@@ -4,64 +4,6 @@ import "../components/UserProfile.css";
 const UserProfile = () => {
   return (
     <div className="app-container">
-      {/* Header */}
-      <header className="header">
-        <div className="header-inner">
-          <div className="header-left">
-            <a href="#" className="logo">
-              <svg
-                className="logo-icon"
-                fill="none"
-                viewBox="0 0 48 48"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g clipPath="url(#clip0)">
-                  <path
-                    clipRule="evenodd"
-                    d="M24 0.757L47.243 24 24 47.243 0.757 24 24 0.757ZM21 35.757V12.243L9.243 24 21 35.757Z"
-                    fill="currentColor"
-                    fillRule="evenodd"
-                  />
-                </g>
-                <defs>
-                  <clipPath id="clip0">
-                    <rect width="48" height="48" fill="white" />
-                  </clipPath>
-                </defs>
-              </svg>
-              <h1 className="logo-text">ColecXion</h1>
-            </a>
-            <nav className="nav-links">
-              <a href="#">Home</a>
-              <a href="#">Shop</a>
-              <a href="#">Sell</a>
-              <a href="#">News</a>
-            </nav>
-          </div>
-          <div className="header-actions">
-            <div className="search-wrapper">
-              <input
-                type="search"
-                placeholder="Search"
-                className="search-input"
-              />
-            </div>
-            <button className="icon-btn">
-              <svg fill="currentColor" width="20" height="20" viewBox="0 0 256 256">
-                <path d="M178,32c-20.65,0-38.73,8.88-50,23.89C116.73,40.88,98.65,32,78,32A62.07,62.07,0,0,0,16,94c0,70,103.79,126.66,108.21,129a8,8,0,0,0,7.58,0C136.21,220.66,240,164,240,94A62.07,62.07,0,0,0,178,32ZM128,206.8C109.74,196.16,32,147.69,32,94A46.06,46.06,0,0,1,78,48c19.45,0,35.78,10.36,42.6,27a8,8,0,0,0,14.8,0c6.82-16.67,23.15-27,42.6-27a46.06,46.06,0,0,1,46,46C224,147.61,146.24,196.15,128,206.8Z"></path>
-              </svg>
-            </button>
-            <div
-              className="avatar"
-              style={{
-                backgroundImage:
-                  'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBKEO4nhJ26IDvmPQnZ8gHy8pn5ckjd_N0nLq91dDRzAJd9F-x9It63JVOfSNo5q_-8lwNMbQwf9lxqOex2cQ1NX_uHdcpWbUu2eDViADT1fKJF4k9hLtVh0JTuytkYIu2i5teBgORGNOjJWE02i59q26QdY9RHEPNwk1sJQ3fG8FZAjgVz5iFxGVQB2Gfh81O0y-XtGXm-YoxiT3D8DrRWLqAdjuTOMx9qrJ1WRZSLAaY17ARx674uQCJKdPvMgaptHPbTxrkyk3I")',
-              }}
-            />
-          </div>
-        </div>
-      </header>
-
       {/* Main content */}
       <main className="main">
         <div className="profile-container">

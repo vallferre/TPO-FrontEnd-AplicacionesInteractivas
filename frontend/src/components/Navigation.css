@@ -1,0 +1,147 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.navbar {
+  position: static;         /* fija arriba */
+  top: 0;
+  left: 0;
+  width: 100%;             /* ocupa todo el ancho */
+  height: 6em;            /* altura fija */
+  background-color: #111827; /* gris oscuro elegante */
+  color: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  z-index: 1000;           /* queda por encima de otros elementos */
+}
+
+/* Para que el contenido no quede tapado por la navbar */
+body {
+  padding-top: 6em;       /* mismo valor que la altura de la navbar */
+}
+
+/* Logo/Naming */
+.navbar-brand a {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #facc15; /* amarillo dorado */
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.navbar-brand a:hover {
+  color: #fde68a; /* amarillo más claro */
+}
+
+/* Links */
+.navbar-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.navbar-links a {
+  text-decoration: none;
+  color: #f9fafb;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.navbar-links a:hover {
+  color: #facc15; /* hover amarillo */
+}
+
+/* Íconos */
+.navbar-icons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.icon {
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.icon:hover {
+  color: #facc15;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar-links {
+    display: none; /* en mobile, podrías luego poner un menú hamburguesa */
+  }
+}
+
+.search-wrapper {
+  display: inline-block;
+  position: relative;
+}
+
+.search-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(19, 91, 236, 0.1);
+  overflow: hidden;
+  transition: width 0.3s ease;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Input */
+.search-btn input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0 1rem;         /* placeholder pegado al borde izquierdo */
+  border: none;
+  outline: none;
+  opacity: 0;
+  pointer-events: none;    /* no interactivo cuando está cerrado */
+  transition: opacity 0.3s ease;
+  background: transparent;
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+/* Icono */
+.material-symbols-outlined {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--primary);
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* Hover: expandir y mostrar input */
+.search-btn:hover {
+  width: 200px;
+  border-radius: 9999px;
+  background: rgba(19, 91, 236, 0.15);
+}
+
+.search-btn:hover input {
+  opacity: 1;
+  pointer-events: auto;    /* ahora sí se puede escribir */
+}
+
+/* Ocultar icono al hover */
+.search-btn:hover .material-symbols-outlined {
+  opacity: 0;
+}

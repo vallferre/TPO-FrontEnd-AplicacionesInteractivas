@@ -4,58 +4,8 @@ import "../components/LandingPage.css";
 export default function LandingPage() {
   return (
     <div className="app">
-      {/* Header */}
-      <header className="header">
-        <div className="container header-content">
-          <a href="./" className="logo">
-            <svg
-              className="logo-icon"
-              fill="none"
-              viewBox="0 0 48 48"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M24 0.757L47.243 24 24 47.243 0.757 24 24 0.757ZM21 35.757V12.243L9.243 24 21 35.757Z"
-                fill="currentColor"
-              />
-            </svg>
-            <span>ColecXion</span>
-          </a>
-          <nav className="nav">
-            <a href="#">Featured</a>
-            <a href="#">New Arrivals</a>
-            <a href="#">Figures</a>
-            <a href="#">Shoes</a>
-            <a href="#">Vintage</a>
-          </nav>
-          <div className="header-actions">
-            <button className="icon-btn">
-              <span className="material-symbols-outlined">search</span>
-            </button>
-            <button className="icon-btn">
-              <span className="material-symbols-outlined">favorite</span>
-            </button>
-            <button className="icon-btn">
-              <span className="material-symbols-outlined">shopping_bag</span>
-            </button>
-            <button className="profile-btn">
-              <img
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBaTsKRVIvCahzr9M3KsusOGKT2BvLMbZee-jkK1P7OPWNfWFM9b2nS2yMMsX-alJGES8YLdV3ijzIsE7GEYZKb2W0GK0ydmXrKqXcVmJkcGaaJqGd_zHxXQv5GxbvnQQH4TCiQiAHDokR-pZQ9h1EojFL5p8blcGn4V1Fptp5RZWBEA-78HFsEBaPeuae3tzKDrKMttWZA7QxGGM9LLDNrF_gzrc436KakDSecADDhqSoWd5HedyuGQQ4EoJ_ewShuw-kavWztcQ"
-                alt="User"
-              />
-            </button>
-          </div>
-        </div>
-      </header>
-
       {/* Main */}
       <main className="main container">
-        {/* Big Search */}
-        <div className="big-search">
-          <span className="material-symbols-outlined">search</span>
-          <input type="search" placeholder="Search for collectibles..." />
-        </div>
-
         {/* Featured */}
         <section className="section">
           <h2>Featured Collections</h2>

@@ -4,48 +4,6 @@ import "../components/Register.css";
 export default function CreateAccount() {
   return (
     <div className="app">
-      <header className="header">
-        <div className="header-container">
-          <a href="#" className="logo">
-            <svg
-              className="logo-icon"
-              fill="none"
-              viewBox="0 0 48 48"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g clipPath="url(#clip0)">
-                <path
-                  d="M24 0.757355L47.2426 24L24 47.2426L0.757355 24L24 0.757355ZM21 35.7574V12.2426L9.24264 24L21 35.7574Z"
-                  fill="currentColor"
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                />
-              </g>
-              <defs>
-                <clipPath id="clip0">
-                  <rect width="48" height="48" fill="white" />
-                </clipPath>
-              </defs>
-            </svg>
-            <span>ColecXion</span>
-          </a>
-
-          <nav className="nav">
-            <a href="#">Browse</a>
-            <a href="#">Sell</a>
-            <a href="#">Help</a>
-          </nav>
-
-          <a href="#" className="signin-btn">
-            Sign In
-          </a>
-
-          <button className="menu-btn">
-            <span className="material-symbols-outlined">menu</span>
-          </button>
-        </div>
-      </header>
-
       <main className="main">
         <div className="form-wrapper">
           <div>

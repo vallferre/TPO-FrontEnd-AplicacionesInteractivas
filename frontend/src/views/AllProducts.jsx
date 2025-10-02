@@ -20,19 +20,6 @@ const products = [
 function App() {
   return (
     <div className="app">
-      <header className="header">
-        <div className="container header-content">
-          <a href="#" className="logo">ColecXion</a>
-          <nav className="nav">
-            <a href="#">Featured</a>
-            <a href="#">Men</a>
-            <a href="#">Women</a>
-            <a href="#">Accessories</a>
-            <a href="#" className="sale">Sale</a>
-          </nav>
-        </div>
-      </header>
-
       <main className="main container">
         <div className="breadcrumb">
           <a href="#">Home</a> / <span>Collectibles</span>

@@ -27,27 +27,6 @@ const Favorites = () => {
 
   return (
     <div className="favorites-page">
-      <header className="header">
-        <div className="header-container">
-          <a href="/" className="logo">
-            <span className="logo-icon">⬡</span>
-            <span className="logo-text">ColecXion</span>
-          </a>
-          <nav className="nav">
-            <a href="#">Featured</a>
-            <a href="#">Men</a>
-            <a href="#">Women</a>
-            <a href="#">Accessories</a>
-          </nav>
-          <div className="actions">
-            <input type="text" placeholder="Search" className="search" />
-            <button className="icon-btn">♡</button>
-            <button className="icon-btn">👜</button>
-            <div className="avatar"></div>
-          </div>
-        </div>
-      </header>
-
       <main className="content">
         <h1>Your Favorites</h1>
         <p>Items you've saved for later.</p>
