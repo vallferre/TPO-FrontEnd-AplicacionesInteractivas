@@ -24,16 +24,12 @@ const Navigation = () => {
               </button>
             </div>
 
-            <button className="icon-btn">
-                <Link to="/favorites">
+            <Link to="/favorites" className="icon-btn">
               <span className="material-symbols-outlined">favorite</span>
-                </Link>
-            </button>
-            <button className="icon-btn">
-              <Link to="/cart">
+            </Link>
+            <Link to="/cart" className="icon-btn">
               <span className="material-symbols-outlined">shopping_bag</span>
-              </Link>
-            </button>
+            </Link>
             <button className="profile-btn">
                 <Link to="/profile">
               <img
