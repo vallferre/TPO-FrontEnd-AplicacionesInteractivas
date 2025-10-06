@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import "../components/Navigation.css";
 
+
 const Navigation = () => {
   return (
     <nav className="navbar">
@@ -12,6 +13,7 @@ const Navigation = () => {
         <li><Link to="/products">Products</Link></li>
         <li><Link to="/register">Register</Link></li>
         <li><Link to="/login">Login</Link></li>
+        <li><Link to="/create">Publicar</Link></li>
       </ul>
 
       <div className="header-actions">

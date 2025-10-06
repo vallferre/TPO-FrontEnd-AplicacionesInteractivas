@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
-import {Routes, Route } from "react-router-dom";
+import {Routes, Route, Form } from "react-router-dom";
 import './App.css'
 import LandingPage from './views/LandingPage';
 import AllProducts from './views/AllProducts';
@@ -11,6 +11,7 @@ import Navigation from './views/Navigation';
 import UserProfile from './views/UserProfile';
 import Favorites from './views/Favorites';
 import Cart from './views/ShoppingCart';
+import CreateProduct from './views/CreateProduct';
 
 const App = () =>{
   return(
@@ -24,6 +25,7 @@ const App = () =>{
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/favorites" element={<Favorites />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/create" element={<CreateProduct />} />
       </Routes>
 
     </>
