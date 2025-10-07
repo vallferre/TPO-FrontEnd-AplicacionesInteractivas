@@ -1,0 +1,162 @@
+/* ----- GENERAL LAYOUT ----- */
+.edit-page {
+  background-color: #f6f7f8;
+  color: #333;
+  font-family: "Inter", sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-main {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.edit-container {
+  max-width: 700px;
+  width: 100%;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+}
+
+/* ----- HEADER ----- */
+.edit-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+}
+
+.edit-header p {
+  color: #666;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+/* ----- FORM ----- */
+.edit-form {
+  margin-top: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  transition: border-color 0.2s;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #1173d4;
+}
+
+/* ----- PRICE / DISCOUNT ROW ----- */
+.form-row {
+  display: flex;
+  gap: 20px;
+}
+
+.price-wrapper {
+  position: relative;
+}
+
+.currency {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  color: #777;
+}
+
+.price-wrapper input {
+  padding-left: 25px;
+}
+
+/* ----- UPLOAD BOXES ----- */
+.upload-box {
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  padding: 30px;
+  text-align: center;
+  background-color: #fafafa;
+}
+
+.upload-icon {
+  font-size: 30px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.upload-link {
+  color: #1173d4;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.upload-link:hover {
+  text-decoration: underline;
+}
+
+.upload-note {
+  font-size: 12px;
+  color: #777;
+  margin-top: 6px;
+}
+
+/* ----- BUTTONS ----- */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.btn {
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn.cancel {
+  background-color: #e5e7eb;
+  color: #111;
+}
+
+.btn.cancel:hover {
+  background-color: #d1d5db;
+}
+
+.btn.save {
+  background-color: #1173d4;
+  color: white;
+}
+
+.btn.save:hover {
+  background-color: #0d5bb0;
+}

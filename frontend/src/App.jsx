@@ -12,6 +12,8 @@ import UserProfile from './views/UserProfile';
 import Favorites from './views/Favorites';
 import Cart from './views/ShoppingCart';
 import CreateProduct from './views/CreateProduct';
+import EditProduct from './views/EditProduct';
+import Orders from './views/Orders';
 
 const App = () =>{
   return(
@@ -26,6 +28,8 @@ const App = () =>{
         <Route path="/favorites" element={<Favorites />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/create" element={<CreateProduct />} />
+        <Route path="/edit" element={<EditProduct />} />
+        <Route path="/orders" element={<Orders />} />
       </Routes>
 
     </>

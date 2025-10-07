@@ -1,265 +1,192 @@
-/* Base reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+.profile-page {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f6f7f8;
+  color: #213547;
+  font-family: 'Inter', sans-serif;
 }
 
-body,
-html {
-  font-family: "Plus Jakarta Sans", sans-serif;
-  width: 100%;
-  height: 100%;
-  background-color: #f6f6f8;
-  color: #1e293b;
+/* SIDEBAR */
+.sidebar {
+  width: 25%;
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 1rem;
+  align-self: flex-start;
 }
 
-.app-container {
+.profile-card {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-}
-
-/* Header */
-.header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  backdrop-filter: blur(10px);
-  background-color: rgba(255, 255, 255, 0.95);
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.header-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 64px;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  color: inherit;
-}
-
-.logo-text {
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.nav-links {
-  display: flex;
-  gap: 1rem;
-}
-
-.nav-links a {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #475569;
-  text-decoration: none;
-}
-
-.nav-links a:hover {
-  color: #135bec;
-}
-
-.header-actions {
-  display: flex;
-  gap: 1rem;
   align-items: center;
 }
 
-.search-wrapper {
+.avatar-container {
   position: relative;
 }
 
-.search-input {
-  padding: 0.5rem 0.75rem 0.5rem 2.5rem;
-  border-radius: 0.5rem;
-  border: 1px solid #d1d5db;
-  background-color: #f3f4f6;
-  font-size: 0.875rem;
-}
-
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   background-size: cover;
   background-position: center;
 }
 
-/* Profile */
-.main {
-  flex-grow: 1;
-  padding: 2rem 1rem;
-  max-width: 1280px;
-  margin: 0 auto;
-}
-
-.profile-header {
+.status-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  background: #1173d4;
+  border: 2px solid white;
+  border-radius: 50%;
+  color: white;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  justify-content: center;
 }
 
-.profile-avatar {
-  width: 128px;
-  height: 128px;
-  border-radius: 50%;
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-  border: 4px solid #fff;
+.profile-card h2 {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 
-.profile-info {
-  text-align: center;
+.email {
+  font-size: 0.9rem;
+  color: gray;
 }
 
-.profile-info h2 {
-  font-size: 1.875rem;
-  font-weight: 700;
-}
-
-.profile-info .username {
-  color: #6b7280;
-  margin-top: 0.25rem;
-}
-
-.profile-info .joined {
-  color: #9ca3af;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-
-.edit-btn {
+.edit-button {
   margin-top: 1rem;
   padding: 0.5rem 1rem;
-  background-color: var(--color-secondary);
-  color: white;
-  border-radius: 0.5rem;
-  font-weight: 600;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
   cursor: pointer;
-  transition: 0.3s;
+  font-weight: 600;
 }
 
-.edit-btn:hover {
-  opacity: 0.9;
-}
-
-/* Tabs */
-.tabs {
-  display: flex;
-  gap: 1rem;
-  border-bottom: 1px solid #e2e8f0;
+.sidebar-nav {
   margin-top: 2rem;
+  width: 100%;
 }
 
-.tab {
-  padding: 0.75rem 0;
-  font-size: 0.875rem;
+.nav-link {
+  display: block;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  color: #333;
   text-decoration: none;
-  color: #6b7280;
-  border-bottom: 2px solid transparent;
+  font-weight: 500;
 }
 
-.tab.active {
-  color: #135bec;
-  border-color: #135bec;
+.nav-link:hover {
+  background: #f1f3f4;
 }
 
-/* Stats */
-.stats-grid {
-  display: grid;
+.nav-link.active {
+  background: #e7f0ff;
+  color: #1173d4;
+}
+
+/* MAIN CONTENT */
+.main-content {
+  width: 75%;
+  padding: 2rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.add-button {
+  background: #1173d4;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.products-list {
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  margin-top: 1rem;
 }
 
-.stat-card {
-  background-color: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
+.product-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
   padding: 1rem;
-  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.1);
 }
 
-.stat-number {
-  color: var(--color-secondary);
-  font-size: 1.875rem;
-  font-weight: 700;
-}
-
-.stat-label {
-  color: #6b7280;
-  margin-top: 0.25rem;
-  font-size: 0.875rem;
-}
-
-/* Collection Highlights */
-.collection-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-}
-
-.collection-item {
-  aspect-ratio: 1 / 1;
-  border-radius: 0.5rem;
+.product-image {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
   background-size: cover;
   background-position: center;
 }
 
-.collection-placeholder {
+.product-info {
+  flex: 1;
+  margin-left: 1rem;
+}
+
+.product-name {
+  font-weight: 600;
+}
+
+.product-price {
+  color: #1173d4;
+  font-weight: bold;
+}
+
+.product-actions {
   display: flex;
   align-items: center;
-  justify-content: center;
-  background-color: #e5e7eb;
-  border-radius: 0.5rem;
-  color: #9ca3af;
-  aspect-ratio: 1 / 1;
-}
-
-/* Recent Activity */
-.activity-timeline {
-  list-style: none;
-  margin-top: 1rem;
-}
-
-.activity-timeline li {
-  display: flex;
-  align-items: flex-start;
   gap: 1rem;
-  margin-bottom: 1rem;
 }
 
-.activity-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.status {
+  padding: 0.3rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
-.bg-primary-light {
-  background-color: rgba(19, 91, 236, 0.2);
+.status-active {
+  background: #d1fae5;
+  color: #065f46;
 }
 
-.activity-text span:first-child {
-  font-weight: 500;
-  display: block;
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
 }
 
-.activity-text span:last-child {
-  font-size: 0.75rem;
-  color: #6b7280;
+.status-sold {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.action-buttons button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
 }
