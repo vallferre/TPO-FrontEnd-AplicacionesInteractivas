@@ -35,7 +35,9 @@ const Favorites = () => {
             <div className="card" key={i}>
               <div className="card-img">
                 <img src={p.img} alt={p.name} />
-                <button className="fav-btn">♡</button>
+                <div class="fav-btn-wrapper">
+                  <button className="fav-btn">♡</button>
+                </div>
               </div>
               <div className="card-info">
                 <h3>{p.name}</h3>
