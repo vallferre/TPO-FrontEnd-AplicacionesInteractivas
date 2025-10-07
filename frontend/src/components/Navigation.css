@@ -4,7 +4,8 @@
   padding: 0;
   box-sizing: border-box;
 }
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -14,9 +15,9 @@ html, body {
   position: static;
   top: 0;
   left: 0;
-  width: 100vw;              /* ocupa el ancho completo de la ventana */
+  width: 100vw; /* ocupa el ancho completo de la ventana */
   height: 6em;
-  background-color: #111827; /* gris oscuro elegante */
+  background-color: var(--color-primary); /* gris oscuro elegante */
   color: #f9fafb;
   display: flex;
   align-items: center;
@@ -24,15 +25,14 @@ html, body {
   padding: 0 2rem;
   font-family: "Plus Jakarta Sans", sans-serif;
   z-index: 1000;
-  margin: 0;                 /* elimina cualquier margen residual */
-  border: none;              /* elimina bordes por defecto */
-  box-shadow: none;          /* sin sombra lateral */
+  margin: 0; /* elimina cualquier margen residual */
+  border: none; /* elimina bordes por defecto */
+  box-shadow: none; /* sin sombra lateral */
 }
-
 
 /* Para que el contenido no quede tapado por la navbar */
 body {
-  padding-top: 6em;       /* mismo valor que la altura de la navbar */
+  padding-top: 6em; /* mismo valor que la altura de la navbar */
 }
 
 /* Logo/Naming */
@@ -116,11 +116,11 @@ body {
   top: 0;
   width: 100%;
   height: 100%;
-  padding: 0 1rem;         /* placeholder pegado al borde izquierdo */
+  padding: 0 1rem; /* placeholder pegado al borde izquierdo */
   border: none;
   outline: none;
   opacity: 0;
-  pointer-events: none;    /* no interactivo cuando está cerrado */
+  pointer-events: none; /* no interactivo cuando está cerrado */
   transition: opacity 0.3s ease;
   background: transparent;
   color: #ffffff;
@@ -133,7 +133,7 @@ body {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  color: var(--primary);
+  color: var(--color-secondary);
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
@@ -147,7 +147,7 @@ body {
 
 .search-btn:hover input {
   opacity: 1;
-  pointer-events: auto;    /* ahora sí se puede escribir */
+  pointer-events: auto; /* ahora sí se puede escribir */
 }
 
 /* Ocultar icono al hover */

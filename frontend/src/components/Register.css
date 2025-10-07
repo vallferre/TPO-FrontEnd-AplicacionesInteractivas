@@ -102,7 +102,7 @@ html,
 }
 
 .form-subtitle .link {
-  color: #135bec;
+  color: var(--color-secondary);
   text-decoration: none;
   font-weight: 600;
 }
@@ -140,13 +140,13 @@ html,
   font-weight: 700;
   border: none;
   border-radius: 0.5rem;
-  background: #135bec;
+  background: var(--color-secondary);
   color: #fff;
   cursor: pointer;
 }
 
 .submit-btn:hover {
-  background: #0f49c2;
+  background: var(--color-hover);
 }
 
 /* Divider */

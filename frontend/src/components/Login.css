@@ -4,19 +4,15 @@
   padding: 0;
   box-sizing: border-box;
 }
-
+:root {
+  --color-secondary: #3b5eb8;
+  --color-hover: #234ab4;
+}
 body,
 html,
 .app {
   height: 100%;
   font-family: "Plus Jakarta Sans", sans-serif;
-}
-
-/* Colors */
-:root {
-  --primary: #135bec;
-  --background-light: #f6f6f8;
-  --background-dark: #101622;
 }
 
 .bg-light {
@@ -75,7 +71,7 @@ html,
 }
 
 .nav a:hover {
-  color: var(--primary);
+  color: var(--color-hover);
 }
 
 .actions {
@@ -84,8 +80,8 @@ html,
 }
 
 .btn-login {
-  background: var(--primary);
-  color: #fff;
+  background: var(--color-secondary);
+  color: #fff !important;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-weight: 700;
@@ -155,7 +151,7 @@ html,
 
 .forgot {
   font-size: 0.875rem;
-  color: var(--primary);
+  color: var(--color-secondary);
   text-decoration: none;
 }
 
@@ -166,7 +162,7 @@ html,
 .btn-submit {
   width: 100%;
   padding: 0.75rem;
-  background: var(--primary);
+  background: var(--color-secondary);
   color: white;
   font-weight: 700;
   border-radius: 0.5rem;

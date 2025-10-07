@@ -1,5 +1,6 @@
-body, html {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+body,
+html {
+  font-family: "Plus Jakarta Sans", sans-serif;
   width: 100%;
   min-height: 100%;
   background-color: #f6f6f8;
@@ -22,14 +23,14 @@ body.dark {
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 1px solid rgba(156,163,175,0.5);
-  background-color: rgba(246,246,248,0.8);
+  border-bottom: 1px solid rgba(156, 163, 175, 0.5);
+  background-color: rgba(246, 246, 248, 0.8);
   backdrop-filter: blur(10px);
 }
 
 body.dark .header {
-  border-color: rgba(55,65,81,0.5);
-  background-color: rgba(16,22,34,0.8);
+  border-color: rgba(55, 65, 81, 0.5);
+  background-color: rgba(16, 22, 34, 0.8);
 }
 
 .header-inner {
@@ -113,16 +114,17 @@ body.dark .header {
   padding: 8px 8px 8px 32px;
   border-radius: 0.5rem;
   border: none;
-  background-color: rgba(156,163,175,0.2);
+  background-color: rgba(156, 163, 175, 0.2);
   color: inherit;
 }
 
 body.dark .search-input {
-  background-color: rgba(55,65,81,0.2);
+  background-color: rgba(55, 65, 81, 0.2);
   color: #f9fafb;
 }
 
-.icon-btn, .cart-btn {
+.icon-btn,
+.cart-btn {
   position: relative;
   border: none;
   background: none;
@@ -132,12 +134,14 @@ body.dark .search-input {
   color: inherit;
 }
 
-.icon-btn:hover, .cart-btn:hover {
-  background-color: rgba(19,91,236,0.2);
+.icon-btn:hover,
+.cart-btn:hover {
+  background-color: rgba(19, 91, 236, 0.2);
 }
 
-body.dark .icon-btn:hover, body.dark .cart-btn:hover {
-  background-color: rgba(19,91,236,0.3);
+body.dark .icon-btn:hover,
+body.dark .cart-btn:hover {
+  background-color: rgba(19, 91, 236, 0.3);
 }
 
 .cart-count {
@@ -146,7 +150,7 @@ body.dark .icon-btn:hover, body.dark .cart-btn:hover {
   right: -4px;
   width: 16px;
   height: 16px;
-  background-color: #135bec;
+  background-color: var(--color-secondary);
   color: white;
   font-size: 0.625rem;
   font-weight: 500;
@@ -185,18 +189,18 @@ body.dark .icon-btn:hover, body.dark .cart-btn:hover {
 /* Cart items */
 .cart-items ul {
   list-style: none;
-  border-top: 1px solid rgba(156,163,175,0.5);
+  border-top: 1px solid rgba(156, 163, 175, 0.5);
 }
 
 .cart-item {
   display: flex;
   padding: 24px 0;
-  border-bottom: 1px solid rgba(156,163,175,0.5);
+  border-bottom: 1px solid rgba(156, 163, 175, 0.5);
 }
 
 body.dark .cart-items ul,
 body.dark .cart-item {
-  border-color: rgba(55,65,81,0.5);
+  border-color: rgba(55, 65, 81, 0.5);
 }
 
 .item-image {
@@ -260,20 +264,20 @@ body.dark .item-size {
   height: 28px;
   border-radius: 9999px;
   border: none;
-  background-color: rgba(156,163,175,0.2);
+  background-color: rgba(156, 163, 175, 0.2);
   cursor: pointer;
 }
 
 body.dark .quantity button {
-  background-color: rgba(55,65,81,0.2);
+  background-color: rgba(55, 65, 81, 0.2);
 }
 
 .quantity button:hover {
-  background-color: rgba(19,91,236,0.2);
+  background-color: rgba(19, 91, 236, 0.2);
 }
 
 body.dark .quantity button:hover {
-  background-color: rgba(19,91,236,0.3);
+  background-color: rgba(19, 91, 236, 0.3);
 }
 
 .quantity span {
@@ -284,7 +288,7 @@ body.dark .quantity button:hover {
 
 .remove-btn {
   font-weight: 500;
-  color: #135bec;
+  color: var(--color-secondary);
   background: none;
   border: none;
   cursor: pointer;
@@ -296,13 +300,13 @@ body.dark .quantity button:hover {
 
 /* Order summary */
 .order-summary {
-  background-color: rgba(156,163,175,0.2);
+  background-color: rgba(156, 163, 175, 0.2);
   border-radius: 0.75rem;
   padding: 24px;
 }
 
 body.dark .order-summary {
-  background-color: rgba(31,41,55,0.5);
+  background-color: rgba(31, 41, 55, 0.5);
 }
 
 .order-summary h3 {
@@ -335,11 +339,11 @@ body.dark .summary-row {
 }
 
 .divider {
-  border-top: 1px solid rgba(156,163,175,0.5);
+  border-top: 1px solid rgba(156, 163, 175, 0.5);
 }
 
 body.dark .divider {
-  border-color: rgba(55,65,81,0.5);
+  border-color: rgba(55, 65, 81, 0.5);
 }
 
 .checkout-btn {
@@ -347,7 +351,7 @@ body.dark .divider {
   margin-top: 24px;
   padding: 12px;
   font-weight: 700;
-  background-color: #135bec;
+  background-color: var(--color-secondary);
   color: white;
   border-radius: 0.5rem;
   cursor: pointer;
@@ -355,7 +359,7 @@ body.dark .divider {
 }
 
 .checkout-btn:hover {
-  background-color: rgba(19,91,236,0.9);
+  background-color: var(--color-hover);
 }
 
 .continue-shopping {
@@ -366,7 +370,7 @@ body.dark .divider {
 }
 
 .continue-shopping a {
-  color: #135bec;
+  color: var(--color-secondary);
   font-weight: 500;
   text-decoration: none;
 }
