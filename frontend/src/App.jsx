@@ -15,7 +15,6 @@ import CreateProduct from './views/CreateProduct';
 import EditProduct from './views/EditProduct';
 import Orders from './views/Orders';
 import AdminCreateCategory from './views/AdminCreateCategory';
-import SingleProduct from './views/SingleProduct';
 
 const App = () =>{
   return(
@@ -33,7 +32,6 @@ const App = () =>{
         <Route path="/edit" element={<EditProduct />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/categories" element={<AdminCreateCategory />} />
-        <Route path="/product" element={<SingleProduct />} />
       </Routes>
 
     </>

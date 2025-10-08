@@ -1,7 +1,7 @@
 import React from "react";
 import "../components/SingleProduct.css";
 
-const ProductDetails = () => {
+const ProductDetails = ({id, name, description, stock, price, discountPercentage, finalPrice, ownerName, categories, imageIds, videos}) => {
   return (
     <div className="app-container">
       <header className="header">
@@ -18,7 +18,7 @@ const ProductDetails = () => {
                   </clipPath>
                 </defs>
               </svg>
-              <h1 className="logo-text">ColecXion</h1>
+              <h1 className="logo-text">Relicaria</h1>
             </a>
             <nav className="nav-links">
               <a href="#">Featured</a>
@@ -26,32 +26,6 @@ const ProductDetails = () => {
               <a href="#">Women</a>
               <a href="#">Accessories</a>
             </nav>
-          </div>
-          <div className="header-actions">
-            <div className="search-wrapper">
-              <input type="search" placeholder="Search..." />
-              <div className="search-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-            </div>
-            <button className="icon-btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            </button>
-            <button className="icon-btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-            </button>
-            <button className="avatar-btn">
-              <img
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEIkpLzAMdMRsO-cBTBn7IPmNWP-pdI0Dj2vFzwwpO2SYLANJgRXmmHzvGdENwv9Tg9JlofV46h5jydxjZvaN-rml_4EjdaTuob3DRCK1dK-WlsPcNUhp9hvb7q8NOOBJmKeZqBMxTO9JsYOyY6Mgl8EfgY06GT_akRB3k_-uWXrOphhktUVsQqMNdyLqQA_RY5mpSkoqFUfBa0y5ZPpelscw2EWgIKE50nd8XsUFio624C2SqBA2ZXyHHUy_544uuENNBEDrvCxA"
-                alt="User avatar"
-              />
-            </button>
           </div>
         </div>
       </header>
@@ -70,12 +44,12 @@ const ProductDetails = () => {
           </div>
 
           <div className="product-info">
-            <h1 className="product-title">Limited Edition Action Figure</h1>
-            <div className="product-price">$250.00</div>
+            <h1 className="product-title">{name}</h1>
+            <div className="product-price">{finalPrice}</div>
             <div className="product-description">
               <h2>Description</h2>
               <p>
-                This limited edition action figure is a must-have for any serious collector. Featuring intricate details and high-quality materials, it's a true representation of the character. The figure comes in its original packaging and is in mint condition, perfect for display or investment. Don't miss out on adding this rare piece to your collection.
+                {description}
               </p>
             </div>
 
@@ -84,7 +58,7 @@ const ProductDetails = () => {
               <div className="seller-details">
                 <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2B1y9kYhBT4T7QHchjwJCsNCW29hw36CmQekHcda7zDlXAjKgAmmznBL3Dis9QRjByWnc2Jhi3YC_yIRdUBwG6MdsaWXsJIP1JvxHI-apErTPJ6sCyOjkQUWzIXMvl4xli1-2Dl8CYbumw6zOPEtbgGvQ-MvIBi1ocdQGI-IKxMtTcj841QhYy_7i_98AgFGwQzJwWvgP53IKpICS4q4ZcZnMSWYxvhniNcQatNDGTBjjpObAJBW771Nozfg2lF5G7ARhmDp_-tQ" alt="Seller avatar" />
                 <div>
-                  <p>Collector's Haven</p>
+                  <p>{ownerName}</p>
                   <p>⭐ 4.8 (120 reviews)</p>
                 </div>
               </div>
