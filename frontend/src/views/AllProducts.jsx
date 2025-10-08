@@ -23,6 +23,7 @@ const ExploreProducts = () => {
 
   return (
     <div className="explore-page">
+      <title>Explore Products</title>
       <main className="container">
         <h1 className="title">Explore Products</h1>
 
@@ -48,8 +49,8 @@ const ExploreProducts = () => {
                 <img src={p.img} alt={p.name} />
               </div>
               <div className="card-info">
-                <h3>{p.name}</h3>
-                <p>{p.price}</p>
+                  <h3>{p.name}</h3>
+                  <p>{p.price}</p>
               </div>
             </div>
           ))}

@@ -9,7 +9,9 @@ const Navigation = () => {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <Link to="/">ColecXion</Link>
+        <Link to="/">
+          <h1>Relicaria</h1>
+        </Link>
       </div>
 
       <div className="header-actions">
