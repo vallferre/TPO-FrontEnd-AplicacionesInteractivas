@@ -246,3 +246,9 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+/* --- Mantener el botón blanco al hacer hover --- */
+.submit-btn:hover {
+  background: #ffffff !important;
+  color: #000 !important;
+  border: 1px dashed #000 !important;
+}

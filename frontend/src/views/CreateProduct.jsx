@@ -3,6 +3,12 @@ import "../components/CreateProduct.css";
 import ImageUpload from "../components/ImageUpload"; // usa styled-components
 
 const CreateProduct = () => {
+
+  useState(() => {
+    document.title = "Create product";
+  })
+
+  
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [price, setPrice] = useState("");
