@@ -67,7 +67,7 @@
   padding: 0.5rem 1rem;
   border: 1px solid #ccc;
   border-radius: 8px;
-  background: white;
+  background: rgb(0, 29, 146);
   cursor: pointer;
   font-weight: 600;
 }
