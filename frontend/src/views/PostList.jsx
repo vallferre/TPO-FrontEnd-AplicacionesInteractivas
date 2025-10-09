@@ -3,7 +3,7 @@ import PostCard from './PostCard'
 
 const PostList = () => {
     const [posts, setPosts] = useState([])
-    const URL = "http://localhost:3000/api/posts"
+    const URL = "https://jsonplaceholder.typicode.com/posts"
 
     useEffect(() => {
         fetch(URL)

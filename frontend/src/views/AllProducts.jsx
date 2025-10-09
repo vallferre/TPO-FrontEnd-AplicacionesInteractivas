@@ -1,15 +1,37 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "../components/AllProducts.css";
+import SingleProduct from "./SingleProduct.jsx"; // asumimos que PostCard está en este path
 
-const ExploreProducts = () => {
-  const [products, setProducts] = useState([]);
-  const URL = "http://localhost:3000/api/products"
+const AllProducts = () => {
+    const [products, setProducts] = useState([]);
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {fetch(URL)
-        .then((response) => response.json())
-        .then((data) => setPosts(data))
-        .catch((error) => {throw Error(error)})
-    }, [])
+    const URL = "http://localhost:8080/products";
+
+    // Configuramos options con form y token
+    const options = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+
+    useEffect(() => {
+      fetch(URL, options)
+        .then((response) => {
+          if (!response.ok) throw new Error(`Error: ${response.status}`);
+          return response.json();
+        })
+        .then((data) => {
+          setProducts(Array.isArray(data.content) ? data.content : []);
+        })
+        .catch((error) => {
+          console.error(error);
+          setError(error.message);
+        })
+        .finally(() => setLoading(false));
+    }, []); // se ejecuta solo al montar
 
   return (
     <div className="explore-page">
@@ -32,20 +54,23 @@ const ExploreProducts = () => {
           ))}
         </div>
 
+        {loading && <p>Cargando productos...</p>}
+        {error && <p className="error">{error}</p>}
+
         <div className="grid">
-          {
-            productos.map((producto) => (
-                        <PostCard 
-                        id={producto.id}
-                        name={producto.name}
-                        key = {producto.id}
-                        />
-                    ))
-          }
+          {products.map((producto) => (
+            <SingleProduct
+              key={producto.id}
+              id={producto.id}
+              name={producto.name}
+              image={producto.imageIds?.[0] || null} // si tiene imágenes
+              price={producto.price}
+            />
+          ))}
         </div>
       </main>
     </div>
   );
 };
 
-export default ExploreProducts;
+export default AllProducts;

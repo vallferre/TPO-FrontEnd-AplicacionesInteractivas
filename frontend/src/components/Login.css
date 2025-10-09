@@ -23,12 +23,6 @@ html,
   background: var(--background-dark);
 }
 
-/* Header */
-.header {
-  border-bottom: 1px solid #e2e8f0;
-  padding: 0.5rem 1rem;
-}
-
 .container {
   max-width: 1200px;
   margin: 0 auto;
