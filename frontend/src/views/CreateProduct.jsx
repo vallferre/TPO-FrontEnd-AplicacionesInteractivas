@@ -1,40 +1,39 @@
-import React, { useState, useEffect } from "react";
-import "../components/CreateProduct.css";
+// src/views/CreateProduct.jsx
+import React, { useEffect, useState } from "react";
+import "../components/CreateProduct.css";               // tu hoja de estilos existente
+import CategoryMultiSelect from "../components/CategoryMultiSelect";
 import ImageUploader from "../components/ImageUploader";
 
 const CreateProduct = () => {
-  // Form state
+  // ---- estado del formulario
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [discount, setDiscount] = useState("");
-  const [categoryInput, setCategoryInput] = useState("");
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState([]); // [{id, description}]
+  const [imageFiles, setImageFiles] = useState([]); // File[]
 
-  // Imagenes (File[])
-  const [images, setImages] = useState([]);
-
-  // UX/validación
   const [touched, setTouched] = useState({});
-  const markTouched = (field) => setTouched((t) => ({ ...t, [field]: true }));
 
-  // Validaciones
+  // ---- validaciones
   const errors = {
     name: !name.trim() ? "El nombre es obligatorio." : null,
     desc: !desc.trim() ? "La descripción es obligatoria." : null,
-    price: !String(price).trim()
-      ? "El precio es obligatorio."
-      : Number(price) <= 0
-      ? "El precio debe ser mayor a 0."
-      : null,
-    stock: !String(stock).trim()
-      ? "El stock es obligatorio."
-      : !Number.isFinite(Number(stock)) || Number(stock) < 0
-      ? "El stock no puede ser negativo."
-      : !Number.isInteger(Number(stock))
-      ? "El stock debe ser un número entero."
-      : null,
+    price:
+      !String(price).trim()
+        ? "El precio es obligatorio."
+        : Number(price) <= 0
+        ? "El precio debe ser mayor a 0."
+        : null,
+    stock:
+      !String(stock).trim()
+        ? "El stock es obligatorio."
+        : !Number.isFinite(Number(stock)) || Number(stock) < 0
+        ? "El stock no puede ser negativo."
+        : !Number.isInteger(Number(stock))
+        ? "El stock debe ser un número entero."
+        : null,
     discount:
       String(discount).trim() === ""
         ? null
@@ -53,43 +52,90 @@ const CreateProduct = () => {
     !errors.discount &&
     !errors.categories;
 
-  // Categorías
-  const addCategory = () => {
-    const raw = categoryInput.trim();
-    if (!raw) return;
-    const parts = raw
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    // Tip: tu backend busca por description capitalizada (Primera letra mayúscula).
-    const normalized = parts.map(
-      (n) => n.charAt(0).toUpperCase() + n.slice(1).toLowerCase()
-    );
-    const unique = Array.from(new Set([...categories, ...normalized]));
-    setCategories(unique);
-    setCategoryInput("");
-  };
+  const markTouched = (field) =>
+    setTouched((t) => ({ ...t, [field]: true }));
 
-  const removeCategory = (cat) =>
-    setCategories(categories.filter((c) => c !== cat));
+  // ---- helpers API
+  const API_BASE = ""; // si necesitas prefijo, ej: "http://localhost:8080"
+  const token = typeof window !== "undefined"
+    ? localStorage.getItem("jwtToken")
+    : null;
 
-  const onCategoriesKeyDown = (e) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      addCategory();
+  async function createProductOnServer() {
+    const payload = {
+      name: name.trim(),
+      description: desc.trim(),
+      price: Number(price),
+      stock: Number(stock),
+      discount:
+        String(discount).trim() === "" ? null : Number(discount),
+      // tu backend espera nombres de categorías (description)
+      categories: categories.map((c) => c.description),
+    };
+
+    const res = await fetch(`${API_BASE}/products/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(
+        text || `Error al crear producto (HTTP ${res.status})`
+      );
     }
-  };
 
-  // Imagenes (vienen de ImageUploader)
-  const handleImagesChange = (filesArray) => {
-    setImages(filesArray);
-  };
+    // intentar obtener id desde el body o el header Location
+    let id = null;
+    try {
+      const body = await res.json();
+      if (body && body.id != null) id = body.id;
+    } catch {
+      // ignore json parse error
+    }
+    if (!id) {
+      const loc = res.headers.get("Location");
+      if (loc) id = Number(loc.split("/").pop());
+    }
+    if (!id) throw new Error("No se pudo obtener el ID del producto.");
 
-  // Submit: 1) crea producto con auth  2) sube imágenes una por request con "file"
+    return id;
+  }
+
+  async function uploadImagesSequential(productId, files) {
+    for (const file of files) {
+      const fd = new FormData();
+      fd.append("file", file); // tu backend espera @RequestParam("file")
+
+      const res = await fetch(
+        `${API_BASE}/products/${productId}/images`,
+        {
+          method: "POST",
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            // NO pongas Content-Type manual al enviar FormData
+          },
+          body: fd,
+        }
+      );
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(
+          txt ||
+            `Error al subir imagen "${file.name}" (HTTP ${res.status})`
+        );
+      }
+    }
+  }
+
+  // ---- submit
   const onSubmit = async (e) => {
     e.preventDefault();
-
-    // Mostrar errores si hay
+    // marcar todo tocado para mostrar errores si los hay
     setTouched({
       name: true,
       desc: true,
@@ -100,92 +146,28 @@ const CreateProduct = () => {
     });
     if (!isValid) return;
 
-    const token = localStorage.getItem("authToken"); // ajustá si usás otro storage/clave
-    if (!token) {
-      alert("No se encontró token de sesión. Iniciá sesión para crear productos.");
-      return;
-    }
-
-    // 1) Crear producto
-    const productPayload = {
-      name: name.trim(),
-      description: desc.trim(),
-      price: Number(price),
-      stock: Number(stock),
-      discount: String(discount).trim() === "" ? null : Number(discount),
-      categories, // array de strings capitalizados
-    };
-
-    let createdProductId = null;
-
     try {
-      const res = await fetch("/products/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Imprescindible para @AuthenticationPrincipal
-        },
-        body: JSON.stringify(productPayload),
-      });
+      // 1) crear producto
+      const productId = await createProductOnServer();
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Error al crear producto (HTTP ${res.status})`);
+      // 2) subir imágenes (una por request)
+      if (imageFiles.length > 0) {
+        await uploadImagesSequential(productId, imageFiles);
       }
 
-      const data = await res.json();
-      // Suponemos que el backend devuelve el producto creado con "id"
-      createdProductId = data.id;
-      if (!createdProductId) {
-        throw new Error("El backend no devolvió un id de producto.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert(
-        `No se pudo crear el producto.\nDetalle: ${err.message || "Error desconocido"}`
-      );
-      return;
-    }
-
-    // 2) Subir imágenes (una request por archivo, con @RequestParam("file"))
-    //    Endpoint que compartiste: POST /products/{productId}/images
-    try {
-      for (const file of images) {
-        const fd = new FormData();
-        fd.append("file", file); // IMPORTANTE: nombre "file" exacto
-
-        const up = await fetch(`/products/${createdProductId}/images`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`, // también necesita auth
-          },
-          body: fd,
-        });
-
-        if (!up.ok) {
-          const msg = await up.text();
-          throw new Error(
-            msg || `Error subiendo imagen: ${file.name} (HTTP ${up.status})`
-          );
-        }
-      }
-
-      alert("✅ Producto creado y todas las imágenes subidas con éxito.");
-      // Reset opcional
+      alert("✅ Producto creado y fotos subidas.");
+      // Reset
       setName("");
       setDesc("");
       setPrice("");
       setStock("");
       setDiscount("");
-      setCategoryInput("");
       setCategories([]);
-      setImages([]);
+      setImageFiles([]);
       setTouched({});
     } catch (err) {
       console.error(err);
-      alert(
-        `El producto se creó (id ${createdProductId}), pero hubo errores subiendo imágenes.\nDetalle: ${err.message || "Error desconocido"}`
-      );
+      alert(err.message || "Error al crear el producto.");
     }
   };
 
@@ -213,6 +195,22 @@ const CreateProduct = () => {
                 />
                 {touched.name && errors.name && (
                   <p className="error">{errors.name}</p>
+                )}
+              </div>
+
+              {/* Descripción */}
+              <div className="form-group full">
+                <label htmlFor="desc">Descripción *</label>
+                <textarea
+                  id="desc"
+                  rows={5}
+                  value={desc}
+                  onChange={(e) => setDesc(e.target.value)}
+                  onBlur={() => markTouched("desc")}
+                  placeholder="Contá detalles del estado, medidas, materiales, etc."
+                />
+                {touched.desc && errors.desc && (
+                  <p className="error">{errors.desc}</p>
                 )}
               </div>
 
@@ -271,60 +269,13 @@ const CreateProduct = () => {
                 )}
               </div>
 
-              {/* Descripción */}
+              {/* Categorías (selector con búsqueda) */}
               <div className="form-group full">
-                <label htmlFor="desc">Descripción *</label>
-                <textarea
-                  id="desc"
-                  rows={5}
-                  value={desc}
-                  onChange={(e) => setDesc(e.target.value)}
-                  onBlur={() => markTouched("desc")}
-                  placeholder="Contá detalles del estado, medidas, materiales, etc."
+                <CategoryMultiSelect
+                  selected={categories}
+                  onChange={setCategories}
+                  endpoint="/categories"
                 />
-                {touched.desc && errors.desc && (
-                  <p className="error">{errors.desc}</p>
-                )}
-              </div>
-
-              {/* Categorías */}
-              <div className="form-group full">
-                <label htmlFor="category">Categorías * (agregá varias)</label>
-                <div className="category-input">
-                  <input
-                    id="category"
-                    type="text"
-                    value={categoryInput}
-                    onChange={(e) => setCategoryInput(e.target.value)}
-                    onKeyDown={onCategoriesKeyDown}
-                    onBlur={() => markTouched("categories")}
-                    placeholder="Escribí una categoría y presioná Enter o coma"
-                  />
-                  <button
-                    type="button"
-                    className="btn-add"
-                    onClick={addCategory}
-                  >
-                    Agregar
-                  </button>
-                </div>
-                {categories.length > 0 && (
-                  <div className="chips">
-                    {categories.map((c) => (
-                      <span className="chip" key={c}>
-                        {c}
-                        <button
-                          type="button"
-                          className="chip-close"
-                          aria-label={`Quitar ${c}`}
-                          onClick={() => removeCategory(c)}
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
                 {touched.categories && errors.categories && (
                   <p className="error">{errors.categories}</p>
                 )}
@@ -333,10 +284,14 @@ const CreateProduct = () => {
               {/* Imágenes */}
               <div className="form-group full">
                 <label>Fotos del producto</label>
-                <ImageUploader onImagesChange={handleImagesChange} />
+                <ImageUploader onImagesChange={setImageFiles} />
+                {/* Si querés el helper, descomentalo (cuidá de no duplicarlo en tu UI) */}
+                {/* <p className="helper">
+                  Subí una o más imágenes. Se enviarán luego de crear el producto.
+                </p> */}
               </div>
 
-              {/* Botón publicar */}
+              {/* Submit */}
               <div className="actions full">
                 <button
                   type="submit"

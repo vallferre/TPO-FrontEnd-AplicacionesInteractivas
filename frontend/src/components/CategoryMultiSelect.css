@@ -1,0 +1,42 @@
+.catms-root { position: relative; width: 100%; }
+.catms-label { font-size: 0.9rem; font-weight: 600; color: #101622; display: block; margin-bottom: 0.5rem; }
+
+.catms-control {
+  display: flex; justify-content: space-between; align-items: center;
+  min-height: 44px; padding: 0.4rem 0.6rem;
+  border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; cursor: pointer;
+}
+.catms-control.open { box-shadow: 0 0 0 3px rgba(19,91,236,0.12); border-color: #135bec; }
+
+.catms-placeholder { color: #6b7280; }
+.catms-value { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+.catms-caret { color: #6b7280; margin-left: 6px; }
+
+.catms-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.catms-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 8px; border-radius: 9999px;
+  background: #eaf0ff; color: #135bec; font-weight: 600;
+  border: 1px solid rgba(19,91,236,0.15);
+}
+.catms-chip-x {
+  border: none; background: transparent; cursor: pointer; color: inherit; font-size: 14px; line-height: 1;
+}
+
+.catms-panel {
+  position: absolute; z-index: 40; margin-top: 6px; width: 100%;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+.catms-search { padding: 8px; border-bottom: 1px solid #e5e7eb; }
+.catms-search input {
+  width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #e5e7eb;
+}
+.catms-list { max-height: 260px; overflow: auto; list-style: none; margin: 0; padding: 4px 0; }
+.catms-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; cursor: pointer;
+}
+.catms-item:hover { background: #f7f8fb; }
+.catms-empty, .catms-info, .catms-error { padding: 10px 12px; color: #6b7280; }
+.catms-error { color: #b91c1c; }
