@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "../components/CreateProduct.css";
-import ImageUpload from "../components/ImageUpload"; // usa styled-components
+import ImageUploader from "../components/ImageUploader";
 
 const CreateProduct = () => {
-
-  useState(() => {
-    document.title = "Create product";
-  })
-
-  
+  // Form state
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [price, setPrice] = useState("");
@@ -16,63 +11,15 @@ const CreateProduct = () => {
   const [discount, setDiscount] = useState("");
   const [categoryInput, setCategoryInput] = useState("");
   const [categories, setCategories] = useState([]);
+
+  // Imagenes (File[])
   const [images, setImages] = useState([]);
+
+  // UX/validación
   const [touched, setTouched] = useState({});
-
-  // Limpieza de ObjectURLs al desmontar o al cambiar
-  useEffect(() => {
-    return () => {
-      images.forEach((img) => URL.revokeObjectURL(img.url));
-    };
-  }, [images]);
-
-  // ---- categorías
-  const addCategory = () => {
-    const raw = categoryInput.trim();
-    if (!raw) return;
-    const parts = raw.split(",").map((s) => s.trim()).filter(Boolean);
-    const unique = Array.from(new Set([...categories, ...parts]));
-    setCategories(unique);
-    setCategoryInput("");
-  };
-  const removeCategory = (cat) => setCategories(categories.filter((c) => c !== cat));
-  const onCategoriesKeyDown = (e) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      addCategory();
-    }
-  };
-
-  // ---- imágenes con ImageUpload (acumula + multiple)
-  const onFilesChange = (e) => {
-    const files = Array.from(e.target.files || []);
-    const mapped = files.map((f, idx) => ({
-      file: f,
-      url: URL.createObjectURL(f),
-      key: `${f.name}-${f.size}-${f.lastModified}-${idx}`,
-    }));
-    setImages((prev) => {
-      const byKey = new Map(prev.map((i) => [i.key, i]));
-      mapped.forEach((m) => {
-        if (!byKey.has(m.key)) byKey.set(m.key, m);
-      });
-      return Array.from(byKey.values());
-    });
-    // permite volver a elegir el mismo archivo en el mismo input
-    e.target.value = "";
-  };
-
-  const removeImage = (key) => {
-    setImages((prev) => {
-      const toRemove = prev.find((i) => i.key === key);
-      if (toRemove) URL.revokeObjectURL(toRemove.url);
-      return prev.filter((i) => i.key !== key);
-    });
-  };
-
   const markTouched = (field) => setTouched((t) => ({ ...t, [field]: true }));
 
-  // ---- validaciones
+  // Validaciones
   const errors = {
     name: !name.trim() ? "El nombre es obligatorio." : null,
     desc: !desc.trim() ? "La descripción es obligatoria." : null,
@@ -94,7 +41,8 @@ const CreateProduct = () => {
         : Number(discount) < 0 || Number(discount) > 100
         ? "El descuento debe estar entre 0 y 100."
         : null,
-    categories: categories.length === 0 ? "Agregá al menos una categoría." : null,
+    categories:
+      categories.length === 0 ? "Agregá al menos una categoría." : null,
   };
 
   const isValid =
@@ -105,8 +53,43 @@ const CreateProduct = () => {
     !errors.discount &&
     !errors.categories;
 
-  const onSubmit = (e) => {
+  // Categorías
+  const addCategory = () => {
+    const raw = categoryInput.trim();
+    if (!raw) return;
+    const parts = raw
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    // Tip: tu backend busca por description capitalizada (Primera letra mayúscula).
+    const normalized = parts.map(
+      (n) => n.charAt(0).toUpperCase() + n.slice(1).toLowerCase()
+    );
+    const unique = Array.from(new Set([...categories, ...normalized]));
+    setCategories(unique);
+    setCategoryInput("");
+  };
+
+  const removeCategory = (cat) =>
+    setCategories(categories.filter((c) => c !== cat));
+
+  const onCategoriesKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addCategory();
+    }
+  };
+
+  // Imagenes (vienen de ImageUploader)
+  const handleImagesChange = (filesArray) => {
+    setImages(filesArray);
+  };
+
+  // Submit: 1) crea producto con auth  2) sube imágenes una por request con "file"
+  const onSubmit = async (e) => {
     e.preventDefault();
+
+    // Mostrar errores si hay
     setTouched({
       name: true,
       desc: true,
@@ -117,20 +100,93 @@ const CreateProduct = () => {
     });
     if (!isValid) return;
 
-    const formData = new FormData();
-    formData.append("name", name.trim());
-    formData.append("description", desc.trim());
-    formData.append("price", Number(price));
-    formData.append("stock", Number(stock));
-    if (String(discount).trim() !== "") formData.append("discount", Number(discount));
-    categories.forEach((c) => formData.append("categories[]", c));
-    images.forEach((img) => formData.append("images", img.file));
+    const token = localStorage.getItem("authToken"); // ajustá si usás otro storage/clave
+    if (!token) {
+      alert("No se encontró token de sesión. Iniciá sesión para crear productos.");
+      return;
+    }
 
-    alert("Producto listo para enviar ✅ (ver consola)");
-    console.log("FormData:", {
-      name, desc, price, stock, discount, categories,
-      images: images.map((i) => i.file.name),
-    });
+    // 1) Crear producto
+    const productPayload = {
+      name: name.trim(),
+      description: desc.trim(),
+      price: Number(price),
+      stock: Number(stock),
+      discount: String(discount).trim() === "" ? null : Number(discount),
+      categories, // array de strings capitalizados
+    };
+
+    let createdProductId = null;
+
+    try {
+      const res = await fetch("/products/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Imprescindible para @AuthenticationPrincipal
+        },
+        body: JSON.stringify(productPayload),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Error al crear producto (HTTP ${res.status})`);
+      }
+
+      const data = await res.json();
+      // Suponemos que el backend devuelve el producto creado con "id"
+      createdProductId = data.id;
+      if (!createdProductId) {
+        throw new Error("El backend no devolvió un id de producto.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert(
+        `No se pudo crear el producto.\nDetalle: ${err.message || "Error desconocido"}`
+      );
+      return;
+    }
+
+    // 2) Subir imágenes (una request por archivo, con @RequestParam("file"))
+    //    Endpoint que compartiste: POST /products/{productId}/images
+    try {
+      for (const file of images) {
+        const fd = new FormData();
+        fd.append("file", file); // IMPORTANTE: nombre "file" exacto
+
+        const up = await fetch(`/products/${createdProductId}/images`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`, // también necesita auth
+          },
+          body: fd,
+        });
+
+        if (!up.ok) {
+          const msg = await up.text();
+          throw new Error(
+            msg || `Error subiendo imagen: ${file.name} (HTTP ${up.status})`
+          );
+        }
+      }
+
+      alert("✅ Producto creado y todas las imágenes subidas con éxito.");
+      // Reset opcional
+      setName("");
+      setDesc("");
+      setPrice("");
+      setStock("");
+      setDiscount("");
+      setCategoryInput("");
+      setCategories([]);
+      setImages([]);
+      setTouched({});
+    } catch (err) {
+      console.error(err);
+      alert(
+        `El producto se creó (id ${createdProductId}), pero hubo errores subiendo imágenes.\nDetalle: ${err.message || "Error desconocido"}`
+      );
+    }
   };
 
   return (
@@ -155,21 +211,9 @@ const CreateProduct = () => {
                   onBlur={() => markTouched("name")}
                   placeholder="Ej: Limited Edition Sneaker"
                 />
-                {touched.name && errors.name && <p className="error">{errors.name}</p>}
-              </div>
-
-              {/* Descripción */}
-              <div className="form-group full">
-                <label htmlFor="desc">Descripción *</label>
-                <textarea
-                  id="desc"
-                  rows={5}
-                  value={desc}
-                  onChange={(e) => setDesc(e.target.value)}
-                  onBlur={() => markTouched("desc")}
-                  placeholder="Contá detalles del estado, medidas, materiales, etc."
-                />
-                {touched.desc && errors.desc && <p className="error">{errors.desc}</p>}
+                {touched.name && errors.name && (
+                  <p className="error">{errors.name}</p>
+                )}
               </div>
 
               {/* Precio */}
@@ -185,7 +229,9 @@ const CreateProduct = () => {
                   onBlur={() => markTouched("price")}
                   placeholder="Ej: 199.99"
                 />
-                {touched.price && errors.price && <p className="error">{errors.price}</p>}
+                {touched.price && errors.price && (
+                  <p className="error">{errors.price}</p>
+                )}
               </div>
 
               {/* Stock */}
@@ -201,10 +247,12 @@ const CreateProduct = () => {
                   onBlur={() => markTouched("stock")}
                   placeholder="Ej: 10"
                 />
-                {touched.stock && errors.stock && <p className="error">{errors.stock}</p>}
+                {touched.stock && errors.stock && (
+                  <p className="error">{errors.stock}</p>
+                )}
               </div>
 
-              {/* Descuento */}
+              {/* Descuento (opcional) */}
               <div className="form-group">
                 <label htmlFor="discount">% Descuento (opcional)</label>
                 <input
@@ -223,6 +271,22 @@ const CreateProduct = () => {
                 )}
               </div>
 
+              {/* Descripción */}
+              <div className="form-group full">
+                <label htmlFor="desc">Descripción *</label>
+                <textarea
+                  id="desc"
+                  rows={5}
+                  value={desc}
+                  onChange={(e) => setDesc(e.target.value)}
+                  onBlur={() => markTouched("desc")}
+                  placeholder="Contá detalles del estado, medidas, materiales, etc."
+                />
+                {touched.desc && errors.desc && (
+                  <p className="error">{errors.desc}</p>
+                )}
+              </div>
+
               {/* Categorías */}
               <div className="form-group full">
                 <label htmlFor="category">Categorías * (agregá varias)</label>
@@ -236,7 +300,11 @@ const CreateProduct = () => {
                     onBlur={() => markTouched("categories")}
                     placeholder="Escribí una categoría y presioná Enter o coma"
                   />
-                  <button type="button" className="btn-add" onClick={addCategory}>
+                  <button
+                    type="button"
+                    className="btn-add"
+                    onClick={addCategory}
+                  >
                     Agregar
                   </button>
                 </div>
@@ -262,39 +330,23 @@ const CreateProduct = () => {
                 )}
               </div>
 
-              {/* Imágenes usando ImageUpload */}
+              {/* Imágenes */}
               <div className="form-group full">
                 <label>Fotos del producto</label>
-                {/* Asegurate de que en ImageUpload.jsx el input tenga 'multiple' */}
-                <ImageUpload onChange={onFilesChange} />
-                {images.length > 0 && (
-                  <div className="preview-grid">
-                    {images.map((img) => (
-                      <div className="preview" key={img.key}>
-                        <img src={img.url} alt={img.file.name} />
-                        <button
-                          type="button"
-                          className="remove-image-btn"
-                          onClick={() => removeImage(img.key)}
-                          aria-label="Quitar imagen"
-                          title="Quitar imagen"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <p className="helper">Podés subir varias imágenes (JPG, PNG, WEBP).</p>
+                <ImageUploader onImagesChange={handleImagesChange} />
               </div>
 
-              {/* Publicar */}
+              {/* Botón publicar */}
               <div className="actions full">
                 <button
                   type="submit"
                   className="submit-btn dotted-btn"
                   disabled={!isValid}
-                  title={!isValid ? "Completá los campos obligatorios" : "Crear producto"}
+                  title={
+                    !isValid
+                      ? "Completá los campos obligatorios"
+                      : "Crear producto"
+                  }
                 >
                   Publicar producto
                 </button>
