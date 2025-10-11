@@ -1,18 +1,18 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // navegación sin manipular DOM
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 import "../components/Login.css";
 
 export default function Login() {
-  // Constante para la URL base del backend
-  const API_URL = "http://localhost:8080/auth/login";
+  const { setIsLoggedIn } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  // Hooks
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
-  // Maneja cambios en los inputs
+  const API_URL = "http://localhost:8080/auth/login";
+
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -20,50 +20,39 @@ export default function Login() {
     });
   };
 
-  // Maneja el envío del formulario
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError("");
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-  try {
+    try {
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
 
-      // Si el backend devuelve un error
       if (!response.ok) {
-        // Leemos la respuesta del backend
         const text = await response.text();
-
-        // Diferenciamos entre error de credenciales (401) y otros errores
         if (response.status === 401 || response.status === 400) {
           setError("Username o contraseña incorrectos");
         } else {
           setError(`Error del servidor: ${text || response.status}`);
         }
-
-        return; // Salimos antes de procesar JSON
+        return;
       }
 
-      // Si todo OK, parseamos JSON y guardamos el token
       const data = await response.json();
       localStorage.setItem("jwtToken", data.token);
-
-      // Redirigimos al perfil
-      navigate("/profile");
-
+      setIsLoggedIn(true); // ⚡ Actualiza Navbar inmediatamente
+      navigate("/"); // Redirige a landing
     } catch (err) {
-      // Error de red o fetch
       setError("No se pudo conectar con el servidor");
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="app bg-light dark:bg-dark font-display text-slate-800 dark:text-slate-200">
