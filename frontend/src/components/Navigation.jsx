@@ -6,6 +6,7 @@ import "../components/Navigation.css";
 const Navigation = () => {
   const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -24,6 +25,15 @@ const Navigation = () => {
   const handleProfile = () => {
     navigate("/profile");
     setIsDropdownOpen(false);
+  };
+
+  const handleSearch = () => {
+    const trimmed = searchTerm.trim();
+    if (trimmed) {
+      navigate(`/products?keyword=${encodeURIComponent(trimmed)}`);
+    } else {
+      navigate("/products");
+    }
   };
 
   // Cerrar menú al hacer clic fuera
@@ -46,12 +56,19 @@ const Navigation = () => {
       </div>
 
       <div className="header-actions">
-        <input type="text" className="search-input" placeholder="Search..." />
-        <Link to="/products" className="icon-btn">
-          <button className="search-btn">
-            <span className="material-symbols-outlined">search</span>
-          </button>
-        </Link>
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSearch();
+          }}
+        />
+        <button className="search-btn" onClick={handleSearch}>
+          <span className="material-symbols-outlined">search</span>
+        </button>
 
         {isLoggedIn ? (
           <>

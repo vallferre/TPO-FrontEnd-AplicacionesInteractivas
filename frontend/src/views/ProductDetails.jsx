@@ -19,20 +19,20 @@ const ProductDetails = () => {
   useEffect(() => {
     const fetchProductAndRelated = async () => {
       try {
-        // 1️⃣ Obtener producto principal
+        // Obtener producto principal
         const resProduct = await fetch(`http://localhost:8080/products/id/${id}`, options);
         if (!resProduct.ok) throw new Error(`Error: ${resProduct.status}`);
         const data = await resProduct.json();
         setProduct(data);
 
-        // 2️⃣ Si tiene categorías, obtener todas las categorías
+        // Si tiene categorías, obtener todas las categorías
         if (data.categories?.length > 0) {
           const resCategories = await fetch("http://localhost:8080/categories", options);
           if (!resCategories.ok) throw new Error(`Error fetching categories: ${resCategories.status}`);
           const categoriesData = await resCategories.json();
           const allCategories = categoriesData.content || [];
 
-          // 3️⃣ Mapear nombres de categorías del producto a sus IDs
+          // Mapear nombres de categorías del producto a sus IDs
           const productCategoryIds = data.categories
             .map((catName) => {
               const catObj = allCategories.find((c) => c.description === catName);
@@ -40,7 +40,7 @@ const ProductDetails = () => {
             })
             .filter((id) => id !== null);
 
-          // 4️⃣ Traer productos relacionados de cada categoría
+          // Traer productos relacionados de cada categoría
           const relatedMap = new Map(); // evitar duplicados
           await Promise.all(
             productCategoryIds.map(async (catId) => {
@@ -107,7 +107,6 @@ const ProductDetails = () => {
 
         <div className="product-info">
           <h1 className="product-title">{product.name}</h1>
-          <p className="product-description">{product.description}</p>
 
           <div className="product-price-stock">
             <span className="product-price">${product.price}</span>
@@ -130,6 +129,17 @@ const ProductDetails = () => {
         </div>
       </div>
 
+      {/* Sección de descripción */}
+      <div className="product-description-section">
+        <h2>Descripción</h2>
+        <p>
+          {product.description && product.description.trim().length > 0
+            ? product.description
+            : "El vendedor no incluyó descripción del producto."}
+        </p>
+      </div>
+
+      {/* Productos relacionados */}
       {relatedProducts.length > 0 && (
         <div className="related-products">
           <h2>A otras personas también les gustó:</h2>
@@ -141,12 +151,14 @@ const ProductDetails = () => {
                 name={p.name}
                 image={p.imageIds?.[0] || null}
                 price={p.price}
+                details={p.details}
               />
             ))}
           </div>
         </div>
       )}
     </div>
+
   );
 };
 
