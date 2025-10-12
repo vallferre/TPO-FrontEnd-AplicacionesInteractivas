@@ -6,9 +6,10 @@ import "../components/UserProfile.css";
 const UserLayout = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState({
-    name: "",
+    fullName: "",
     email: "",
-    avatar: ""
+    username: "",
+    avatar: "",
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,10 +21,21 @@ const UserLayout = () => {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("jwtToken");
+
+    if (!token) {
+      setError("No hay token, inicia sesión");
+      setLoading(false);
+      return;
+    }
+
     const fetchUser = async () => {
       try {
-        const response = await fetch("http://localhost:8080/users/me", {
-          credentials: "include", // Para que Spring Security maneje sesión/token
+        const response = await fetch("http://localhost:8080/users/", {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
         });
 
         if (!response.ok) {
@@ -32,9 +44,10 @@ const UserLayout = () => {
 
         const data = await response.json();
         setUser({
-          name: data.name || "Usuario",
+          fullName: `${data.name} ${data.surname}`.trim() || "Usuario",
           email: data.email || "",
-          avatar: data.avatar || "",
+          username: data.username || "",
+          avatar: data.avatar || "", // si no existe avatar, se mantiene vacío
         });
       } catch (err) {
         console.error(err);
@@ -67,8 +80,8 @@ const UserLayout = () => {
               }}
             ></div>
           </div>
-          <h2>{user.name}</h2>
-          <p className="email">{user.email}</p>
+          <h2>{user.fullName}</h2>
+          <p className="username">{user.username}</p>
           <Link to="/editProfile" className="edit-link">
             Edit Profile
           </Link>
