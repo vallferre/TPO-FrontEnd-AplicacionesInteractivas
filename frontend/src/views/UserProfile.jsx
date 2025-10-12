@@ -5,48 +5,6 @@ import "../components/UserProfile.css";
 const UserProfile = () => {
   return (
     <div className="profile-page">
-      <aside className="sidebar">
-        <div className="profile-card">
-          <div className="avatar-container">
-            <div
-              className="avatar"
-              style={{
-                backgroundImage:
-                  'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDfxBzW11MXXkqOvQ1L8OuOOALYsKHFwbQxml2-rowcOj9Xomdwn8fJc3jtXM7hJzEx1E9bkZmCI8V89RTrZBKsqfI5EBca9J2mEalb62mYZxtiJ0-FDfXP8cCR-1wNInR2X-n6hTH09vnIHe_OzwMjbFTmSNJWQcsyUZ_W9QwSKynQigt7FmVj8HjcsjIe9r40HTQo_EK7o12GjWEy2vomFkSqroYp4ewrKHFUvMhEA57a_1TK3MuFw49bZ1ShzpBxX0jgWrPz9fxr")',
-              }}
-            ></div>
-            <span className="status-badge">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  d="M5 13l4 4L19 7"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-          </div>
-          <h2>Alex Morgan</h2>
-          <p className="email">alex.morgan@example.com</p>
-          <button className="edit-button">Edit Profile</button>
-
-          <nav className="sidebar-nav">
-            <a href="#" className="nav-link">
-              🛍 Orders
-            </a>
-            <a href="#" className="nav-link active">
-              🏪 My Products
-            </a>
-            <a href="#" className="nav-link">
-              ⚙️ Settings
-            </a>
-            <a href="#" className="nav-link">
-              Logout
-            </a>
-          </nav>
-        </div>
-      </aside>
-
       <main className="main-content">
         <div className="header">
           <h1>My Products</h1>

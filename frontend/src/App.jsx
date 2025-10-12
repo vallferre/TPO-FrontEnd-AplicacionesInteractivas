@@ -8,7 +8,7 @@ import LandingPage from './views/LandingPage';
 import AllProducts from './views/AllProducts';
 import Register from './views/Register';
 import Login from './views/Login';
-import Navigation from './views/Navigation';
+import Navigation from './components/Navigation';
 import UserProfile from './views/UserProfile'; // Solo si seguís usando esta vista independiente
 import Favorites from './views/Favorites';
 import Cart from './views/ShoppingCart';
@@ -16,10 +16,10 @@ import CreateProduct from './views/CreateProduct';
 import EditProduct from './views/EditProduct';
 import Orders from './views/Orders';
 import AdminCreateCategory from './views/AdminCreateCategory';
-import UserLayout from './views/UserLayout';
+import UserLayout from './components/UserLayout';
 import UserProducts from './views/UserProducts';
 import EditProfile from './views/EditProfile';
-//import Settings from './views/Settings';
+import ProductDetails from './views/ProductDetails';
 
 const App = () => {
   return (
@@ -48,6 +48,7 @@ const App = () => {
         <Route path="/create" element={<CreateProduct />} />
         <Route path="/edit" element={<EditProduct />} />
         <Route path="/categories" element={<AdminCreateCategory />} />
+        <Route path="/product/:id" element={<ProductDetails />}/>
       </Routes>
     </>
   );

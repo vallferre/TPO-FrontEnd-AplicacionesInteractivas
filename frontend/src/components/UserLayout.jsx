@@ -38,9 +38,6 @@ const UserLayout = () => {
             <Link to="/profile/products" className="nav-link">
               🏪 My Products
             </Link>
-            <Link to="/profile/settings" className="nav-link">
-              ⚙️ Settings
-            </Link>
             <button onClick={handleLogout} className="nav-link logout">
               Logout
             </button>
