@@ -1,10 +1,8 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
 import "../components/Register.css";
 
 export default function CreateAccount() {
-  const { setIsLoggedIn } = useContext(AuthContext);
   const navigate = useNavigate();
   const API_URL = "http://localhost:8080/auth/register";
 
@@ -60,13 +58,17 @@ export default function CreateAccount() {
       }
 
       const data = await response.json();
+      const token = data.token || data.access_token; // <-- acepta cualquiera de los dos nombres
 
-      if (data.token) {
-        localStorage.setItem("jwtToken", data.token);
-        setIsLoggedIn(true); // Actualiza Navbar inmediatamente
+      if (token) {
+        localStorage.setItem("jwtToken", token);
+        setIsLoggedIn(true); // actualiza estado global
+        navigate("/"); // redirige a la landing
+      } else {
+        throw new Error("No se recibió token del servidor");
       }
 
-      navigate("/"); // Redirige a landing
+
     } catch (err) {
       console.error(err);
       setError("No se pudo conectar con el servidor");

@@ -4,7 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import "../components/Navigation.css";
 
 const Navigation = () => {
-  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext); // 🔹 Extraemos estado global
+  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
@@ -13,6 +13,17 @@ const Navigation = () => {
     e.preventDefault();
     if (isLoggedIn) navigate("/favorites");
     else navigate("/login");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("jwtToken");
+    setIsLoggedIn(false);
+    navigate("/");
+  };
+
+  const handleProfile = () => {
+    navigate("/profile");
+    setIsDropdownOpen(false);
   };
 
   return (
@@ -54,14 +65,10 @@ const Navigation = () => {
 
               {isDropdownOpen && (
                 <div className="dropdown-menu">
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem("jwtToken");
-                      setIsLoggedIn(false);
-                      navigate("/");
-                    }}
-                    className="dropdown-item"
-                  >
+                  <button onClick={handleProfile} className="dropdown-item">
+                    Profile
+                  </button>
+                  <button onClick={handleLogout} className="dropdown-item">
                     Logout
                   </button>
                 </div>

@@ -44,7 +44,7 @@ export default function Login() {
 
       const data = await response.json();
       localStorage.setItem("jwtToken", data.token);
-      setIsLoggedIn(true); // ⚡ Actualiza Navbar inmediatamente
+      setIsLoggedIn(true); // Actualiza Navbar inmediatamente
       navigate("/"); // Redirige a landing
     } catch (err) {
       setError("No se pudo conectar con el servidor");

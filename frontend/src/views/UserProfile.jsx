@@ -32,19 +32,16 @@ const UserProfile = () => {
 
           <nav className="sidebar-nav">
             <a href="#" className="nav-link">
-              👤 Profile
-            </a>
-            <a href="#" className="nav-link">
               🛍 Orders
             </a>
             <a href="#" className="nav-link active">
               🏪 My Products
             </a>
             <a href="#" className="nav-link">
-              ❤️ Wishlist
+              ⚙️ Settings
             </a>
             <a href="#" className="nav-link">
-              ⚙️ Settings
+              Logout
             </a>
           </nav>
         </div>

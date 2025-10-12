@@ -62,15 +62,24 @@
   color: gray;
 }
 
-.edit-button {
+.edit-link {
   margin-top: 1rem;
   padding: 0.5rem 1rem;
   border: 1px solid #ccc;
   border-radius: 8px;
-  background: rgb(0, 29, 146);
+  background: rgb(237, 239, 245);
   cursor: pointer;
   font-weight: 600;
+  text-decoration: none; /* quita subrayado */
+  color: #213547;        /* color del texto */
+  display: inline-block;  /* respeta padding */
+  text-align: center;     /* centra el texto */
 }
+
+.edit-link:hover {
+  background: rgb(224, 227, 235);
+}
+
 
 .sidebar-nav {
   margin-top: 2rem;
@@ -93,6 +102,23 @@
 .nav-link.active {
   background: #e7f0ff;
   color: #1173d4;
+}
+
+.nav-link.logout {
+  display: block;
+  width: 100%;  
+  margin-top: 2rem;     
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  color: rgb(250, 0, 0);
+  background: #f1f3f4;
+  text-align: center; 
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nav-link.logout:hover {
+  background: #e7f0ff;
 }
 
 /* MAIN CONTENT */
