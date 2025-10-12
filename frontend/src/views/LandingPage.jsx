@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../components/LandingPage.css";
 
 export default function LandingPage() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -28,6 +30,10 @@ export default function LandingPage() {
     fetchCategories();
   }, []);
 
+  const handleCategoryClick = (categoryId) => {
+    navigate(`/products?category=${categoryId}`);
+  };
+
   if (loading) return <p>Cargando categorías...</p>;
   if (error) return <p>{error}</p>;
 
@@ -38,14 +44,17 @@ export default function LandingPage() {
           <h2>Featured Collections</h2>
           <div className="grid grid-4">
             {categories.map((cat) => (
-              <a href={`#`} key={cat.id} className="card">
-                {/* Placeholder de imagen, podés reemplazarlo luego por algo dinámico */}
+              <div
+                key={cat.id}
+                className="card category-card"
+                onClick={() => handleCategoryClick(cat.id)}
+              >
                 <img
                   src={`https://via.placeholder.com/300x200?text=${encodeURIComponent(cat.description)}`}
                   alt={cat.description}
                 />
                 <p>{cat.description}</p>
-              </a>
+              </div>
             ))}
           </div>
         </section>

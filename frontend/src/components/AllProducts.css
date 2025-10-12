@@ -12,6 +12,12 @@ body, html, .explore-page {
   color: #101622;
 }
 
+.explore-page {
+  display: flex;
+  gap: 1rem;
+  min-height: 100vh; /* para que ocupe toda la altura de la pantalla */
+}
+
 .dark-mode .explore-page {
   background-color: #101922;
   color: #fff;

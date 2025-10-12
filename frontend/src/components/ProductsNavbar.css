@@ -1,0 +1,73 @@
+/* ProductNavBar.css */
+
+.product-navbar {
+  width: 250px;
+  flex-shrink: 0;
+  padding: 1rem;
+  border-right: 1px solid #ddd;
+  background-color: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-sizing: border-box;
+}
+
+/* 🔹 Filters Section */
+.filters-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filters-section select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #101622;
+  background-color: #fff;
+}
+
+.apply-filters-btn {
+  padding: 0.45rem 0.75rem;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.apply-filters-btn:hover {
+  background-color: #357ab7;
+}
+
+/* 🔹 AllProducts Container Adaptación */
+.explore-page {
+  display: flex;
+}
+
+.explore-page main.container {
+  flex: 1;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+/* 🔹 Responsivo */
+@media (max-width: 768px) {
+  .explore-page {
+    flex-direction: column;
+  }
+
+  .product-navbar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+  }
+
+  main.container {
+    width: 100%;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+

@@ -57,13 +57,6 @@ const UserProfile = () => {
                 <span className={`status ${item.statusClass}`}>
                   {item.status}
                 </span>
-                <div className="action-buttons">
-
-                  <Link to="/edit">
-                    <button className="edit-button">✏️</button>
-                  </Link>
-                  <button className="delete">🗑️</button>
-                </div>
               </div>
             </div>
           ))}
