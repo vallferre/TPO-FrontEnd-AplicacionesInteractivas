@@ -5,12 +5,51 @@ import "../components/UserProfile.css";
 
 const UserLayout = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState({
+    name: "",
+    email: "",
+    avatar: ""
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const handleLogout = () => {
     localStorage.removeItem("jwtToken");
     navigate("/");
     window.location.reload();
   };
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/users/me", {
+          credentials: "include", // Para que Spring Security maneje sesión/token
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setUser({
+          name: data.name || "Usuario",
+          email: data.email || "",
+          avatar: data.avatar || "",
+        });
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+        handleLogout(); // Forzar logout si hay error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  if (loading) return <p>Cargando perfil...</p>;
+  if (error) return <p className="error">{error}</p>;
 
   return (
     <div className="profile-page">
@@ -26,10 +65,11 @@ const UserLayout = () => {
               }}
             ></div>
           </div>
-          <h2>Alex Morgan</h2>
-          <p className="email">alex.morgan@example.com</p>
-          {/*<button className="edit-button">Edit Profile</button> */}
-          <Link to="/editProfile" className="edit-link">Edit Profile</Link>
+          <h2>{user.name}</h2>
+          <p className="email">{user.email}</p>
+          <Link to="/editProfile" className="edit-link">
+            Edit Profile
+          </Link>
 
           <nav className="sidebar-nav">
             <Link to="/profile/orders" className="nav-link">
