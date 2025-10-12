@@ -8,16 +8,23 @@ const UserProducts = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const userId = localStorage.getItem("userId"); // id del usuario
   const token = localStorage.getItem("jwtToken"); // token JWT
-  const URL = `http://localhost:8080/products/filter-by-username/${userId}`;
 
   useEffect(() => {
+    if (!token) {
+      setError("No hay token, inicia sesión");
+      setLoading(false);
+      return;
+    }
+
+    const URL = "http://localhost:8080/products/filter-by-username";
+
     const options = {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`, // agregamos token
+        "Accept": "application/json",
+        "Authorization": `Bearer ${token}`,
       },
     };
 
@@ -45,15 +52,11 @@ const UserProducts = () => {
         setError(err.message);
       })
       .finally(() => setLoading(false));
-  }, [URL, token]);
+  }, [token]);
 
-  const handleCreate = () => {
-    navigate("/create");
-  };
-
-  const handleEdit = (productName) => {
+  const handleCreate = () => navigate("/create");
+  const handleEdit = (productName) =>
     navigate("/edit", { state: { productName } });
-  };
 
   return (
     <div className="user-products-container">

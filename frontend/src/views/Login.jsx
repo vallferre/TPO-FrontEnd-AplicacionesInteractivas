@@ -43,7 +43,10 @@ export default function Login() {
       }
 
       const data = await response.json();
-      localStorage.setItem("jwtToken", data.token);
+      localStorage.setItem("jwtToken", data.access_token);
+      //VERIFICACIÓN
+      console.log(localStorage.getItem("jwtToken"));
+
       setIsLoggedIn(true); // Actualiza Navbar inmediatamente
       navigate("/"); // Redirige a landing
     } catch (err) {
