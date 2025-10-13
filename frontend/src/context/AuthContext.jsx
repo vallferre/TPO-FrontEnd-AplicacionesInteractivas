@@ -3,11 +3,17 @@ import { createContext, useState, useEffect } from "react";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    !!localStorage.getItem("jwtToken")
+  );
 
+  // Si el token cambia en localStorage (por login, logout o register), se actualiza automáticamente
   useEffect(() => {
-    const token = localStorage.getItem("jwtToken");
-    if (token) setIsLoggedIn(true);
+    const syncAuth = () => {
+      setIsLoggedIn(!!localStorage.getItem("jwtToken"));
+    };
+    window.addEventListener("storage", syncAuth);
+    return () => window.removeEventListener("storage", syncAuth);
   }, []);
 
   return (
