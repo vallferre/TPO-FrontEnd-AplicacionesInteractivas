@@ -1,0 +1,32 @@
+.footer {
+  background-color: var(--color-primary);
+  color: #f9fafb;
+  padding: 1.5rem 0;
+  text-align: center;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  width: 100%;
+  margin-top: auto;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.footer-links a {
+  color: #facc15;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #fde68a;
+}

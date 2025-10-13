@@ -21,39 +21,44 @@ import UserLayout from "./components/UserLayout";
 import UserProducts from "./views/UserProducts";
 import EditProfile from "./views/EditProfile";
 import ProductDetails from "./views/ProductDetails";
+import Footer from "./components/Footer";
 
 const App = () => {
   return (
-    <>
+    <div className="app-layout">
       <Navigation />
       {/* Toaster global para los popups */}
       <Toaster />
 
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/products" element={<AllProducts />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/editProfile" element={<EditProfile />} />
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/products" element={<AllProducts />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/editProfile" element={<EditProfile />} />
 
-        {/* Layout de perfil con rutas anidadas */}
-        <Route path="/profile" element={<UserLayout />}>
-          <Route path="products" element={<UserProducts />} />
-          <Route path="orders" element={<Orders />} />
-          {/* <Route path="settings" element={<Settings />} /> */}
-        </Route>
+          {/* Layout de perfil con rutas anidadas */}
+          <Route path="/profile" element={<UserLayout />}>
+            <Route path="products" element={<UserProducts />} />
+            <Route path="orders" element={<Orders />} />
+            {/* <Route path="settings" element={<Settings />} /> */}
+          </Route>
 
-        {/* Vieja ruta individual, opcional */}
-        <Route path="/profile-old" element={<UserProfile />} />
+          {/* Vieja ruta individual, opcional */}
+          <Route path="/profile-old" element={<UserProfile />} />
 
-        <Route path="/favorites" element={<Favorites />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/create" element={<CreateProduct />} />
-        <Route path="/edit" element={<EditProduct />} />
-        <Route path="/categories" element={<AdminCreateCategory />} />
-        <Route path="/product/:id" element={<ProductDetails />} />
-      </Routes>
-    </>
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/create" element={<CreateProduct />} />
+          <Route path="/edit" element={<EditProduct />} />
+          <Route path="/categories" element={<AdminCreateCategory />} />
+          <Route path="/product/:id" element={<ProductDetails />} />
+        </Routes>
+      </main>
+
+      <Footer />
+    </div>
   );
 };
 
