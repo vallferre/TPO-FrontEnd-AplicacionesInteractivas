@@ -1,13 +1,18 @@
 // src/views/AdminCreateCategory.jsx
 import React, { useState } from "react";
-import "../components/Categories.css"; // CSS exclusivo de esta vista
+import { useNavigate } from "react-router-dom";
+import "../components/Categories.css";
+import { toast } from "react-toastify";
+import Toaster from "../components/Toaster"; // ✅ nuevo import
+
+const API_BASE = "http://localhost:8080";
 
 const AdminCreateCategory = () => {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [touched, setTouched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
-  const [serverSuccess, setServerSuccess] = useState("");
 
   const error = !name.trim() ? "El nombre de la categoría es obligatorio." : null;
   const isValid = !error && !submitting;
@@ -16,57 +21,63 @@ const AdminCreateCategory = () => {
     e.preventDefault();
     setTouched(true);
     setServerError("");
-    setServerSuccess("");
-
     if (!isValid) return;
 
     try {
       setSubmitting(true);
 
-      const token = localStorage.getItem("jwtToken"); // <-- JWT del login
+      const token = localStorage.getItem("jwtToken");
       if (!token) {
         setServerError("No estás autenticado. Iniciá sesión con una cuenta ADMIN.");
         return;
-        }
+      }
 
-      // El backend espera { "description": "NombreCategoria" }
       const payload = { description: name.trim() };
 
-      const res = await fetch("/categories", {
+      const res = await fetch(`${API_BASE}/categories`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // protegido: solo ADMIN
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
 
       if (res.status === 201 || res.ok) {
-        const data = await res.json();
-        setServerSuccess(`Categoría creada: ${data.description || name.trim()}`);
-        setName("");
-        setTouched(false);
-      } else {
-        // Intentamos leer mensaje del backend
-        let msg = "Error al crear la categoría.";
+        let createdDesc = name.trim();
         try {
-          const text = await res.text();
-          if (text) msg = text;
-        } catch (_) {}
-        if (res.status === 409) {
-          // conflicto/duplicado (si tu backend usa 409 para duplicados)
-          msg = msg || "La categoría ya existe.";
-        } else if (res.status === 400) {
-          msg = msg || "Solicitud inválida.";
-        } else if (res.status === 403) {
-          msg = "No tenés permisos (requiere ROLE_ADMIN).";
-        } else if (res.status === 401) {
-          msg = "No estás autenticado. Iniciá sesión.";
-        }
-        setServerError(msg);
+          const data = await res.json();
+          if (data?.description) createdDesc = data.description;
+        } catch {}
+
+        toast.success(`✅ Categoría "${createdDesc}" creada con éxito`, {
+          closeButton: true,
+          autoClose: 3000,
+        });
+
+        // Espera a que se vea el popup, luego redirige
+        setTimeout(() => navigate("/"), 3200);
+        return;
       }
-    } catch (err) {
+
+      // Errores del servidor
+      let msg = "Error al crear la categoría.";
+      try {
+        const text = await res.text();
+        if (text) msg = text;
+      } catch {}
+      if (res.status === 409) msg = "La categoría ya existe.";
+      else if (res.status === 400) msg = "Solicitud inválida.";
+      else if (res.status === 403) msg = "No tenés permisos (requiere ROLE_ADMIN).";
+      else if (res.status === 401) msg = "No estás autenticado. Iniciá sesión.";
+      setServerError(msg);
+      toast.error(msg, { closeButton: true, autoClose: 3000 });
+    } catch {
       setServerError("No se pudo conectar con el servidor.");
+      toast.error("No se pudo conectar con el servidor.", {
+        closeButton: true,
+        autoClose: 3000,
+      });
     } finally {
       setSubmitting(false);
     }
@@ -74,7 +85,6 @@ const AdminCreateCategory = () => {
 
   return (
     <div className="categories-page">
-      {/* mantiene el mismo offset de navbar que el resto */}
       <main className="main with-nav-offset">
         <div className="create-container">
           <h1 className="form-title">Crear categoría</h1>
@@ -95,7 +105,6 @@ const AdminCreateCategory = () => {
                 />
                 {touched && error && <p className="error">{error}</p>}
                 {serverError && <p className="error">{serverError}</p>}
-                {serverSuccess && <p className="success">{serverSuccess}</p>}
               </div>
 
               <div className="actions">
@@ -105,13 +114,16 @@ const AdminCreateCategory = () => {
                   disabled={!isValid}
                   title={!isValid ? "Completá el nombre" : "Crear categoría"}
                 >
-                  {submitting ? "Creando..." : "Crear categoría"}
+                  {submitting ? "Creando..." : "CREAR CATEGORÍA"}
                 </button>
               </div>
             </form>
           </div>
         </div>
       </main>
+
+      {/* ✅ Se usa el componente reusable */}
+      <Toaster />
     </div>
   );
 };
