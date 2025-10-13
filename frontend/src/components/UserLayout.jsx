@@ -1,14 +1,15 @@
 // src/views/UserLayout.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import "../components/UserProfile.css";
 
 const UserLayout = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState({
-    name: "",
+    fullName: "",
     email: "",
-    avatar: ""
+    username: "",
+    avatar: "",
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,10 +21,21 @@ const UserLayout = () => {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("jwtToken");
+
+    if (!token) {
+      setError("No hay token, inicia sesión");
+      setLoading(false);
+      return;
+    }
+
     const fetchUser = async () => {
       try {
-        const response = await fetch("http://localhost:8080/users/me", {
-          credentials: "include", // Para que Spring Security maneje sesión/token
+        const response = await fetch("http://localhost:8080/users/", {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
         });
 
         if (!response.ok) {
@@ -32,9 +44,10 @@ const UserLayout = () => {
 
         const data = await response.json();
         setUser({
-          name: data.name || "Usuario",
+          fullName: `${data.name} ${data.surname}`.trim() || "Usuario",
           email: data.email || "",
-          avatar: data.avatar || "",
+          username: data.username || "",
+          avatar: data.avatar || "", // si no existe avatar, se mantiene vacío
         });
       } catch (err) {
         console.error(err);
@@ -60,13 +73,15 @@ const UserLayout = () => {
             <div
               className="avatar"
               style={{
-                backgroundImage:
-                  'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDfxBzW11MXXkqOvQ1L8OuOOALYsKHFwbQxml2-rowcOj9Xomdwn8fJc3jtXM7hJzEx1E9bkZmCI8V89RTrZBKsqfI5EBca9J2mEalb62mYZxtiJ0-FDfXP8cCR-1wNInR2X-n6hTH09vnIHe_OzwMjbFTmSNJWQcsyUZ_W9QwSKynQigt7FmVj8HjcsjIe9r40HTQo_EK7o12GjWEy2vomFkSqroYp4ewrKHFUvMhEA57a_1TK3MuFw49bZ1ShzpBxX0jgWrPz9fxr")',
+                backgroundImage: `url("${
+                  user.avatar ||
+                  "https://lh3.googleusercontent.com/aida-public/AB6AXuDfxBzW11MXXkqOvQ1L8OuOOALYsKHFwbQxml2-rowcOj9Xomdwn8fJc3jtXM7hJzEx1E9bkZmCI8V89RTrZBKsqfI5EBca9J2mEalb62mYZxtiJ0-FDfXP8cCR-1wNInR2X-n6hTH09vnIHe_OzwMjbFTmSNJWQcsyUZ_W9QwSKynQigt7FmVj8HjcsjIe9r40HTQo_EK7o12GjWEy2vomFkSqroYp4ewrKHFUvMhEA57a_1TK3MuFw49bZ1ShzpBxX0jgWrPz9fxr"
+                }")`,
               }}
             ></div>
           </div>
-          <h2>{user.name}</h2>
-          <p className="email">{user.email}</p>
+          <h2>{user.fullName}</h2>
+          <p className="username">{user.username}</p>
           <Link to="/editProfile" className="edit-link">
             Edit Profile
           </Link>
