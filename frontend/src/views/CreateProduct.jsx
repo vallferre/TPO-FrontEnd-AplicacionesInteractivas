@@ -1,10 +1,32 @@
 // src/views/CreateProduct.jsx
-import React, { useEffect, useState } from "react";
-import "../components/CreateProduct.css";               // tu hoja de estilos existente
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
+import "../components/CreateProduct.css";
 import CategoryMultiSelect from "../components/CategoryMultiSelect";
 import ImageUploader from "../components/ImageUploader";
 
+const API_BASE = "http://localhost:8080"; // ajustá si cambia
+
+// --- helpers auth ---
+function getToken() {
+  const t =
+    typeof window !== "undefined" ? localStorage.getItem("jwtToken") : null;
+  return t && t.trim().length > 0 ? t : null;
+}
+
+function authHeaders() {
+  const t = getToken();
+  if (!t) return {};
+  // Diagnóstico: ver si hay token
+  console.debug("[CreateProduct] Using token (first 20 chars):", t.slice(0, 20));
+  return { Authorization: `Bearer ${t}` };
+}
+
 const CreateProduct = () => {
+  const navigate = useNavigate();
+
   // ---- estado del formulario
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
@@ -20,20 +42,18 @@ const CreateProduct = () => {
   const errors = {
     name: !name.trim() ? "El nombre es obligatorio." : null,
     desc: !desc.trim() ? "La descripción es obligatoria." : null,
-    price:
-      !String(price).trim()
-        ? "El precio es obligatorio."
-        : Number(price) <= 0
-        ? "El precio debe ser mayor a 0."
-        : null,
-    stock:
-      !String(stock).trim()
-        ? "El stock es obligatorio."
-        : !Number.isFinite(Number(stock)) || Number(stock) < 0
-        ? "El stock no puede ser negativo."
-        : !Number.isInteger(Number(stock))
-        ? "El stock debe ser un número entero."
-        : null,
+    price: !String(price).trim()
+      ? "El precio es obligatorio."
+      : Number(price) <= 0
+      ? "El precio debe ser mayor a 0."
+      : null,
+    stock: !String(stock).trim()
+      ? "El stock es obligatorio."
+      : !Number.isFinite(Number(stock)) || Number(stock) < 0
+      ? "El stock no puede ser negativo."
+      : !Number.isInteger(Number(stock))
+      ? "El stock debe ser un número entero."
+      : null,
     discount:
       String(discount).trim() === ""
         ? null
@@ -55,47 +75,48 @@ const CreateProduct = () => {
   const markTouched = (field) =>
     setTouched((t) => ({ ...t, [field]: true }));
 
-  // ---- helpers API
-  const API_BASE = ""; // si necesitas prefijo, ej: "http://localhost:8080"
-  const token = typeof window !== "undefined"
-    ? localStorage.getItem("jwtToken")
-    : null;
-
+  // ---- API calls
   async function createProductOnServer() {
     const payload = {
       name: name.trim(),
       description: desc.trim(),
       price: Number(price),
       stock: Number(stock),
-      discount:
-        String(discount).trim() === "" ? null : Number(discount),
-      // tu backend espera nombres de categorías (description)
+      discount: String(discount).trim() === "" ? null : Number(discount),
+      // el backend espera nombres (description) de categorías
       categories: categories.map((c) => c.description),
     };
 
-    const res = await fetch(`${API_BASE}/products/create`, {
+    const url = `${API_BASE}/products/create`;
+    console.debug("[CreateProduct] POST", url, payload);
+
+    const res = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...authHeaders(),
       },
       body: JSON.stringify(payload),
     });
 
+    console.debug("[CreateProduct] Response status:", res.status);
+
     if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(
-        text || `Error al crear producto (HTTP ${res.status})`
-      );
+      let msg = `Error al crear producto (HTTP ${res.status})`;
+      try {
+        const text = await res.text();
+        if (text) msg = text;
+      } catch {}
+      throw new Error(msg);
     }
 
-    // intentar obtener id desde el body o el header Location
+    // obtener id del body o del header Location
     let id = null;
     try {
       const body = await res.json();
       if (body && body.id != null) id = body.id;
     } catch {
-      // ignore json parse error
+      // ignore json parse error (quizá vino vacío)
     }
     if (!id) {
       const loc = res.headers.get("Location");
@@ -109,25 +130,28 @@ const CreateProduct = () => {
   async function uploadImagesSequential(productId, files) {
     for (const file of files) {
       const fd = new FormData();
-      fd.append("file", file); // tu backend espera @RequestParam("file")
+      // tu backend espera @RequestParam("file")
+      fd.append("file", file);
 
-      const res = await fetch(
-        `${API_BASE}/products/${productId}/images`,
-        {
-          method: "POST",
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            // NO pongas Content-Type manual al enviar FormData
-          },
-          body: fd,
-        }
-      );
+      const url = `${API_BASE}/products/${productId}/images`;
+      console.debug("[CreateProduct] Upload image", file.name, "->", url);
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          // NO setear Content-Type manual con FormData
+          ...authHeaders(),
+        },
+        body: fd,
+      });
+
       if (!res.ok) {
-        const txt = await res.text().catch(() => "");
-        throw new Error(
-          txt ||
-            `Error al subir imagen "${file.name}" (HTTP ${res.status})`
-        );
+        let msg = `Error al subir imagen "${file.name}" (HTTP ${res.status})`;
+        try {
+          const txt = await res.text();
+          if (txt) msg = txt;
+        } catch {}
+        throw new Error(msg);
       }
     }
   }
@@ -135,6 +159,14 @@ const CreateProduct = () => {
   // ---- submit
   const onSubmit = async (e) => {
     e.preventDefault();
+
+    // Requiere sesión (token)
+    const token = getToken();
+    if (!token) {
+      toast.error("Necesitás iniciar sesión para crear productos.");
+      return;
+    }
+
     // marcar todo tocado para mostrar errores si los hay
     setTouched({
       name: true,
@@ -155,7 +187,8 @@ const CreateProduct = () => {
         await uploadImagesSequential(productId, imageFiles);
       }
 
-      alert("✅ Producto creado y fotos subidas.");
+      toast.success("✅ Producto creado y fotos subidas.");
+
       // Reset
       setName("");
       setDesc("");
@@ -165,9 +198,12 @@ const CreateProduct = () => {
       setCategories([]);
       setImageFiles([]);
       setTouched({});
+
+      // ➜ Redirigir al catálogo
+      navigate("/products");
     } catch (err) {
       console.error(err);
-      alert(err.message || "Error al crear el producto.");
+      toast.error(err.message || "Error al crear el producto.");
     }
   };
 
@@ -274,7 +310,7 @@ const CreateProduct = () => {
                 <CategoryMultiSelect
                   selected={categories}
                   onChange={setCategories}
-                  endpoint="/categories"
+                  apiBase={API_BASE}
                 />
                 {touched.categories && errors.categories && (
                   <p className="error">{errors.categories}</p>
@@ -285,10 +321,10 @@ const CreateProduct = () => {
               <div className="form-group full">
                 <label>Fotos del producto</label>
                 <ImageUploader onImagesChange={setImageFiles} />
-                {/* Si querés el helper, descomentalo (cuidá de no duplicarlo en tu UI) */}
-                {/* <p className="helper">
-                  Subí una o más imágenes. Se enviarán luego de crear el producto.
-                </p> */}
+                <p className="helper">
+                  Subí una o más imágenes. Se enviarán luego de crear el
+                  producto.
+                </p>
               </div>
 
               {/* Submit */}
