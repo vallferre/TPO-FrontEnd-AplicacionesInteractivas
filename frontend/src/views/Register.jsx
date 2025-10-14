@@ -168,15 +168,6 @@ export default function CreateAccount() {
                   Create Account
                 </button>
               </form>
-
-              <div className="divider">
-                <span>Or continue with</span>
-              </div>
-
-              <div className="socials">
-                <a href="#" className="social google">Google</a>
-                <a href="#" className="social facebook">Facebook</a>
-              </div>
             </div>
 
             <p className="form-footer">

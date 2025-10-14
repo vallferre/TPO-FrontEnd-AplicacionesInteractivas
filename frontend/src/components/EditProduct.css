@@ -91,6 +91,7 @@ select {
   border-radius: 8px;
   background-color: #f9fafb;
   transition: border-color 0.2s;
+  color: #000;
 }
 
 input:focus,
