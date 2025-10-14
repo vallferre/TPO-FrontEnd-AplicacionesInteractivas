@@ -1,60 +1,110 @@
-// src/views/Orders.jsx
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../components/Orders.css";
 
 const Orders = () => {
-  const orders = [
-    {
-      id: "1234567890",
-      date: "July 15, 2023",
-      items: 2,
-      total: "$120.00",
-      discount: "$10.00",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAjBhalqy_ucFvQOLrm8v8BAm-Vi75LAk7SaV-ehdcI5Sn9e0O7CNH5uKr5QjLq2caqFJWD0JkwUoa36v8sfIybYGZWUuImm9FBoPeFZtoYNowYVeCR4GG5NyCkyHOCO-1UHeVnM8--nj8O6uATy0hqYYrDA__xCXUJQ-VDCWAKlr7bWXc4vJE2_yn-6DAR_2bh-qWdqxqDDWp4GTCtmUX3PnQ1qpwnCxFA6WiNtOuUhiVYn9HlwdP4Bn3nz9ErycM6b65tvXvofiFW",
-    },
-    {
-      id: "9876543210",
-      date: "August 3, 2023",
-      items: 1,
-      total: "$45.00",
-      discount: "$0.00",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBjhcbZc5P8cxoI6ylGRQLKWJn3iNgBh_EjsFOxuwoUbrqc8Afc4iD6pmztElxKLzruCR4xBzd1M2qK_eR8Jf8AxbOgqfG6RSIruDDLZedl4FjPuX6LdsBJZNNWlJiRq0uTTPj8LfaZXEibQrxgp_eAPSYEaTmPVupCRkiBsTRLQULVBojmzcuo0-xDxnY6jwjHJQDufAgvI8t4e2Zu7vIRwK1d9aimEGZbP-mQjVP_X7BMjF6eOvdcsP2VUA0YjDfrHL7d3p1T209L",
-    },
-  ];
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [sortOrder, setSortOrder] = useState("desc");
+  const navigate = useNavigate();
+
+  const toggleSortOrder = () => {
+    setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"));
+    setPage(0);
+  };
+
+  const handleOrderClick = (orderId) => {
+    navigate(`/order/${orderId}`);
+  };
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const token = localStorage.getItem("jwtToken");
+        const API_URL = `http://localhost:8080/orders/user?page=${page}&size=10&sort=${sortOrder}`;
+
+        const response = await fetch(API_URL, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: no se pudieron obtener las órdenes`);
+        }
+
+        const data = await response.json();
+        setOrders(data.content || []);
+        setTotalPages(data.totalPages || 1);
+      } catch (err) {
+        console.error(err);
+        setError("Error al cargar las órdenes. Intenta nuevamente.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [page, sortOrder]);
 
   return (
     <div className="orders-content">
       <div className="orders-header">
         <h1>Your Orders</h1>
-        <p>View your complete order history and track current deliveries.</p>
+        <div className="orders-subheader">
+          <p>View your complete order history and track current deliveries.</p>
+          <button className="sort-button" onClick={toggleSortOrder}>
+            {sortOrder === "desc" ? "⬇ Newest first" : "⬆ Oldest first"}
+          </button>
+        </div>
       </div>
+
+      {loading && <p>Loading orders...</p>}
+      {error && <p className="error">{error}</p>}
+      {!loading && !error && orders.length === 0 && <p>You don't have any orders yet.</p>}
 
       <div className="orders-list">
         {orders.map((order) => (
-          <div key={order.id} className="order-card">
-            <div className="order-info">
-              <div
-                className="order-image"
-                style={{ backgroundImage: `url(${order.image})` }}
-              ></div>
-              <div>
-                <p className="order-id">Order #{order.id}</p>
-                <p className="order-date">Placed on {order.date}</p>
-                <p className="order-items">{order.items} items</p>
+          <div 
+            key={order.orderId} 
+            className="order-card"
+            onClick={() => handleOrderClick(order.orderId)}
+          >
+            <div className="order-card-content">
+              <div className="order-basic-info">
+                <h3 className="order-title">Order #{order.orderId}</h3>
+                <div className="order-stats">
+                  <span className="items-count">{order.count} items</span>
+                  <span className="total-amount">${order.totalAmount}</span>
+                </div>
               </div>
-            </div>
 
-            <div className="order-details">
-              <p className="order-price">{order.total}</p>
-              <p className="order-discount">Discount: {order.discount}</p>
-              <a href="#" className="view-details-btn">
-                View Details →
-              </a>
+              <div className="view-details">
+                Click to view details →
+              </div>
             </div>
           </div>
         ))}
       </div>
+
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
+            ← Prev
+          </button>
+          <span>
+            Page {page + 1} of {totalPages}
+          </span>
+          <button onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page + 1 === totalPages}>
+            Next →
+          </button>
+        </div>
+      )}
     </div>
   );
 };
