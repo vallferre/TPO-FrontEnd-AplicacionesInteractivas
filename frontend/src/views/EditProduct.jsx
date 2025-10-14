@@ -3,15 +3,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import "../components/EditProduct.css";
 
 const EditProduct = () => {
-  const { id } = useParams(); // ruta tipo /edit/:id
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
-  const [categories, setCategories] = useState([]); // 🔹 categorías dinámicas
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 🔹 Obtener producto
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -22,7 +21,6 @@ const EditProduct = () => {
 
         if (!resProduct.ok) throw new Error(`Error: ${resProduct.status}`);
         const data = await resProduct.json();
-        console.log("Fetched product:", data);
         setProduct(data);
       } catch (err) {
         console.error(err);
@@ -35,7 +33,6 @@ const EditProduct = () => {
     fetchProduct();
   }, [id]);
 
-  // 🔹 Obtener categorías
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -53,7 +50,6 @@ const EditProduct = () => {
     fetchCategories();
   }, []);
 
-  // 🔹 Manejar el submit del formulario (PUT con token)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -64,15 +60,13 @@ const EditProduct = () => {
     }
 
     const updatedProduct = {
-      name: e.target.name.value,
-      description: e.target.description.value,
+      name: e.target.name.value.trim(),
+      description: e.target.description.value.trim(),
       category: { id: e.target.category.value },
       price: parseFloat(e.target.price.value),
       discount: parseInt(e.target.discount.value),
       quantity: parseInt(e.target.quantity.value),
     };
-
-    console.log("Updating product:", updatedProduct);
 
     try {
       const res = await fetch(`http://localhost:8080/products/${id}`, {
@@ -113,7 +107,15 @@ const EditProduct = () => {
           <form className="edit-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="name">Product Name</label>
-              <input id="name" name="name" type="text" defaultValue={product.name || ""} />
+              <input
+                id="name"
+                name="name"
+                type="text"
+                defaultValue={product.name || ""}
+                required
+                pattern="^[A-Za-z0-9\s]{1,100}$"
+                title="Solo letras, números y espacios (máx 100 caracteres)"
+              />
             </div>
 
             <div className="form-group">
@@ -123,12 +125,21 @@ const EditProduct = () => {
                 name="description"
                 rows="4"
                 defaultValue={product.description || ""}
+                required
+                maxLength={500}
+                title="Máx 500 caracteres"
               ></textarea>
             </div>
 
             <div className="form-group">
               <label htmlFor="category">Category</label>
-              <select id="category" name="category" defaultValue={product.category?.id || ""}>
+              <select
+                id="category"
+                name="category"
+                defaultValue={product.category?.id || ""}
+                required
+                title="Seleccioná una categoría"
+              >
                 <option value="">Seleccionar categoría</option>
                 {Array.isArray(categories) &&
                   categories.map((cat) => (
@@ -149,6 +160,9 @@ const EditProduct = () => {
                     name="price"
                     type="text"
                     defaultValue={product.price?.toFixed(2) || ""}
+                    required
+                    pattern="^\d+(\.\d{1,2})?$"
+                    title="Solo números positivos, opcional hasta 2 decimales"
                   />
                 </div>
               </div>
@@ -160,6 +174,10 @@ const EditProduct = () => {
                   name="discount"
                   type="number"
                   defaultValue={product.discount || 0}
+                  required
+                  min={0}
+                  max={99}
+                  title="Número entre 0 y 99"
                 />
               </div>
             </div>
@@ -171,6 +189,9 @@ const EditProduct = () => {
                 name="quantity"
                 type="number"
                 defaultValue={product.quantity || 0}
+                required
+                min={0}
+                title="Número entero positivo"
               />
             </div>
 
