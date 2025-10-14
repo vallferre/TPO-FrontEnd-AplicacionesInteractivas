@@ -87,7 +87,7 @@ const ProductNavbar = ({ setProducts, setLoading, setError }) => {
   };
 
   return (
-    <div className="product-navbar">
+    <div className="product-navbar sidebar-fade-in">
       <div className="filters-section">
         <input
           type="text"

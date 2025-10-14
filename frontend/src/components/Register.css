@@ -10,6 +10,8 @@ html,
   color: #111827;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Header */
@@ -82,23 +84,61 @@ html,
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  width: 100%;
 }
 
 .form-wrapper {
   max-width: 400px;
   width: 100%;
   text-align: center;
+  animation: fadeInUp 0.7s ease forwards;
 }
 
+/* Animaciones */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.delay-1 {
+  animation-delay: 0.2s;
+}
+
+.delay-2 {
+  animation-delay: 0.4s;
+}
+
+.delay-3 {
+  animation-delay: 0.6s;
+}
+
+/* Titles */
 .form-title {
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
 }
 
 .form-subtitle {
   font-size: 0.9rem;
   color: #6b7280;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
+  animation-delay: 0.2s;
 }
 
 .form-subtitle .link {
@@ -113,12 +153,17 @@ html,
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
   padding: 2rem;
-  margin-top: 2rem;
+  margin-top: 1rem;
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
+  animation-delay: 0.4s;
 }
 
 .form-group {
   text-align: left;
   margin-bottom: 1rem;
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
 }
 
 .form-group label {
@@ -134,6 +179,7 @@ html,
   margin-top: 0.3rem;
 }
 
+/* Submit button */
 .submit-btn {
   width: 100%;
   padding: 0.8rem;
@@ -143,6 +189,10 @@ html,
   background: var(--color-secondary);
   color: #fff;
   cursor: pointer;
+  margin-top: 1rem;
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
+  animation-delay: 0.6s;
 }
 
 .submit-btn:hover {
@@ -175,6 +225,9 @@ html,
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
+  animation-delay: 0.8s;
 }
 
 .social-btn {
@@ -202,6 +255,9 @@ html,
   font-size: 0.75rem;
   color: #6b7280;
   margin-top: 2rem;
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
+  animation-delay: 1s;
 }
 
 .form-footer .link {

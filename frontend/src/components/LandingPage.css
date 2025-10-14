@@ -219,3 +219,67 @@ body::-webkit-scrollbar {
   text-align: center;
   width: 100%;
 }
+
+/* Fade desde arriba para las tarjetas */
+.fade-down {
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: fadeDown 0.5s ease forwards;
+}
+
+@keyframes fadeDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade para los textos */
+.fade-text {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeText 0.5s ease forwards;
+}
+
+@keyframes fadeText {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade desde arriba para títulos y tarjetas */
+.fade-down {
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: fadeDown 0.5s ease forwards;
+}
+
+@keyframes fadeDown {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade para los textos */
+.fade-text {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeText 0.5s ease forwards;
+}
+
+@keyframes fadeText {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -41,19 +41,25 @@ export default function LandingPage() {
     <div className="app">
       <main className="main container">
         <section className="section">
-          <h2>Featured Collections</h2>
+          <h2 className="fade-down" style={{ animationDelay: "0s" }}>Featured Collections</h2>
           <div className="grid grid-4">
-            {categories.map((cat) => (
+            {categories.map((cat, index) => (
               <div
                 key={cat.id}
-                className="card category-card"
+                className="card category-card fade-down"
+                style={{ animationDelay: `${index * 0.2}s` }}
                 onClick={() => handleCategoryClick(cat.id)}
               >
                 <img
                   src={`https://via.placeholder.com/300x200?text=${encodeURIComponent(cat.description)}`}
                   alt={cat.description}
                 />
-                <p>{cat.description}</p>
+                <p
+                  className="fade-text"
+                  style={{ animationDelay: `${index * 0.2 + 0.2}s` }}
+                >
+                  {cat.description}
+                </p>
               </div>
             ))}
           </div>

@@ -28,20 +28,20 @@ const Favorites = () => {
   return (
     <div className="favorites-page">
       <main className="content">
-        <h1>Your Favorites</h1>
-        <p>Items you've saved for later.</p>
+        <h1 className="fade-in-title">Your Favorites</h1>
+        <p className="fade-in-subtitle">Items you've saved for later.</p>
         <div className="grid">
           {products.map((p, i) => (
             <div className="card" key={i}>
-              <div className="card-img">
+              <div className="card-img fade-in-img" style={{ animationDelay: "0s" }}>
                 <img src={p.img} alt={p.name} />
                 <div class="fav-btn-wrapper">
                   <button className="fav-btn">♡</button>
                 </div>
               </div>
               <div className="card-info">
-                <h3>{p.name}</h3>
-                <p>{p.price}</p>
+                <h3 className="fade-in-card">{p.name}</h3>
+                <p className="fade-in-card">{p.price}</p>
               </div>
             </div>
           ))}

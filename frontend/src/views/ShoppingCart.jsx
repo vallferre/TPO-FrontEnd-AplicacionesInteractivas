@@ -18,7 +18,7 @@ const ShoppingCart = () => {
           }}
         >
           <h2
-            className="cart-title"
+            className="cart-title fade-in"
             style={{
               fontSize: "2rem",
               fontWeight: "bold",
@@ -30,7 +30,7 @@ const ShoppingCart = () => {
           </h2>
 
           <div
-            className="cart-grid"
+            className="cart-grid fade-in"
             style={{
               display: "grid",
               gridTemplateColumns: "3fr 1fr",

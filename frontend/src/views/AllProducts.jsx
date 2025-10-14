@@ -10,7 +10,6 @@ const AllProducts = () => {
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
 
-  // 🔹 Leemos todos los filtros de la query string
   const keyword = searchParams.get("keyword") || "";
   const category = searchParams.get("category") || "";
   const priceRange = searchParams.get("price") || "";
@@ -19,6 +18,7 @@ const AllProducts = () => {
 
   const BASE_URL = "http://localhost:8080/products";
 
+  // 🔹 Traer productos según filtros
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -27,15 +27,12 @@ const AllProducts = () => {
       try {
         let endpoint = BASE_URL;
 
-        // 🔹 Elegimos endpoint según filtros
         if (keyword) {
           endpoint += `/search?keyword=${encodeURIComponent(keyword)}`;
         } else if (category) {
           endpoint += `/by-category/${category}`;
         }
 
-        // ⚠️ Nota: los filtros de price, discount y rating actualmente
-        // no tienen endpoint en backend, se podrían filtrar frontend después
         const response = await fetch(endpoint, {
           headers: { "Content-Type": "application/json" },
         });
@@ -45,7 +42,6 @@ const AllProducts = () => {
         const data = await response.json();
         const list = Array.isArray(data.content) ? data.content : data;
 
-        // 🔹 Filtrado adicional en frontend si existieran
         let filteredList = list;
         if (priceRange) {
           const [min, max] = priceRange.includes("+")
@@ -80,6 +76,17 @@ const AllProducts = () => {
     fetchProducts();
   }, [keyword, category, priceRange, discount, rating]);
 
+  // 🔹 Reiniciar animación al cambiar productos
+  useEffect(() => {
+    const cards = document.querySelectorAll(".product-card");
+    cards.forEach((card, index) => {
+      card.classList.remove("fade-in-up");
+      void card.offsetWidth; // forzar reflow
+      card.style.animationDelay = `${index * 0.15}s`;
+      card.classList.add("fade-in-up");
+    });
+  }, [products]);
+
   return (
     <div className="explore-page">
       <title>Explore Products</title>
@@ -92,14 +99,19 @@ const AllProducts = () => {
 
         <div className="grid">
           {products.length > 0 ? (
-            products.map((producto) => (
-              <SingleProduct
-                key={producto.id}
-                id={producto.id}
-                name={producto.name}
-                image={producto.imageIds?.[0] || null}
-                price={producto.price}
-              />
+            products.map((producto, index) => (
+              <div
+                key={producto.id + "-" + keyword + "-" + category} // 🔹 clave única para reiniciar animación
+                className="product-card"
+                style={{ animationDelay: `${index * 0.15}s` }}
+              >
+                <SingleProduct
+                  id={producto.id}
+                  name={producto.name}
+                  image={producto.imageIds?.[0] || null}
+                  price={producto.price}
+                />
+              </div>
             ))
           ) : (
             !loading && (
