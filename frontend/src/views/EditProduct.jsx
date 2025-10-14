@@ -53,6 +53,50 @@ const EditProduct = () => {
     fetchCategories();
   }, []);
 
+  // 🔹 Manejar el submit del formulario (PUT con token)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const token = localStorage.getItem("jwtToken");
+    if (!token) {
+      alert("⚠️ No se encontró el token. Iniciá sesión nuevamente.");
+      return;
+    }
+
+    const updatedProduct = {
+      name: e.target.name.value,
+      description: e.target.description.value,
+      category: { id: e.target.category.value },
+      price: parseFloat(e.target.price.value),
+      discount: parseInt(e.target.discount.value),
+      quantity: parseInt(e.target.quantity.value),
+    };
+
+    console.log("Updating product:", updatedProduct);
+
+    try {
+      const res = await fetch(`http://localhost:8080/products/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedProduct),
+      });
+
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(`Error al actualizar producto: ${msg}`);
+      }
+
+      alert("✅ Producto actualizado correctamente");
+      navigate(-1);
+    } catch (err) {
+      console.error("Error actualizando producto:", err);
+      alert("❌ Hubo un error al actualizar el producto");
+    }
+  };
+
   if (loading) return <p>Cargando producto...</p>;
   if (error) return <p className="error">{error}</p>;
   if (!product) return <p>No se encontró el producto.</p>;
@@ -66,20 +110,17 @@ const EditProduct = () => {
             <p>Update the details of your product below.</p>
           </div>
 
-          <form className="edit-form">
+          <form className="edit-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="name">Product Name</label>
-              <input
-                id="name"
-                type="text"
-                defaultValue={product.name || ""}
-              />
+              <input id="name" name="name" type="text" defaultValue={product.name || ""} />
             </div>
 
             <div className="form-group">
               <label htmlFor="description">Description</label>
               <textarea
                 id="description"
+                name="description"
                 rows="4"
                 defaultValue={product.description || ""}
               ></textarea>
@@ -87,13 +128,14 @@ const EditProduct = () => {
 
             <div className="form-group">
               <label htmlFor="category">Category</label>
-              <select id="category" defaultValue={product.category?.id || ""}>
+              <select id="category" name="category" defaultValue={product.category?.id || ""}>
                 <option value="">Seleccionar categoría</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.description}
-                  </option>
-                ))}
+                {Array.isArray(categories) &&
+                  categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.description}
+                    </option>
+                  ))}
               </select>
             </div>
 
@@ -104,6 +146,7 @@ const EditProduct = () => {
                   <span className="currency">$</span>
                   <input
                     id="price"
+                    name="price"
                     type="text"
                     defaultValue={product.price?.toFixed(2) || ""}
                   />
@@ -114,6 +157,7 @@ const EditProduct = () => {
                 <label htmlFor="discount">Discount (%)</label>
                 <input
                   id="discount"
+                  name="discount"
                   type="number"
                   defaultValue={product.discount || 0}
                 />
@@ -124,6 +168,7 @@ const EditProduct = () => {
               <label htmlFor="quantity">Quantity</label>
               <input
                 id="quantity"
+                name="quantity"
                 type="number"
                 defaultValue={product.quantity || 0}
               />
