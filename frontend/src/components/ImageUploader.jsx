@@ -107,7 +107,7 @@ const ImageUploader = ({ onImagesChange }) => {
           ))}
         </div>
       )}
-      <p className="helper">Subí una o más imágenes. Se enviarán luego de crear el producto.</p>
+      <p className="helper"></p>
     </StyledWrapper>
   );
 };

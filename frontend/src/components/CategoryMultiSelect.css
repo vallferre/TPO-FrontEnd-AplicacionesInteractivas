@@ -1,74 +1,156 @@
-.category-selector {
+/* ==== CategoryMultiSelect – Estilos completos y centrados ==== */
+
+.catms {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  position: relative;
+  width: 100%;
+  color: #111827;
+  font-family: inherit;
 }
 
-.selected-list {
+.catms__label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* --- Chips seleccionadas --- */
+.catms__chips {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 8px;
+  margin-bottom: 2px;
 }
 
-.category-tag {
-  background-color: #007bff;
-  color: white;
-  padding: 5px 10px;
-  border-radius: 15px;
-  font-size: 0.9rem;
-  display: flex;
+.catms__chip {
+  background: #f3f4f6;
+  color: #1f2937;
+  padding: 4px 10px;
+  border-radius: 12px;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  font-size: 0.9rem;
 }
 
-.category-tag button {
+.catms__chip-close {
   background: none;
   border: none;
-  color: white;
+  color: #6b7280;
+  margin-left: 6px;
   cursor: pointer;
-  font-weight: bold;
+  font-size: 14px;
+  line-height: 1;
+  transition: color 0.2s ease;
 }
 
-.search-input {
-  padding: 8px 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+.catms__chip-close:hover {
+  color: #374151;
+}
+
+/* --- Contenedor del input --- */
+.catms__inputwrap {
+  position: relative;
   width: 100%;
-  font-size: 1rem;
 }
 
-.dropdown {
+/* --- Input de búsqueda --- */
+.catms__input {
+  width: 100%;
+  font-size: 0.95rem;
+  height: 42px; /* Altura uniforme */
+  padding: 0 44px 0 12px; /* espacio derecho para la flecha */
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #111827;
+  background: #fff;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.catms__input:focus {
+  outline: none;
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.35);
+}
+
+/* --- Botón flecha ▼ --- */
+.catms__toggle {
   position: absolute;
-  top: 100%;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  height: 28px;
+  width: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: #6b7280;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.catms__toggle:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* --- Icono de flecha --- */
+.catms__caret {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #6b7280;
+}
+
+/* --- Dropdown (lista de categorías) --- */
+.catms__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  margin-top: 4px;
-  max-height: 180px;
+  z-index: 20;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  max-height: 240px;
   overflow-y: auto;
-  z-index: 10;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
-.dropdown-item {
-  padding: 8px 12px;
+/* --- Items dentro del dropdown --- */
+.catms__item,
+.catms__itembtn {
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.catms__item {
+  background: #fff;
+}
+
+.catms__item--error {
+  color: #ef4444;
+}
+
+.catms__itembtn {
+  background: #fff;
+  border: none;
   cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.dropdown-item:hover {
-  background-color: #f0f0f0;
+.catms__itembtn:hover {
+  background: #f3f4f6;
 }
 
-.no-results {
-  padding: 8px 12px;
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.error {
-  color: red;
-  font-size: 0.9rem;
+.catms__itembtn.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
