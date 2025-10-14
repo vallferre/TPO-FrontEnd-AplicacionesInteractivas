@@ -8,13 +8,14 @@
 
 /* SIDEBAR */
 .sidebar {
-  width: 25%;
+  width: 20%;
   background: white;
   padding: 2rem;
   border-radius: 1rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  position: sticky;
+  position: relative;
   top: 1rem;
+  left: 1rem;
   align-self: flex-start;
 }
 
