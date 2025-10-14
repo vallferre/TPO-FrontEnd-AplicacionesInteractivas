@@ -18,7 +18,7 @@ const AllProducts = () => {
 
   const BASE_URL = "http://localhost:8080/products";
 
-  // 🔹 Traer productos según filtros
+  // Traer productos según filtros
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -76,7 +76,7 @@ const AllProducts = () => {
     fetchProducts();
   }, [keyword, category, priceRange, discount, rating]);
 
-  // 🔹 Reiniciar animación al cambiar productos
+  // Reiniciar animación al cambiar productos
   useEffect(() => {
     const cards = document.querySelectorAll(".product-card");
     cards.forEach((card, index) => {
@@ -101,9 +101,7 @@ const AllProducts = () => {
           {products.length > 0 ? (
             products.map((producto, index) => (
               <div
-                key={producto.id + "-" + keyword + "-" + category} // 🔹 clave única para reiniciar animación
-                className="product-card"
-                style={{ animationDelay: `${index * 0.15}s` }}
+                key={producto.id + "-" + keyword + "-" + category} // clave única para reiniciar animación
               >
                 <SingleProduct
                   id={producto.id}

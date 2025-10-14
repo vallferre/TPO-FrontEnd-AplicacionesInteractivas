@@ -1,7 +1,62 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import "../components/EditProduct.css";
 
 const EditProduct = () => {
+  const { id } = useParams(); // ruta tipo /edit/:id
+  const navigate = useNavigate();
+
+  const [product, setProduct] = useState(null);
+  const [categories, setCategories] = useState([]); // 🔹 categorías dinámicas
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // 🔹 Obtener producto
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const resProduct = await fetch(`http://localhost:8080/products/id/${id}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!resProduct.ok) throw new Error(`Error: ${resProduct.status}`);
+        const data = await resProduct.json();
+        console.log("Fetched product:", data);
+        setProduct(data);
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  // 🔹 Obtener categorías
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/categories", {
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!res.ok) throw new Error("Error al cargar categorías");
+        const data = await res.json();
+        setCategories(data.content || []);
+      } catch (err) {
+        console.error("Error cargando categorías:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  if (loading) return <p>Cargando producto...</p>;
+  if (error) return <p className="error">{error}</p>;
+  if (!product) return <p>No se encontró el producto.</p>;
+
   return (
     <div className="edit-page">
       <main className="edit-main">
@@ -14,7 +69,11 @@ const EditProduct = () => {
           <form className="edit-form">
             <div className="form-group">
               <label htmlFor="name">Product Name</label>
-              <input id="name" type="text" defaultValue="Vintage Leather Jacket" />
+              <input
+                id="name"
+                type="text"
+                defaultValue={product.name || ""}
+              />
             </div>
 
             <div className="form-group">
@@ -22,16 +81,19 @@ const EditProduct = () => {
               <textarea
                 id="description"
                 rows="4"
-                defaultValue="A classic vintage leather jacket in great condition. Perfect for a timeless look."
+                defaultValue={product.description || ""}
               ></textarea>
             </div>
 
             <div className="form-group">
               <label htmlFor="category">Category</label>
-              <select id="category" defaultValue="Jackets">
-                <option>Apparel</option>
-                <option>Jackets</option>
-                <option>Accessories</option>
+              <select id="category" defaultValue={product.category?.id || ""}>
+                <option value="">Seleccionar categoría</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.description}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -40,19 +102,31 @@ const EditProduct = () => {
                 <label htmlFor="price">Price</label>
                 <div className="price-wrapper">
                   <span className="currency">$</span>
-                  <input id="price" type="text" defaultValue="120.00" />
+                  <input
+                    id="price"
+                    type="text"
+                    defaultValue={product.price?.toFixed(2) || ""}
+                  />
                 </div>
               </div>
 
               <div className="form-group">
                 <label htmlFor="discount">Discount (%)</label>
-                <input id="discount" type="number" defaultValue="10" />
+                <input
+                  id="discount"
+                  type="number"
+                  defaultValue={product.discount || 0}
+                />
               </div>
             </div>
 
             <div className="form-group">
               <label htmlFor="quantity">Quantity</label>
-              <input id="quantity" type="number" defaultValue="1" />
+              <input
+                id="quantity"
+                type="number"
+                defaultValue={product.quantity || 0}
+              />
             </div>
 
             <div className="form-group">
@@ -70,23 +144,12 @@ const EditProduct = () => {
               </div>
             </div>
 
-            <div className="form-group">
-              <label>Videos</label>
-              <div className="upload-box">
-                <span className="upload-icon">🎥</span>
-                <p>
-                  <label htmlFor="video-upload" className="upload-link">
-                    Upload a file
-                    <input id="video-upload" type="file" multiple hidden />
-                  </label>
-                  &nbsp;or drag and drop
-                </p>
-                <p className="upload-note">MP4, AVI, MOV up to 50MB</p>
-              </div>
-            </div>
-
             <div className="form-actions">
-              <button type="button" className="btn cancel">
+              <button
+                type="button"
+                className="btn cancel"
+                onClick={() => navigate(-1)}
+              >
                 Cancel
               </button>
               <button type="submit" className="btn save">

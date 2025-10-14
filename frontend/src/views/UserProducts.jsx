@@ -64,7 +64,7 @@ const UserProducts = () => {
         const formatted = data.map((p) => ({
           id: p.id,
           name: p.name,
-          img: p.imageIds?.[0] || null, // evita warning de src vacío
+          img: p.imageIds?.[0] || null,
           status: p.status || "Active",
           statusClass:
             p.status === "Active"
@@ -83,11 +83,13 @@ const UserProducts = () => {
   }, [token]);
 
   const handleCreate = () => navigate("/create");
-  const handleEdit = (productName) =>
-    navigate("/edit", { state: { productName } });
 
-  const handleRowClick = (id) => {
-    navigate(`/product/${id}`);
+  const handleEdit = (productId) => navigate(`/edit/${productId}`);
+
+  const handleRowClick = (e, id) => {
+    // 🔹 Evitamos que botones dentro de la fila disparen la navegación
+    if (e.target.closest(".edit-btn") || e.target.closest(".delete-btn")) return;
+    navigate(`/edit/${id}`);
   };
 
   const handleDeleteClick = (e, product) => {
@@ -116,9 +118,7 @@ const UserProducts = () => {
 
       if (!response.ok) throw new Error("Error al eliminar el producto");
 
-      setProducts((prev) =>
-        prev.filter((p) => p.id !== selectedProduct.id)
-      );
+      setProducts((prev) => prev.filter((p) => p.id !== selectedProduct.id));
       setModalOpen(false);
       setSelectedProduct(null);
     } catch (error) {
@@ -126,7 +126,6 @@ const UserProducts = () => {
       alert("Error al eliminar el producto. Revisa consola.");
     }
   };
-
 
   return (
     <div className="user-products-container">
@@ -154,7 +153,7 @@ const UserProducts = () => {
               <tr
                 key={idx}
                 className="product-row"
-                onClick={() => handleRowClick(product.id)}
+                onClick={(e) => handleRowClick(e, product.id)}
               >
                 <td>
                   <div className="product-info">
@@ -177,11 +176,12 @@ const UserProducts = () => {
                     className="edit-btn"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleEdit(product.name);
+                      handleEdit(product.id);
                     }}
                   >
                     <span className="material-symbols-outlined">edit</span>
                   </button>
+
                   <button
                     className="delete-btn"
                     onClick={(e) => handleDeleteClick(e, product)}
@@ -195,7 +195,6 @@ const UserProducts = () => {
         </table>
       </div>
 
-      {/* Modal */}
       <DeleteConfirmationModal
         isOpen={modalOpen}
         onConfirm={handleConfirmDelete}

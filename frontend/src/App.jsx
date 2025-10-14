@@ -51,7 +51,7 @@ const App = () => {
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/create" element={<CreateProduct />} />
-          <Route path="/edit" element={<EditProduct />} />
+          <Route path="/edit/:id" element={<EditProduct />} />
           <Route path="/categories" element={<AdminCreateCategory />} />
           <Route path="/product/:id" element={<ProductDetails />} />
         </Routes>
