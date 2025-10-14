@@ -210,3 +210,67 @@
   cursor: pointer;
   font-size: 1rem;
 }
+
+/* ----- ANIMACIONES ----- */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ----- PROFILE PAGE ----- */
+.profile-page {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f6f7f8;
+  color: #213547;
+  font-family: 'Inter', sans-serif;
+  opacity: 0;
+  animation: fadeInUp 0.8s ease forwards;
+  animation-delay: 0.2s; /* aparece antes que los productos */
+}
+
+/* SIDEBAR ANIMATION */
+.sidebar {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s ease forwards;
+  animation-delay: 0.1s;
+}
+
+/* PROFILE CARD ANIMATION */
+.profile-card {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s ease forwards;
+  animation-delay: 0.2s;
+}
+
+/* PRODUCTS LIST ANIMATION */
+.products-list .product-card {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+/* Stagger de productos */
+.products-list .product-card:nth-child(1) { animation-delay: 0.3s; }
+.products-list .product-card:nth-child(2) { animation-delay: 0.45s; }
+.products-list .product-card:nth-child(3) { animation-delay: 0.6s; }
+.products-list .product-card:nth-child(4) { animation-delay: 0.75s; }
+.products-list .product-card:nth-child(5) { animation-delay: 0.9s; }
+/* ... y así sucesivamente para más productos */
+
+/* HEADER Y BOTONES */
+.header,
+.add-button {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s ease forwards;
+  animation-delay: 0.25s;
+}

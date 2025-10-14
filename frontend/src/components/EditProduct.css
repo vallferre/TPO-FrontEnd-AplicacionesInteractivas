@@ -13,6 +13,9 @@
   display: flex;
   justify-content: center;
   padding: 40px 20px;
+  opacity: 0;
+  animation: fadeInUp 0.8s ease forwards;
+  animation-delay: 0.3s; /* el contenido aparece un poco después del header */
 }
 
 .edit-container {
@@ -25,16 +28,41 @@
 }
 
 /* ----- HEADER ----- */
+.edit-header {
+  text-align: center;
+  margin-bottom: 25px;
+  opacity: 0;
+  transform: translateY(40px);
+  animation: fadeInUp 0.8s ease forwards;
+}
+
 .edit-header h2 {
   font-size: 28px;
   font-weight: 700;
   color: #111;
+  margin-bottom: 6px;
+  animation: fadeInUp 0.8s ease forwards;
 }
 
 .edit-header p {
   color: #666;
   font-size: 14px;
-  margin-top: 6px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s ease forwards;
+  animation-delay: 0.2s;
+}
+
+/* ----- HEADER ANIMATION ----- */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ----- FORM ----- */

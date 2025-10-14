@@ -421,3 +421,36 @@ body, html {
   transform: translateY(-4px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
+
+/* ----- ANIMACIONES FADE-IN ----- */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación para títulos de producto */
+.product-title {
+  opacity: 0;
+  animation: fade-in-up 0.6s forwards;
+}
+
+/* Animación para la imagen del producto */
+.product-image {
+  opacity: 0;
+  animation: fade-in-up 0.6s forwards;
+  animation-delay: 0.2s;
+}
+
+/* Animación escalonada para tarjetas en la grilla */
+.products-container .product-card {
+  opacity: 0;
+  animation: fade-in-up 0.6s forwards;
+}
+
+/* Delay dinámico con JavaScript (si querés que cada tarjeta aparezca una tras otra) */

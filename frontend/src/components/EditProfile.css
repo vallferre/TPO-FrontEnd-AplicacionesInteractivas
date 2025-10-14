@@ -147,3 +147,36 @@
 .update-btn:hover {
   background-color: #0e5ab8;
 }
+
+/* ----- ANIMACIONES FADE-IN ----- */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Avatar y título animados */
+.profile-picture-wrapper,
+.edit-profile-header h1,
+.edit-profile-header p {
+  opacity: 0;
+  animation: fade-in-up 0.6s forwards;
+}
+
+/* Retardos para que aparezcan en orden */
+.profile-picture-wrapper {
+  animation-delay: 0s;
+}
+
+.edit-profile-header h1 {
+  animation-delay: 0.2s;
+}
+
+.edit-profile-header p {
+  animation-delay: 0.4s;
+}
