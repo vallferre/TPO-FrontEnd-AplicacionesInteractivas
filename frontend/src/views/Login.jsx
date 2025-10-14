@@ -90,33 +90,10 @@ export default function Login() {
               {error && <p className="error">{error}</p>}
               {loading && <p>Loading...</p>}
 
-              <div className="form-options">
-                <label className="remember">
-                  <input type="checkbox" name="remember-me" />
-                  Remember me
-                </label>
-                <a href="#" className="forgot">
-                  Forgot your password?
-                </a>
-              </div>
-
               <button type="submit" className="btn-submit" disabled={loading}>
                 Log In
               </button>
             </form>
-
-            <div className="divider">
-              <span>Or continue with</span>
-            </div>
-
-            <div className="socials">
-              <a href="#" className="social google">
-                Google
-              </a>
-              <a href="#" className="social facebook">
-                Facebook
-              </a>
-            </div>
           </div>
         </main>
       </div>

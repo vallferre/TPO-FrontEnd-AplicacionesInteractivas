@@ -52,17 +52,6 @@ const Orders = () => {
     fetchOrders();
   }, [page, sortOrder]);
 
-  // 🔹 Reiniciar animación
-  useEffect(() => {
-    const cards = document.querySelectorAll(".product-card");
-    cards.forEach((card, index) => {
-      card.classList.remove("fade-in-up");
-      void card.offsetWidth; // forzar reflow
-      card.style.animationDelay = `${index * 0.15}s`;
-      card.classList.add("fade-in-up");
-    });
-  }, [products]);  
-
   return (
     <div className="orders-content">
       <div className="orders-header">
