@@ -121,12 +121,6 @@
   background: #e7f0ff;
 }
 
-/* MAIN CONTENT */
-.main-content {
-  width: 75%;
-  padding: 2rem;
-}
-
 .header {
   display: flex;
   justify-content: space-between;

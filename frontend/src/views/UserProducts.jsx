@@ -1,14 +1,41 @@
 import React, { useState, useEffect } from "react";
 import "../components/UserProducts.css";
+import "../components/DeleteConfirmationModal.css";
 import { useNavigate } from "react-router-dom";
+
+const DeleteConfirmationModal = ({ isOpen, onConfirm, onCancel, productName }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-container">
+        <h2>Delete Product</h2>
+        <p>
+          Are you sure you want to delete <strong>{productName}</strong>?<br />
+          This action cannot be undone.
+        </p>
+        <div className="modal-buttons">
+          <button className="btn-cancel" onClick={onCancel}>
+            Cancel
+          </button>
+          <button className="btn-confirm" onClick={onConfirm}>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const UserProducts = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const token = localStorage.getItem("jwtToken"); // token JWT
+  const token = localStorage.getItem("jwtToken");
 
   useEffect(() => {
     if (!token) {
@@ -23,8 +50,8 @@ const UserProducts = () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -35,8 +62,9 @@ const UserProducts = () => {
       })
       .then((data) => {
         const formatted = data.map((p) => ({
+          id: p.id,
           name: p.name,
-          img: p.imageIds?.[0] || "",
+          img: p.imageIds?.[0] || null, // evita warning de src vacío
           status: p.status || "Active",
           statusClass:
             p.status === "Active"
@@ -58,6 +86,48 @@ const UserProducts = () => {
   const handleEdit = (productName) =>
     navigate("/edit", { state: { productName } });
 
+  const handleRowClick = (id) => {
+    navigate(`/product/${id}`);
+  };
+
+  const handleDeleteClick = (e, product) => {
+    e.stopPropagation();
+    setSelectedProduct(product);
+    setModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedProduct) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/products/${selectedProduct.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Response status:", response.status);
+      console.log("Response body:", await response.text());
+
+      if (!response.ok) throw new Error("Error al eliminar el producto");
+
+      setProducts((prev) =>
+        prev.filter((p) => p.id !== selectedProduct.id)
+      );
+      setModalOpen(false);
+      setSelectedProduct(null);
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert("Error al eliminar el producto. Revisa consola.");
+    }
+  };
+
+
   return (
     <div className="user-products-container">
       <div className="user-products-header">
@@ -76,34 +146,46 @@ const UserProducts = () => {
           <thead>
             <tr>
               <th>Product</th>
-              <th>Status</th>
               <th className="text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
             {products.map((product, idx) => (
-              <tr key={idx}>
+              <tr
+                key={idx}
+                className="product-row"
+                onClick={() => handleRowClick(product.id)}
+              >
                 <td>
                   <div className="product-info">
                     <div className="product-img-wrapper">
-                      <img src={product.img} alt={product.name} />
+                      {product.img ? (
+                        <img
+                          src={product.img}
+                          alt={product.name}
+                          className="product-img"
+                        />
+                      ) : (
+                        <div className="product-img placeholder">No image</div>
+                      )}
                     </div>
                     <span className="product-name">{product.name}</span>
                   </div>
                 </td>
-                <td>
-                  <span className={`status-badge ${product.statusClass}`}>
-                    {product.status}
-                  </span>
-                </td>
                 <td className="text-center actions-cell">
                   <button
                     className="edit-btn"
-                    onClick={() => handleEdit(product.name)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(product.name);
+                    }}
                   >
                     <span className="material-symbols-outlined">edit</span>
                   </button>
-                  <button className="delete-btn">
+                  <button
+                    className="delete-btn"
+                    onClick={(e) => handleDeleteClick(e, product)}
+                  >
                     <span className="material-symbols-outlined">delete</span>
                   </button>
                 </td>
@@ -112,6 +194,14 @@ const UserProducts = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Modal */}
+      <DeleteConfirmationModal
+        isOpen={modalOpen}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setModalOpen(false)}
+        productName={selectedProduct?.name || ""}
+      />
     </div>
   );
 };

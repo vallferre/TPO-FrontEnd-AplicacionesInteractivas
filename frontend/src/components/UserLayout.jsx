@@ -11,6 +11,7 @@ const UserLayout = () => {
     username: "",
     avatar: "",
   });
+  const [role, setRole] = useState(""); // rol del usuario: "USER" o "ADMIN"
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -22,47 +23,57 @@ const UserLayout = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("jwtToken");
-
     if (!token) {
       setError("No hay token, inicia sesión");
       setLoading(false);
       return;
     }
 
-    const fetchUser = async () => {
+    const fetchUserAndRole = async () => {
       try {
-        const response = await fetch("http://localhost:8080/users/", {
+        // 🔹 Fetch datos del usuario
+        const userResponse = await fetch("http://localhost:8080/users/", {
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
-
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
-        }
-
-        const data = await response.json();
+        if (!userResponse.ok) throw new Error(`Error: ${userResponse.status}`);
+        const userData = await userResponse.json();
         setUser({
-          fullName: `${data.name} ${data.surname}`.trim() || "Usuario",
-          email: data.email || "",
-          username: data.username || "",
-          avatar: data.avatar || "", // si no existe avatar, se mantiene vacío
+          fullName: `${userData.name} ${userData.surname}`.trim() || "Usuario",
+          email: userData.email || "",
+          username: userData.username || "",
+          avatar: userData.avatar || "",
         });
+
+        // 🔹 Fetch rol del usuario
+        const roleResponse = await fetch("http://localhost:8080/users/role", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!roleResponse.ok)
+          throw new Error(`Error fetching role: ${roleResponse.status}`);
+        const roleData = await roleResponse.json(); // <-- parseamos JSON
+        setRole(roleData.role); // <-- guardamos solo "ADMIN" o "USER"
       } catch (err) {
         console.error(err);
         setError(err.message);
-        handleLogout(); // Forzar logout si hay error
+        handleLogout();
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUser();
+    fetchUserAndRole();
   }, []);
 
   if (loading) return <p>Cargando perfil...</p>;
   if (error) return <p className="error">{error}</p>;
+
+  const isAdmin = role === "ADMIN";
 
   return (
     <div className="profile-page">
@@ -87,12 +98,21 @@ const UserLayout = () => {
           </Link>
 
           <nav className="sidebar-nav">
-            <Link to="/profile/orders" className="nav-link">
-              🛍 Orders
-            </Link>
-            <Link to="/profile/products" className="nav-link">
-              🏪 My Products
-            </Link>
+            {!isAdmin && (
+              <>
+                <Link to="/profile/orders" className="nav-link">
+                  🛍 Orders
+                </Link>
+                <Link to="/profile/products" className="nav-link">
+                  🏪 My Products
+                </Link>
+              </>
+            )}
+            {isAdmin && (
+              <Link to="/categories" className="nav-link">
+                🏷 Categories
+              </Link>
+            )}
             <button onClick={handleLogout} className="nav-link logout">
               Logout
             </button>
