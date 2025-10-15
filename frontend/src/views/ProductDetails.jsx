@@ -10,6 +10,9 @@ const ProductDetails = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentImage, setCurrentImage] = useState(0);
+
+  const API_BASE = "http://localhost:8080";
 
   const options = {
     method: "GET",
@@ -19,20 +22,18 @@ const ProductDetails = () => {
   useEffect(() => {
     const fetchProductAndRelated = async () => {
       try {
-        // Obtener producto principal
-        const resProduct = await fetch(`http://localhost:8080/products/id/${id}`, options);
+        const resProduct = await fetch(`${API_BASE}/products/id/${id}`, options);
         if (!resProduct.ok) throw new Error(`Error: ${resProduct.status}`);
         const data = await resProduct.json();
         setProduct(data);
 
-        // Si tiene categorías, obtener todas las categorías
         if (data.categories?.length > 0) {
-          const resCategories = await fetch("http://localhost:8080/categories", options);
-          if (!resCategories.ok) throw new Error(`Error fetching categories: ${resCategories.status}`);
+          const resCategories = await fetch(`${API_BASE}/categories`, options);
+          if (!resCategories.ok)
+            throw new Error(`Error fetching categories: ${resCategories.status}`);
           const categoriesData = await resCategories.json();
           const allCategories = categoriesData.content || [];
 
-          // Mapear nombres de categorías del producto a sus IDs
           const productCategoryIds = data.categories
             .map((catName) => {
               const catObj = allCategories.find((c) => c.description === catName);
@@ -40,14 +41,13 @@ const ProductDetails = () => {
             })
             .filter((id) => id !== null);
 
-          // Traer productos relacionados de cada categoría
-          const relatedMap = new Map(); // evitar duplicados
+          const relatedMap = new Map();
           await Promise.all(
             productCategoryIds.map(async (catId) => {
               try {
-                const res = await fetch(`http://localhost:8080/products/by-category/${catId}`, options);
+                const res = await fetch(`${API_BASE}/products/by-category/${catId}`, options);
                 if (!res.ok) return;
-                const related = await res.json(); // lista de ProductResponse
+                const related = await res.json();
                 related.forEach((p) => {
                   if (p.id !== data.id && p.stock > 0 && !relatedMap.has(p.id)) {
                     relatedMap.set(p.id, p);
@@ -59,7 +59,6 @@ const ProductDetails = () => {
             })
           );
 
-          // Tomar máximo 5 productos
           setRelatedProducts(Array.from(relatedMap.values()).slice(0, 5));
         }
       } catch (err) {
@@ -94,14 +93,43 @@ const ProductDetails = () => {
       </div>
     );
 
+  const imageIds = product.imageIds || [];
+  const imageUrl =
+    imageIds.length > 0
+      ? `${API_BASE}/images/${imageIds[currentImage]}`
+      : "https://via.placeholder.com/600x400?text=Sin+imagen";
+
+  const handlePrev = () => {
+    setCurrentImage((prev) => (prev === 0 ? imageIds.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentImage((prev) => (prev === imageIds.length - 1 ? 0 : prev + 1));
+  };
+
   return (
     <div className="product-details-page">
       <div className="product-details">
-        <div className="product-image-container">
+        <div className="image-carousel-container">
+          {imageIds.length > 1 && (
+            <>
+              <button className="carousel-btn left" onClick={handlePrev}>
+                ❮
+              </button>
+              <button className="carousel-btn right" onClick={handleNext}>
+                ❯
+              </button>
+            </>
+          )}
+
           <img
-            src={product.imageIds?.[0] || "/placeholder.png"}
+            src={imageUrl}
             alt={product.name}
-            className="product-image"
+            className="productImageSpecial"
+            onError={(e) => {
+              e.currentTarget.src =
+                "https://via.placeholder.com/600x400?text=Sin+imagen";
+            }}
           />
         </div>
 
@@ -129,7 +157,6 @@ const ProductDetails = () => {
         </div>
       </div>
 
-      {/* Sección de descripción */}
       <div className="product-description-section">
         <h2>Descripción</h2>
         <p>
@@ -139,7 +166,6 @@ const ProductDetails = () => {
         </p>
       </div>
 
-      {/* Productos relacionados */}
       {relatedProducts.length > 0 && (
         <div className="related-products">
           <h2>A otras personas también les gustó:</h2>
@@ -158,7 +184,6 @@ const ProductDetails = () => {
         </div>
       )}
     </div>
-
   );
 };
 

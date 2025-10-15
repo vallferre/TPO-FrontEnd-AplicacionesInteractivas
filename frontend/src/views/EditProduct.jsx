@@ -1,20 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import CategoryMultiSelect from "../components/CategoryMultiSelect";
 import "../components/EditProduct.css";
+
+const API_BASE = "http://localhost:8080";
 
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState([]); // categorías seleccionadas del producto
+  const [allCategories, setAllCategories] = useState([]); // todas las categorías disponibles
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // 🔹 Obtener el producto
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const resProduct = await fetch(`http://localhost:8080/products/id/${id}`, {
+        const resProduct = await fetch(`${API_BASE}/products/id/${id}`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -22,6 +27,11 @@ const EditProduct = () => {
         if (!resProduct.ok) throw new Error(`Error: ${resProduct.status}`);
         const data = await resProduct.json();
         setProduct(data);
+
+        // Cargar categorías actuales del producto
+        if (data.categories && Array.isArray(data.categories)) {
+          setCategories(data.categories);
+        }
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -33,15 +43,16 @@ const EditProduct = () => {
     fetchProduct();
   }, [id]);
 
+  // 🔹 Obtener todas las categorías
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch("http://localhost:8080/categories", {
+        const res = await fetch(`${API_BASE}/categories`, {
           headers: { "Content-Type": "application/json" },
         });
         if (!res.ok) throw new Error("Error al cargar categorías");
         const data = await res.json();
-        setCategories(data.content || []);
+        setAllCategories(data.content || data || []); // por si cambia el formato
       } catch (err) {
         console.error("Error cargando categorías:", err);
       }
@@ -59,17 +70,25 @@ const EditProduct = () => {
       return;
     }
 
+    if (categories.length === 0) {
+      alert("Debe seleccionar al menos una categoría.");
+      return;
+    }
+
+    // Convertimos el array de objetos a array de strings (IDs o nombres)
+    const selectedCategoryStrings = categories.map(cat => cat.id); // o cat.description si tu backend quiere nombres
+
     const updatedProduct = {
       name: e.target.name.value.trim(),
       description: e.target.description.value.trim(),
-      category: { id: e.target.category.value },
+      categories: selectedCategoryStrings, // 👈 ahora es un array de strings
       price: parseFloat(e.target.price.value),
       discount: parseInt(e.target.discount.value),
       quantity: parseInt(e.target.quantity.value),
     };
 
     try {
-      const res = await fetch(`http://localhost:8080/products/${id}`, {
+      const res = await fetch(`${API_BASE}/products/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -91,6 +110,7 @@ const EditProduct = () => {
     }
   };
 
+
   if (loading) return <p>Cargando producto...</p>;
   if (error) return <p className="error">{error}</p>;
   if (!product) return <p>No se encontró el producto.</p>;
@@ -105,6 +125,7 @@ const EditProduct = () => {
           </div>
 
           <form className="edit-form" onSubmit={handleSubmit}>
+            {/* Nombre */}
             <div className="form-group">
               <label htmlFor="name">Product Name</label>
               <input
@@ -113,11 +134,12 @@ const EditProduct = () => {
                 type="text"
                 defaultValue={product.name || ""}
                 required
-                pattern="^[A-Za-z0-9\s]{1,100}$"
+                pattern="^[A-Za-z0-9\\s]{1,100}$"
                 title="Solo letras, números y espacios (máx 100 caracteres)"
               />
             </div>
 
+            {/* Descripción */}
             <div className="form-group">
               <label htmlFor="description">Description</label>
               <textarea
@@ -131,25 +153,21 @@ const EditProduct = () => {
               ></textarea>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="category">Category</label>
-              <select
-                id="category"
-                name="category"
-                defaultValue={product.category?.id || ""}
-                required
-                title="Seleccioná una categoría"
-              >
-                <option value="">Seleccionar categoría</option>
-                {Array.isArray(categories) &&
-                  categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.description}
-                    </option>
-                  ))}
-              </select>
+            {/* Categorías */}
+            <div className="form-group full">
+              <label>Categorías</label>
+              <CategoryMultiSelect
+                selected={categories}
+                onChange={setCategories}
+                apiBase={API_BASE}
+                allCategories={allCategories}
+              />
+              {categories.length === 0 && (
+                <p className="error">Debe seleccionar al menos una categoría.</p>
+              )}
             </div>
 
+            {/* Precio y descuento */}
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="price">Price</label>
@@ -158,15 +176,14 @@ const EditProduct = () => {
                   <input
                     id="price"
                     name="price"
-                    type="text"
+                    type="number"
+                    step="0.01"
+                    min="0"
                     defaultValue={product.price?.toFixed(2) || ""}
                     required
-                    pattern="^\d+(\.\d{1,2})?$"
-                    title="Solo números positivos, opcional hasta 2 decimales"
                   />
                 </div>
               </div>
-
               <div className="form-group">
                 <label htmlFor="discount">Discount (%)</label>
                 <input
@@ -177,11 +194,11 @@ const EditProduct = () => {
                   required
                   min={0}
                   max={99}
-                  title="Número entre 0 y 99"
                 />
               </div>
             </div>
 
+            {/* Cantidad */}
             <div className="form-group">
               <label htmlFor="quantity">Quantity</label>
               <input
@@ -191,10 +208,10 @@ const EditProduct = () => {
                 defaultValue={product.quantity || 0}
                 required
                 min={0}
-                title="Número entero positivo"
               />
             </div>
 
+            {/* Fotos */}
             <div className="form-group">
               <label>Photos</label>
               <div className="upload-box">
@@ -210,6 +227,7 @@ const EditProduct = () => {
               </div>
             </div>
 
+            {/* Botones */}
             <div className="form-actions">
               <button
                 type="button"

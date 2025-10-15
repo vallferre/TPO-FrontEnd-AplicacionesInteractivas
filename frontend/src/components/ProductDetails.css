@@ -147,3 +147,53 @@
   transform: translateY(-5px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
+
+.image-carousel-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 700px; /* límite lógico */
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f8f8f8;
+}
+
+.productImageSpecial {
+  max-width: 100%;
+  max-height: 500px;
+  object-fit: contain; /* evita recortes */
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.7);
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.3s;
+}
+
+.carousel-btn:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.carousel-btn.left {
+  left: 10px;
+}
+
+.carousel-btn.right {
+  right: 10px;
+}
