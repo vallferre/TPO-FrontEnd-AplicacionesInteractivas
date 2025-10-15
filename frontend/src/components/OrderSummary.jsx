@@ -15,7 +15,7 @@ export default function OrderSummary({ subtotal, shipping, tax, total }) {
           <p>{shipping}</p>
         </div>
         <div className="summary-row" style={{ display: "flex", justifyContent: "space-between" }}>
-          <p>Estimated Tax</p>
+          <p>Discount</p>
           <p>${tax}</p>
         </div>
         <div className="divider" style={{ borderTop: "1px solid #e2e8f0", margin: "0.75rem 0" }}></div>
