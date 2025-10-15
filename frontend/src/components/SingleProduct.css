@@ -1,116 +1,119 @@
-/* ====== SingleProduct.css (versión aislada) ====== */
-
-.productCardSpecial {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  cursor: pointer;
+/* ===== Tarjeta base ===== */
+.product-card--dynamic {
   display: flex;
   flex-direction: column;
-  text-align: left;
+  background-color: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+  overflow: hidden;
+  max-width: 25rem;
+  margin: auto;
 }
 
-.productCardSpecial:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.product-card--dynamic:hover {
+  transform: translateY(-0.25rem);
+  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.12);
 }
 
-/* 🔹 Imagen destacada */
-.productImageSpecial {
+/* ===== Imagen ===== */
+.product-media--dynamic {
   width: 100%;
-  height: 280px;            /* tamaño grande y uniforme */
-  object-fit: cover;
-  border-bottom: 1px solid #e5e7eb;
+  aspect-ratio: 4 / 3;
+  background: #f3f4f6;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-bottom: 0.05rem solid #e5e7eb;
+}
+
+.product-media--dynamic img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
   transition: transform 0.3s ease;
 }
 
-.productCardSpecial:hover .productImageSpecial {
-  transform: scale(1.03);
+.product-card--dynamic:hover .product-media--dynamic img {
+  transform: scale(1.02);
 }
 
-/* 🔹 Placeholder si no hay imagen */
-.productImageSpecial.placeholder {
-  background-color: #f3f4f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
+.product-media__placeholder--dynamic {
+  display: grid;
+  place-items: center;
   color: #9ca3af;
-  height: 280px;
+  font-size: clamp(0.9rem, 1.5vw, 1rem);
 }
 
-/* 🔹 Contenedor de información */
-.productInfoSpecial {
-  padding: 1rem 1.25rem 1.25rem;
+/* ===== Información del producto ===== */
+.product-info--dynamic {
+  padding: 1rem 1.25rem;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0.4rem;
+  background-color: #fff;
+  flex-grow: 1;
 }
 
-.productNameSpecial {
-  font-size: 1.1rem;
-  font-weight: 600;
+/* 🔹 Versión compacta (reduce área blanca) */
+.product-info--dynamic.compact {
+  padding-block: 0.75rem; /* menos alto arriba y abajo */
+  gap: 0.25rem;
+}
+
+.product-name--dynamic {
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  font-weight: 700;
   color: #111827;
   margin: 0;
 }
 
-.productDescriptionSpecial {
-  font-size: 0.9rem;
-  color: #6b7280;
-  margin: 0;
-  min-height: 40px;
-}
-
-.productPriceSpecial {
-  font-size: 1.1rem;
-  font-weight: 700;
+.product-price--dynamic {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 800;
   color: #2563eb;
-  margin-top: 0.25rem;
+  margin: 0.3rem 0 0.5rem 0;
 }
 
-.productStockSpecial {
-  font-size: 0.85rem;
-  color: #374151;
-}
-
-/* 🔹 Categorías */
-.productCategoriesSpecial {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.4rem;
-}
-
-.categoryBadgeSpecial {
-  background-color: #e0e7ff;
-  color: #3730a3;
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 0.2rem 0.6rem;
-  border-radius: 8px;
-}
-
-/* 🔹 Botón Add to Cart */
-.btnAddSpecial {
+/* ===== Botón ===== */
+.btn-add--dynamic {
   background-color: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.6rem 1rem;
-  margin-top: 0.75rem;
-  font-size: 0.9rem;
-  font-weight: 500;
+  color: #fff;
+  border: 0;
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: clamp(0.85rem, 1.3vw, 1rem);
+  font-weight: 600;
   cursor: pointer;
   transition: background-color 0.25s ease, transform 0.2s ease;
+  width: 90%;
+  max-width: 15rem;
 }
 
-.btnAddSpecial:hover {
+.btn-add--dynamic:hover {
   background-color: #1d4ed8;
-  transform: translateY(-1px);
+  transform: translateY(-0.05rem);
 }
 
-.btnAddSpecial:active {
+.btn-add--dynamic:active {
   transform: scale(0.98);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 48rem) {
+  .product-card--dynamic {
+    max-width: 92%;
+  }
+
+  .product-media--dynamic {
+    aspect-ratio: 3 / 4;
+  }
+}
+
+@media (min-width: 80rem) {
+  .product-media--dynamic {
+    aspect-ratio: 16 / 9;
+  }
 }

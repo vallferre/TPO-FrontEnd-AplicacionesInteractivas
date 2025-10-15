@@ -210,6 +210,54 @@
     'GRAD' 0,
     'opsz' 24;
 }
+/* ===========================
+   UserProducts – fila Producto
+   =========================== */
+
+/* Evita que algún .product-info global te aplaste el layout */
+.up-product-info {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1.6vw, 0.9rem);
+}
+
+/* Miniatura fluida, sin px fijos */
+.up-product-thumb {
+  inline-size: clamp(2.75rem, 7vw, 3.5rem); /* ancho adaptable */
+  aspect-ratio: 1 / 1;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #f3f4f6;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0; /* no se deforma */
+}
+
+.up-product-thumb img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Placeholder si no hay imagen */
+.up-thumb-placeholder {
+  color: #9ca3af;
+  font-size: clamp(0.7rem, 1.2vw, 0.85rem);
+}
+
+/* Nombre al lado de la imagen */
+.up-product-name {
+  font-weight: 600;
+  color: #333;
+  line-height: 1.2;
+  font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+}
+
+/* Asegura alineación vertical centrada en la tabla */
+.products-table td {
+  vertical-align: middle;
+}
 
 /* Responsive */
 @media (max-width: 768px) {

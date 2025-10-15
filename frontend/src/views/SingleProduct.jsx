@@ -1,4 +1,3 @@
-// src/views/SingleProduct.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../components/SingleProduct.css";
@@ -10,41 +9,41 @@ const SingleProduct = ({ id, name, description, price, stock, categories, image 
   const imageUrl = image ? `${API_BASE}/images/${image}` : null;
 
   const handleCardClick = (e) => {
-    if (e.target.closest(".btnAddSpecial")) return;
+    if (e.target.closest(".btn-add--dynamic")) return;
     navigate(`/product/${id}`);
   };
 
   return (
-    <div className="productCardSpecial" onClick={handleCardClick}>
-      {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={name}
-          className="productImageSpecial"
-          onError={(e) => {
-            e.currentTarget.src = "https://via.placeholder.com/400x300?text=Sin+imagen";
-          }}
-        />
-      ) : (
-        <div className="productImageSpecial placeholder">No image</div>
-      )}
+    <div className="product-card--dynamic large-card" onClick={handleCardClick}>
+      {/* Imagen principal */}
+      <div className="product-media--dynamic extra-large">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={name}
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src =
+                "https://via.placeholder.com/800x600?text=Sin+imagen";
+            }}
+          />
+        ) : (
+          <div className="product-media__placeholder--dynamic">No image</div>
+        )}
+      </div>
 
-      <div className="productInfoSpecial">
-        <h3 className="productNameSpecial">{name}</h3>
-        {description && <p className="productDescriptionSpecial">{description}</p>}
-        {price != null && <p className="productPriceSpecial">${Number(price).toLocaleString()}</p>}
-        {stock != null && <p className="productStockSpecial">Stock: {stock}</p>}
+      {/* Información */}
+      <div className="product-info--dynamic compact">
+        <h3 className="product-name--dynamic">{name}</h3>
 
-        <div className="productCategoriesSpecial">
-          {(categories || []).map((cat, i) => (
-            <span key={i} className="categoryBadgeSpecial">
-              {typeof cat === "string" ? cat : cat?.description ?? ""}
-            </span>
-          ))}
-        </div>
+        {price != null && (
+          <p className="product-price--dynamic">
+            ${Number(price).toLocaleString()}
+          </p>
+        )}
 
         <button
-          className="btnAddSpecial"
+          className="btn-add--dynamic"
           onClick={(e) => {
             e.stopPropagation();
             console.log(`Producto ${id} agregado al carrito`);

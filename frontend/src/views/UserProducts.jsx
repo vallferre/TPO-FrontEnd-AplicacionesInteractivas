@@ -3,6 +3,8 @@ import "../components/UserProducts.css";
 import "../components/DeleteConfirmationModal.css";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE = "http://localhost:8080";
+
 const DeleteConfirmationModal = ({ isOpen, onConfirm, onCancel, productName }) => {
   if (!isOpen) return null;
 
@@ -15,12 +17,8 @@ const DeleteConfirmationModal = ({ isOpen, onConfirm, onCancel, productName }) =
           This action cannot be undone.
         </p>
         <div className="modal-buttons">
-          <button className="btn-cancel" onClick={onCancel}>
-            Cancel
-          </button>
-          <button className="btn-confirm" onClick={onConfirm}>
-            Delete
-          </button>
+          <button className="btn-cancel" onClick={onCancel}>Cancel</button>
+          <button className="btn-confirm" onClick={onConfirm}>Delete</button>
         </div>
       </div>
     </div>
@@ -64,7 +62,7 @@ const UserProducts = () => {
         const formatted = data.map((p) => ({
           id: p.id,
           name: p.name,
-          img: p.imageIds?.[0] || null,
+          img: p.imageIds?.[0] ? `${API_BASE}/images/${p.imageIds[0]}` : null,
           status: p.status || "Active",
           statusClass:
             p.status === "Active"
@@ -83,7 +81,6 @@ const UserProducts = () => {
   }, [token]);
 
   const handleCreate = () => navigate("/create");
-
   const handleEdit = (productId) => navigate(`/edit/${productId}`);
 
   const handleRowClick = (e, id) => {
@@ -111,9 +108,6 @@ const UserProducts = () => {
           },
         }
       );
-
-      console.log("Response status:", response.status);
-      console.log("Response body:", await response.text());
 
       if (!response.ok) throw new Error("Error al eliminar el producto");
 
@@ -164,26 +158,25 @@ const UserProducts = () => {
                   onClick={(e) => handleRowClick(e, product.id)}
                 >
                   <td>
-                    <div className="product-info">
-                      <div className="product-img-wrapper">
+                    {/* === NUEVA ESTRUCTURA NAMESPACED PARA EVITAR CHOQUES DE CSS === */}
+                    <div className="up-product-info">
+                      <div className="up-product-thumb">
                         {product.img ? (
-                          <img
-                            src={product.img}
-                            alt={product.name}
-                            className="product-img"
-                          />
+                          <img src={product.img} alt={product.name} />
                         ) : (
-                          <div className="product-img placeholder">No image</div>
+                          <div className="up-thumb-placeholder">No image</div>
                         )}
                       </div>
-                      <span className="product-name">{product.name}</span>
+                      <span className="up-product-name">{product.name}</span>
                     </div>
                   </td>
+
                   <td>
                     <span className={`status-badge ${product.statusClass}`}>
                       {product.status}
                     </span>
                   </td>
+
                   <td className="text-center actions-cell">
                     <button
                       className="edit-btn"
