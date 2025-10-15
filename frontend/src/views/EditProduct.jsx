@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import "../components/EditProduct.css";
 import CategoryMultiSelect from "../components/CategoryMultiSelect";
 import ImageUploader from "../components/ImageUploader";
+import {toast} from "react-toastify"
 
 const API_BASE = "http://localhost:8080";
 
@@ -196,7 +197,7 @@ const EditProduct = () => {
         await uploadNewImagesSequential(id, newImages);
       }
 
-      alert("✅ Producto actualizado correctamente");
+      toast.success("✅ Producto actualizado correctamente");
       navigate(-1);
     } catch (err) {
       console.error(err);
@@ -251,9 +252,8 @@ const EditProduct = () => {
             {/* Precio y descuento */}
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="price">Price</label>
+                <label htmlFor="price">Price ($)</label>
                 <div className="price-wrapper">
-                  <span className="currency">$</span>
                   <input
                     id="price"
                     name="price"
@@ -295,7 +295,6 @@ const EditProduct = () => {
 
             {/* Categorías */}
             <div className="form-group">
-              <label>Categorías</label>
 
               {/* Wrapper que oculta la lista gris interna del multiselect SOLO aquí */}
               <div className="cms-hide-selected">

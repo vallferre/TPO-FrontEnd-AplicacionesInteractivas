@@ -104,11 +104,6 @@
 
 /* Precio con prefijo $ */
 .price-wrapper {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
   background: #fff;
   overflow: hidden;
 }

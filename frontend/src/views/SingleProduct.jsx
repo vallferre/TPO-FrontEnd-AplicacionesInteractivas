@@ -51,8 +51,6 @@ const SingleProduct = ({ id, name, description, price, stock, categories, image 
     }
 
     try {
-      // Aquí podrías llamar al endpoint de favoritos
-      // const response = await fetch(`${API_BASE}/favorites/add`, { ... });
       setIsFavorite(!isFavorite); // toggle visual
       toast.success(
       `${name} ${!isFavorite ? "added to" : "removed from"} favorites!`
