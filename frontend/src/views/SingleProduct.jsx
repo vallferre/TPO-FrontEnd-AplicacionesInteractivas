@@ -1,15 +1,35 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "../components/SingleProduct.css";
 
 const API_BASE = "http://localhost:8080";
 
-const SingleProduct = ({ id, name, description, price, stock, categories, image }) => {
+const SingleProduct = ({ id }) => {
   const navigate = useNavigate();
   const token = localStorage.getItem("jwtToken");
-  const imageUrl = image ? `${API_BASE}/images/${image}` : null;
+
+  const [product, setProduct] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // === Fetch product info ===
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/products/id/${id}`);
+        if (!res.ok) throw new Error(`Error: ${res.status}`);
+        const data = await res.json();
+        setProduct(data);
+      } catch (err) {
+        console.error("Error fetching product:", err);
+        toast.error("Failed to load product information.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id]);
 
   const handleCardClick = (e) => {
     if (e.target.closest(".btn-add--dynamic") || e.target.closest(".btn-favorite--dynamic")) return;
@@ -25,7 +45,7 @@ const SingleProduct = ({ id, name, description, price, stock, categories, image 
     }
 
     try {
-      const response = await fetch(`${API_BASE}/cart/add`, {
+      const res = await fetch(`${API_BASE}/cart/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -34,8 +54,8 @@ const SingleProduct = ({ id, name, description, price, stock, categories, image 
         body: JSON.stringify({ productId: id, quantity: 1 }),
       });
 
-      if (!response.ok) throw new Error(`Failed to add product: ${response.status}`);
-      toast.success(`${name} added to cart!`);
+      if (!res.ok) throw new Error(`Failed to add product: ${res.status}`);
+      toast.success(`${product?.name || "Product"} added to cart!`);
     } catch (err) {
       console.error("Error adding to cart:", err);
       toast.error("Failed to add product to cart. Please try again.");
@@ -43,26 +63,59 @@ const SingleProduct = ({ id, name, description, price, stock, categories, image 
   };
 
   const handleFavorite = async (e) => {
-    e.stopPropagation(); // evita navegar
+    e.stopPropagation();
     if (!token) {
-      toast.info("Please log in to add products to favorites.");
+      toast.info("Please log in to manage your favorites.");
       navigate("/login");
       return;
     }
 
     try {
-      setIsFavorite(!isFavorite); // toggle visual
+      const newFavoriteState = !isFavorite;
+      setIsFavorite(newFavoriteState);
+
+      const res = await fetch(`${API_BASE}/users/favorites`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productId: id }),
+      });
+
+      if (!res.ok) throw new Error(`Failed to update favorites: ${res.status}`);
+
       toast.success(
-      `${name} ${!isFavorite ? "added to" : "removed from"} favorites!`
-    );
+        `${product?.name || "Product"} ${
+          newFavoriteState ? "added to" : "removed from"
+        } favorites!`
+      );
     } catch (err) {
       console.error("Error updating favorites:", err);
       toast.error("Failed to update favorites. Please try again.");
+      setIsFavorite((prev) => !prev);
     }
   };
 
+  if (loading) {
+    return <div className="product-card--dynamic loading">Loading...</div>;
+  }
+
+  if (!product) {
+    return <div className="product-card--dynamic error">Product not found</div>;
+  }
+
+  // === Obtener imagen principal (la primera del array) ===
+  const mainImageUrl = product.imageIds?.[0]
+    ? `${API_BASE}/images/${product.imageIds[0]}`
+    : "https://via.placeholder.com/800x600?text=Sin+imagen";
+
   return (
-    <div className="product-card--dynamic large-card" onClick={handleCardClick} style={{ position: "relative" }}>
+    <div
+      className="product-card--dynamic large-card"
+      onClick={handleCardClick}
+      style={{ position: "relative" }}
+    >
       {/* Botón de favoritos */}
       <button
         className={`btn-favorite--dynamic ${isFavorite ? "active" : ""}`}
@@ -74,34 +127,27 @@ const SingleProduct = ({ id, name, description, price, stock, categories, image 
 
       {/* Imagen principal */}
       <div className="product-media--dynamic extra-large">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={name}
-            loading="lazy"
-            onError={(e) => {
-              e.currentTarget.src = "https://via.placeholder.com/800x600?text=Sin+imagen";
-            }}
-          />
-        ) : (
-          <div className="product-media__placeholder--dynamic">No image</div>
-        )}
+        <img
+          src={mainImageUrl}
+          alt={product.name}
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.src = "https://via.placeholder.com/800x600?text=Sin+imagen";
+          }}
+        />
       </div>
 
       {/* Información */}
       <div className="product-info--dynamic compact">
-        <h3 className="product-name--dynamic">{name}</h3>
+        <h3 className="product-name--dynamic">{product.name}</h3>
 
-        {price != null && (
+        {product.finalPrice != null && (
           <p className="product-price--dynamic">
-            ${Number(price).toLocaleString()}
+            ${Number(product.finalPrice).toLocaleString()}
           </p>
         )}
 
-        <button
-          className="btn-add--dynamic"
-          onClick={handleAddToCart}
-        >
+        <button className="btn-add--dynamic" onClick={handleAddToCart}>
           Add to Cart
         </button>
       </div>

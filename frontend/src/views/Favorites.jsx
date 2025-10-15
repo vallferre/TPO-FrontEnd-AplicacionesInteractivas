@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import SingleProduct from "../views/SingleProduct"; // importa el componente
+import SingleProduct from "../views/SingleProduct";
 import "../components/Favorites.css";
+
+const API_BASE = "http://localhost:8080";
 
 const Favorites = () => {
   const [favorites, setFavorites] = useState([]);
@@ -20,7 +22,7 @@ const Favorites = () => {
       }
 
       try {
-        const response = await fetch("http://localhost:8080/users/favorites", {
+        const response = await fetch(`${API_BASE}/users/favorites`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -54,18 +56,18 @@ const Favorites = () => {
         <p className="fade-in-subtitle">Items you've saved for later.</p>
 
         <div className="grid">
-          {favorites.map((p) => (
-            <SingleProduct
-              key={p.id}
-              id={p.id}
-              name={p.name}
-              description={p.description}
-              price={p.finalPrice}
-              stock={p.stock}
-              categories={p.categories.map((c) => c.description)} // mapeamos correctamente
-              image={p.img || "https://via.placeholder.com/300x200?text=No+Image"}
-            />
-          ))}
+          {favorites.map((p) => {
+            // Tomamos el ID de la primera imagen del producto, si existe
+            const imageId = p.images?.[0]?.id || null;
+            console.log(imageId);
+
+            return (
+              <SingleProduct
+                key={p.id}
+                id={p.id}
+              />
+            );
+          })}
         </div>
       </main>
     </div>

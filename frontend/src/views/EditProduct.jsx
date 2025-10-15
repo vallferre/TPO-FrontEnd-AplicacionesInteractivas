@@ -197,11 +197,11 @@ const EditProduct = () => {
         await uploadNewImagesSequential(id, newImages);
       }
 
-      toast.success("✅ Producto actualizado correctamente");
+      toast.success("Producto actualizado correctamente");
       navigate(-1);
     } catch (err) {
       console.error(err);
-      alert(err.message || "❌ Hubo un error al actualizar el producto");
+      alert(err.message || "Hubo un error al actualizar el producto");
     } finally {
       setSaving(false);
     }
@@ -305,8 +305,6 @@ const EditProduct = () => {
                     lockedIds={originalCategories.map(c => c.id)} // ✅ bloqueadas
                 />
               </div>
-
-              
 
               <p className="muted" style={{ marginTop: ".4rem" }}>
                 Las categorías ya asignadas están bloqueadas y no se vuelven a enviar al guardar.

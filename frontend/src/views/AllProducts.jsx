@@ -104,10 +104,8 @@ const AllProducts = () => {
                 key={producto.id + "-" + keyword + "-" + category} // clave única para reiniciar animación
               >
                 <SingleProduct
+                  key={producto.id}
                   id={producto.id}
-                  name={producto.name}
-                  image={producto.imageIds?.[0] || null}
-                  price={producto.price}
                 />
               </div>
             ))
