@@ -156,8 +156,6 @@
 }
 
 .product-image {
-  width: 64px;
-  height: 64px;
   border-radius: 8px;
   background-size: cover;
   background-position: center;

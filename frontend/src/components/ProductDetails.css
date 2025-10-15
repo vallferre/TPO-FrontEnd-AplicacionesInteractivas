@@ -23,8 +23,6 @@
 }
 
 .product-image {
-  max-height: 400px;
-  object-fit: contain;
   border-radius: 8px;
 }
 

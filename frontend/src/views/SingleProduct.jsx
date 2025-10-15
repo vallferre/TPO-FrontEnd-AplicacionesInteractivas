@@ -1,40 +1,52 @@
+// src/views/SingleProduct.jsx
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "../components/SingleProduct.css";
+
+const API_BASE = "http://localhost:8080";
 
 const SingleProduct = ({ id, name, description, price, stock, categories, image }) => {
   const navigate = useNavigate();
+  const imageUrl = image ? `${API_BASE}/images/${image}` : null;
 
   const handleCardClick = (e) => {
-    // Evita que el click en el botón dispare la navegación
-    if (e.target.closest(".btn-add")) return;
+    if (e.target.closest(".btnAddSpecial")) return;
     navigate(`/product/${id}`);
   };
 
   return (
-    <div className="product-card" key={id} onClick={handleCardClick}>
-      {image ? (
-        <img src={image} alt={name} className="product-image" />
+    <div className="productCardSpecial" onClick={handleCardClick}>
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={name}
+          className="productImageSpecial"
+          onError={(e) => {
+            e.currentTarget.src = "https://via.placeholder.com/400x300?text=Sin+imagen";
+          }}
+        />
       ) : (
-        <div className="product-image placeholder">No image</div>
+        <div className="productImageSpecial placeholder">No image</div>
       )}
 
-      <div className="product-info">
-        <h3 className="product-name">{name}</h3>
-        <p className="product-description">{description}</p>
-        <p className="product-price">${price?.toLocaleString()}</p>
-        <p className="product-stock">Stock: {stock}</p>
-        <div className="product-categories">
-          {(categories || []).map((cat, index) => (
-            <span key={index} className="category-badge">{cat}</span>
+      <div className="productInfoSpecial">
+        <h3 className="productNameSpecial">{name}</h3>
+        {description && <p className="productDescriptionSpecial">{description}</p>}
+        {price != null && <p className="productPriceSpecial">${Number(price).toLocaleString()}</p>}
+        {stock != null && <p className="productStockSpecial">Stock: {stock}</p>}
+
+        <div className="productCategoriesSpecial">
+          {(categories || []).map((cat, i) => (
+            <span key={i} className="categoryBadgeSpecial">
+              {typeof cat === "string" ? cat : cat?.description ?? ""}
+            </span>
           ))}
         </div>
 
         <button
-          className="btn-add"
+          className="btnAddSpecial"
           onClick={(e) => {
             e.stopPropagation();
-            // Acá podrías manejar el "add to cart"
             console.log(`Producto ${id} agregado al carrito`);
           }}
         >
