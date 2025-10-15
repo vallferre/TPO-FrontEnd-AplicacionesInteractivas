@@ -35,7 +35,7 @@ const SingleProduct = ({ id, name, description, price, stock, categories, image 
       });
 
       if (!response.ok) throw new Error(`Failed to add product: ${response.status}`);
-      toast.error("Failed to add product to cart. Please try again.");
+      toast.success(`${name} added to cart!`);
     } catch (err) {
       console.error("Error adding to cart:", err);
       toast.error("Failed to add product to cart. Please try again.");
