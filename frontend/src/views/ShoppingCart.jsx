@@ -1,42 +1,116 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../components/ShoppingCart.css";
 
 const ShoppingCart = () => {
+  const [cart, setCart] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const token = localStorage.getItem("jwtToken");
+
+  const fetchCart = async () => {
+    if (!token) {
+      setError("No token found. Please log in.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8080/cart", {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error(`Error ${response.status}: Failed to fetch cart`);
+      const data = await response.json();
+      setCart(data);
+    } catch (err) {
+      console.error("Error fetching cart:", err);
+      setError("Failed to fetch cart. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  const handleAdd = async (productId) => {
+    try {
+      const response = await fetch("http://localhost:8080/cart/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productId, quantity: 1 }),
+      });
+      if (!response.ok) throw new Error("Failed to add product");
+      fetchCart();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRemove = async (productId) => {
+    try {
+      const response = await fetch("http://localhost:8080/cart/remove", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productId }),
+      });
+      if (!response.ok) throw new Error("Failed to remove product");
+      fetchCart();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="app-container" style={{ padding: "2rem", textAlign: "center" }}>
+        Loading...
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="app-container" style={{ padding: "2rem", textAlign: "center", color: "red" }}>
+        {error}
+      </div>
+    );
+
+  if (!cart || !cart.items?.length)
+    return (
+      <div className="app-container" style={{ padding: "2rem", textAlign: "center" }}>
+        Your cart is empty.
+      </div>
+    );
+
   return (
     <div className="app-container" style={{ padding: "2rem", backgroundColor: "#f9fafb" }}>
-      {/* Main */}
       <main className="main" style={{ display: "flex", justifyContent: "center", alignItems: "flex-start" }}>
         <div
           className="cart-container"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "2rem",
-            maxWidth: "1100px",
-            width: "100%",
-          }}
+          style={{ display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "1100px", width: "100%" }}
         >
           <h2
             className="cart-title fade-in"
-            style={{
-              fontSize: "2rem",
-              fontWeight: "bold",
-              color: "#1e293b",
-              marginBottom: "1rem",
-            }}
+            style={{ fontSize: "2rem", fontWeight: "bold", color: "#1e293b", marginBottom: "1rem" }}
           >
             Shopping Cart
           </h2>
 
           <div
             className="cart-grid fade-in"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "3fr 1fr",
-              gap: "3rem",
-              alignItems: "start",
-            }}
+            style={{ display: "grid", gridTemplateColumns: "3fr 1fr", gap: "3rem", alignItems: "start" }}
           >
             {/* Items */}
             <div
@@ -49,114 +123,75 @@ const ShoppingCart = () => {
               }}
             >
               <ul style={{ display: "flex", flexDirection: "column", gap: "1.5rem", listStyle: "none", padding: 0 }}>
-                {/* Item 1 */}
-                <li
-                  className="cart-item"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "1.5rem",
-                    borderBottom: "1px solid #e2e8f0",
-                    paddingBottom: "1.5rem",
-                  }}
-                >
-                  <div className="item-image">
-                    <img
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCE-mj59m3h86Jn90wxXC25c1p_kY4gGzExaJ1KPO4iaIQdKGa476iULqLTftXzCJhWbx-yAzgncZ1qVpslkacLWZzuOotrFuKsjKsGxA2kOPTWVfiO0aQAZnEzGRInTAVyYh1w7a-9-mZm_geWTipc1Pk-yJ2tSx1BSP89KZmcVQV3pmmtVwFC7S8BzYTkhJg3hvE7pbX2-5brnCRLrFsIJzp4JgcWw1yyTAldTpcIjNDEzo0ms1SWXy3y949HWBimF3nwtuOsJI"
-                      alt="Limited Edition Sneakers"
-                      style={{ width: "80px", height: "80px", borderRadius: "0.5rem", objectFit: "cover" }}
-                    />
-                  </div>
-                  <div className="item-details" style={{ flex: 1 }}>
-                    <div className="item-top" style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-                      <h3 style={{ fontSize: "1.125rem", fontWeight: "600", color: "#1e293b" }}>
-                        Limited Edition Sneakers
-                      </h3>
-                      <p className="item-price" style={{ fontWeight: "500", color: "#334155" }}>
-                        $150.00
+                {cart.items.map((item, i) => (
+                  <li
+                    key={i}
+                    className="cart-item"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "1.5rem",
+                      borderBottom: "1px solid #e2e8f0",
+                      paddingBottom: "1.5rem",
+                    }}
+                  >
+                    <div className="item-image">
+                      <img
+                        src={item.imageUrl || "https://via.placeholder.com/80"}
+                        alt={item.productName}
+                        style={{ width: "80px", height: "80px", borderRadius: "0.5rem", objectFit: "cover" }}
+                      />
+                    </div>
+                    <div className="item-details" style={{ flex: 1 }}>
+                      <div
+                        className="item-top"
+                        style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}
+                      >
+                        <h3 style={{ fontSize: "1.125rem", fontWeight: "600", color: "#1e293b" }}>
+                          {item.productName}
+                        </h3>
+                        <p className="item-price" style={{ fontWeight: "500", color: "#334155" }}>
+                          ${item.priceAtAddTime.toFixed(2)}
+                        </p>
+                      </div>
+                      <p className="item-size" style={{ fontSize: "0.9rem", color: "#64748b" }}>
+                        {item.productDescription}
                       </p>
-                    </div>
-                    <p className="item-size" style={{ fontSize: "0.9rem", color: "#64748b" }}>
-                      Size 9
-                    </p>
-                    <div className="item-actions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem" }}>
-                      <div className="quantity" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <button style={{ backgroundColor: "#e2e8f0", padding: "0.3rem 0.6rem", borderRadius: "0.375rem" }}>-</button>
-                        <span>1</span>
-                        <button style={{ backgroundColor: "#e2e8f0", padding: "0.3rem 0.6rem", borderRadius: "0.375rem" }}>+</button>
+                      <div
+                        className="item-actions"
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginTop: "1rem",
+                        }}
+                      >
+                        <div className="quantity" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <button
+                            onClick={() => handleRemove(item.productId)}
+                            style={{ backgroundColor: "#e2e8f0", padding: "0.3rem 0.6rem", borderRadius: "0.375rem" }}
+                          >
+                            -
+                          </button>
+                          <span>{item.quantity}</span>
+                          <button
+                            onClick={() => handleAdd(item.productId)}
+                            style={{ backgroundColor: "#e2e8f0", padding: "0.3rem 0.6rem", borderRadius: "0.375rem" }}
+                          >
+                            +
+                          </button>
+                        </div>
+                        <button
+                          className="remove-btn"
+                          onClick={() => handleRemove(item.productId)}
+                          style={{ color: "#ef4444" }}
+                        >
+                          Remove
+                        </button>
                       </div>
-                      <button className="remove-btn" style={{ color: "#ef4444" }}>Remove</button>
                     </div>
-                  </div>
-                </li>
-
-                {/* Item 2 */}
-                <li
-                  className="cart-item"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "1.5rem",
-                    borderBottom: "1px solid #e2e8f0",
-                    paddingBottom: "1.5rem",
-                  }}
-                >
-                  <div className="item-image">
-                    <img
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuB202qCH64LOgzxnWNMtL_vUA4LZlXwuQf0GhihXjk61Ux_BRW7BAuG4Djh1_A-qlIooFp82bXSP2Of5yiHq1fLoxTSgGcFNUwcOohQZtFc08YzuQTIhG0x8_l1PCCTI3twa9IME0vesA8V0_Y8_ezwocUPD98T0LXz6ok48XQMol4uA8pVY5-M7hyzwky8H7Ll33kBn2qgEHwIFSE5QhKEGo-TsgS8hukKcy8Ll4fZlrj_FkjH_Ux46dBkx7rkNlJlXc6YUBvhD1A"
-                      alt="Vintage T-Shirt"
-                      style={{ width: "80px", height: "80px", borderRadius: "0.5rem", objectFit: "cover" }}
-                    />
-                  </div>
-                  <div className="item-details" style={{ flex: 1 }}>
-                    <div className="item-top" style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-                      <h3 style={{ fontSize: "1.125rem", fontWeight: "600", color: "#1e293b" }}>Vintage T-Shirt</h3>
-                      <p className="item-price" style={{ fontWeight: "500", color: "#334155" }}>$50.00</p>
-                    </div>
-                    <p className="item-size" style={{ fontSize: "0.9rem", color: "#64748b" }}>Size M</p>
-                    <div className="item-actions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem" }}>
-                      <div className="quantity" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <button style={{ backgroundColor: "#e2e8f0", padding: "0.3rem 0.6rem", borderRadius: "0.375rem" }}>-</button>
-                        <span>1</span>
-                        <button style={{ backgroundColor: "#e2e8f0", padding: "0.3rem 0.6rem", borderRadius: "0.375rem" }}>+</button>
-                      </div>
-                      <button className="remove-btn" style={{ color: "#ef4444" }}>Remove</button>
-                    </div>
-                  </div>
-                </li>
-
-                {/* Item 3 */}
-                <li
-                  className="cart-item"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "1.5rem",
-                  }}
-                >
-                  <div className="item-image">
-                    <img
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZHNGfhPOWgEkIEdLiJ4VMlD1ktTr9ynvh2b_qDgGbIYjHDLsPs-pWmQQo_g58feyYGuKml2MOoZw_82u__NS9HMQx3eQ728rLSIiuiES4ETUcN376bY2_owCbVT2Z_AMiLbVE_ccq6hOHEusNT8Kk0Qh0mhFEGvMX6LxJnLgJFU3oBLdkkxfnX0kq_VNeSO7tYfUv3HmDkvG0PTAfiLTzzPGMuy8CQ9laXf_ZFFbD4hVrll4wjnE9XkHqe9pFmaL2JD2_DZsaINE"
-                      alt="Collectible Action Figure"
-                      style={{ width: "80px", height: "80px", borderRadius: "0.5rem", objectFit: "cover" }}
-                    />
-                  </div>
-                  <div className="item-details" style={{ flex: 1 }}>
-                    <div className="item-top" style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-                      <h3 style={{ fontSize: "1.125rem", fontWeight: "600", color: "#1e293b" }}>Collectible Action Figure</h3>
-                      <p className="item-price" style={{ fontWeight: "500", color: "#334155" }}>$50.00</p>
-                    </div>
-                    <p className="item-size" style={{ fontSize: "0.9rem", color: "#64748b" }}>Standard</p>
-                    <div className="item-actions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem" }}>
-                      <div className="quantity" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <button style={{ backgroundColor: "#e2e8f0", padding: "0.3rem 0.6rem", borderRadius: "0.375rem" }}>-</button>
-                        <span>1</span>
-                        <button style={{ backgroundColor: "#e2e8f0", padding: "0.3rem 0.6rem", borderRadius: "0.375rem" }}>+</button>
-                      </div>
-                      <button className="remove-btn" style={{ color: "#ef4444" }}>Remove</button>
-                    </div>
-                  </div>
-                </li>
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -175,20 +210,19 @@ const ShoppingCart = () => {
               <div className="summary-details" style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 <div className="summary-row" style={{ display: "flex", justifyContent: "space-between" }}>
                   <p>Subtotal</p>
-                  <p>$250.00</p>
+                  <p>${cart.total.toFixed(2)}</p>
                 </div>
                 <div className="summary-row" style={{ display: "flex", justifyContent: "space-between" }}>
                   <p>Shipping</p>
                   <p>Free</p>
                 </div>
-                <div className="summary-row" style={{ display: "flex", justifyContent: "space-between" }}>
-                  <p>Estimated Tax</p>
-                  <p>$20.00</p>
-                </div>
                 <div className="divider" style={{ borderTop: "1px solid #e2e8f0", margin: "0.75rem 0" }}></div>
-                <div className="summary-row total" style={{ display: "flex", justifyContent: "space-between", fontWeight: "600" }}>
+                <div
+                  className="summary-row total"
+                  style={{ display: "flex", justifyContent: "space-between", fontWeight: "600" }}
+                >
                   <p>Total</p>
-                  <p>$270.00</p>
+                  <p>${cart.total.toFixed(2)}</p>
                 </div>
               </div>
               <button
