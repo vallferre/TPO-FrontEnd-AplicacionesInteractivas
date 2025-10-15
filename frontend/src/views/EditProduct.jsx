@@ -1,119 +1,213 @@
+// src/views/EditProduct.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import CategoryMultiSelect from "../components/CategoryMultiSelect";
 import "../components/EditProduct.css";
+import CategoryMultiSelect from "../components/CategoryMultiSelect";
+import ImageUploader from "../components/ImageUploader";
 
 const API_BASE = "http://localhost:8080";
+
+function authHeaders() {
+  const t = localStorage.getItem("jwtToken");
+  return t ? { Authorization: `Bearer ${t}` } : {};
+}
 
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [product, setProduct] = useState(null);
-  const [categories, setCategories] = useState([]); // categorías seleccionadas del producto
-  const [allCategories, setAllCategories] = useState([]); // todas las categorías disponibles
+  // Campos base
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [stock, setStock] = useState(0);
+
+  // Categorías
+  const [originalCategories, setOriginalCategories] = useState([]); // [{id, description}] bloqueadas
+  const [selectedCategories, setSelectedCategories] = useState([]); // originales + nuevas
+
+  // Imágenes
+  const [existingImages, setExistingImages] = useState([]); // [{id, filename, ...}]
+  const [newImages, setNewImages] = useState([]); // File[]
+
+  // Estado
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  // 🔹 Obtener el producto
+  // Helpers fetch
+  const fetchProduct = async () => {
+    const res = await fetch(`${API_BASE}/products/id/${id}`, {
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error(`Error producto: ${res.status}`);
+    return res.json();
+  };
+
+  const fetchAllCategories = async () => {
+    const res = await fetch(`${API_BASE}/categories`, {
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error(`Error categorías: ${res.status}`);
+    const data = await res.json();
+    return data.content || [];
+  };
+
+  const fetchExistingImages = async () => {
+    const res = await fetch(`${API_BASE}/products/${id}/images`, {
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) return [];
+    return res.json();
+  };
+
   useEffect(() => {
-    const fetchProduct = async () => {
+    const load = async () => {
       try {
-        const resProduct = await fetch(`${API_BASE}/products/id/${id}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
+        setLoading(true);
+        setError("");
 
-        if (!resProduct.ok) throw new Error(`Error: ${resProduct.status}`);
-        const data = await resProduct.json();
-        setProduct(data);
+        const [product, catsList, imgs] = await Promise.all([
+          fetchProduct(),
+          fetchAllCategories(),
+          fetchExistingImages(),
+        ]);
 
-        // Cargar categorías actuales del producto
-        if (data.categories && Array.isArray(data.categories)) {
-          setCategories(data.categories);
-        }
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
+        setName(product.name ?? "");
+        setDescription(product.description ?? "");
+        setPrice(String(product.price ?? "")); // sin pattern para evitar falsos errores
+        setDiscount(Number(product.discount ?? 0));
+        setStock(Number(product.quantity ?? product.stock ?? 0));
+
+        // Mapear categorías del producto (strings) -> objetos {id, description}
+        const prodCats = Array.isArray(product.categories) ? product.categories : [];
+        const mappedOriginals = prodCats
+          .map((desc) => catsList.find((c) => c.description === desc))
+          .filter(Boolean);
+
+        setOriginalCategories(mappedOriginals);
+        setSelectedCategories(mappedOriginals); // al inicio = solo originales
+
+        setExistingImages(Array.isArray(imgs) ? imgs : []);
+      } catch (e) {
+        console.error(e);
+        setError("No se pudo cargar el producto.");
       } finally {
         setLoading(false);
       }
     };
-
-    fetchProduct();
+    load();
   }, [id]);
 
-  // 🔹 Obtener todas las categorías
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/categories`, {
-          headers: { "Content-Type": "application/json" },
-        });
-        if (!res.ok) throw new Error("Error al cargar categorías");
-        const data = await res.json();
-        setAllCategories(data.content || data || []); // por si cambia el formato
-      } catch (err) {
-        console.error("Error cargando categorías:", err);
-      }
-    };
+  // CategoryMultiSelect: nunca permitir quitar originales
+  const handleCategoriesChange = (picked) => {
+    // picked: arreglo devuelto por el selector (posibles nuevas)
+    const merged = [
+      ...originalCategories,
+      ...picked.filter((c) => !originalCategories.some((o) => o.id === c.id)),
+    ];
+    setSelectedCategories(merged);
+  };
 
-    fetchCategories();
-  }, []);
+  // Imágenes
+  const handleRemoveExistingImage = async (imageId) => {
+    if (!confirm("¿Eliminar esta imagen definitivamente?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/images/${imageId}`, {
+        method: "DELETE",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+      });
+      if (!res.ok) throw new Error(`Error al eliminar (HTTP ${res.status})`);
+      setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo eliminar la imagen.");
+    }
+  };
+
+  const handleRemoveNewImage = (idx) => {
+    setNewImages((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const uploadNewImagesSequential = async (productId, files) => {
+    for (const file of files) {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch(`${API_BASE}/products/${productId}/images`, {
+        method: "POST",
+        headers: { ...authHeaders() }, // NO setear Content-Type con FormData
+        body: fd,
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(
+          `Error subiendo "${file.name}" (HTTP ${res.status}) ${text || ""}`
+        );
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const token = localStorage.getItem("jwtToken");
     if (!token) {
-      alert("⚠️ No se encontró el token. Iniciá sesión nuevamente.");
+      alert("⚠️ Iniciá sesión nuevamente.");
       return;
     }
 
-    if (categories.length === 0) {
-      alert("Debe seleccionar al menos una categoría.");
-      return;
-    }
+    // Solo categorías NUEVAS (las que no están en originalCategories)
+    const newOnly = selectedCategories.filter(
+      (c) => !originalCategories.some((o) => o.id === c.id)
+    );
 
-    // Convertimos el array de objetos a array de strings (IDs o nombres)
-    const selectedCategoryStrings = categories.map(cat => cat.id); // o cat.description si tu backend quiere nombres
-
-    const updatedProduct = {
-      name: e.target.name.value.trim(),
-      description: e.target.description.value.trim(),
-      categories: selectedCategoryStrings, // 👈 ahora es un array de strings
-      price: parseFloat(e.target.price.value),
-      discount: parseInt(e.target.discount.value),
-      quantity: parseInt(e.target.quantity.value),
+    const payload = {
+      name: name.trim(),
+      description: description.trim(),
+      price: Number(price),
+      discount: Number(discount) || 0,
+      quantity: Number(stock),
+      // Solo mandamos 'categories' si hay nuevas → evita el 400 del backend
+      ...(newOnly.length > 0 && {
+        categories: newOnly.map((c) => c.description),
+      }),
     };
 
     try {
+      setSaving(true);
+
+      // 1) actualizar producto
       const res = await fetch(`${API_BASE}/products/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          ...authHeaders(),
         },
-        body: JSON.stringify(updatedProduct),
+        body: JSON.stringify(payload),
       });
-
       if (!res.ok) {
         const msg = await res.text();
-        throw new Error(`Error al actualizar producto: ${msg}`);
+        throw new Error(`Error al actualizar: ${msg || res.status}`);
+      }
+
+      // 2) subir nuevas imágenes
+      if (newImages.length > 0) {
+        await uploadNewImagesSequential(id, newImages);
       }
 
       alert("✅ Producto actualizado correctamente");
       navigate(-1);
     } catch (err) {
-      console.error("Error actualizando producto:", err);
-      alert("❌ Hubo un error al actualizar el producto");
+      console.error(err);
+      alert(err.message || "❌ Hubo un error al actualizar el producto");
+    } finally {
+      setSaving(false);
     }
   };
 
-
   if (loading) return <p>Cargando producto...</p>;
   if (error) return <p className="error">{error}</p>;
-  if (!product) return <p>No se encontró el producto.</p>;
 
   return (
     <div className="edit-page">
@@ -132,10 +226,11 @@ const EditProduct = () => {
                 id="name"
                 name="name"
                 type="text"
-                defaultValue={product.name || ""}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 required
-                pattern="^[A-Za-z0-9\\s]{1,100}$"
-                title="Solo letras, números y espacios (máx 100 caracteres)"
+                maxLength={100}
+                title="Máx 100 caracteres"
               />
             </div>
 
@@ -146,25 +241,11 @@ const EditProduct = () => {
                 id="description"
                 name="description"
                 rows="4"
-                defaultValue={product.description || ""}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 required
                 maxLength={500}
-                title="Máx 500 caracteres"
-              ></textarea>
-            </div>
-
-            {/* Categorías */}
-            <div className="form-group full">
-              <label>Categorías</label>
-              <CategoryMultiSelect
-                selected={categories}
-                onChange={setCategories}
-                apiBase={API_BASE}
-                allCategories={allCategories}
               />
-              {categories.length === 0 && (
-                <p className="error">Debe seleccionar al menos una categoría.</p>
-              )}
             </div>
 
             {/* Precio y descuento */}
@@ -176,68 +257,169 @@ const EditProduct = () => {
                   <input
                     id="price"
                     name="price"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    defaultValue={product.price?.toFixed(2) || ""}
-                    required
+                    type="text"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="Ej: 199.99"
+                    title="Solo números positivos, opcional hasta 2 decimales"
                   />
                 </div>
               </div>
+
               <div className="form-group">
                 <label htmlFor="discount">Discount (%)</label>
                 <input
                   id="discount"
                   name="discount"
                   type="number"
-                  defaultValue={product.discount || 0}
-                  required
+                  value={discount}
+                  onChange={(e) => setDiscount(e.target.value)}
                   min={0}
                   max={99}
                 />
               </div>
             </div>
 
-            {/* Cantidad */}
+            {/* Stock */}
             <div className="form-group">
               <label htmlFor="quantity">Quantity</label>
               <input
                 id="quantity"
                 name="quantity"
                 type="number"
-                defaultValue={product.quantity || 0}
-                required
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
                 min={0}
               />
             </div>
 
-            {/* Fotos */}
+            {/* Categorías */}
             <div className="form-group">
-              <label>Photos</label>
-              <div className="upload-box">
-                <span className="upload-icon">📷</span>
-                <p>
-                  <label htmlFor="photo-upload" className="upload-link">
-                    Upload a file
-                    <input id="photo-upload" type="file" multiple hidden />
-                  </label>
-                  &nbsp;or drag and drop
-                </p>
-                <p className="upload-note">PNG, JPG, GIF up to 10MB</p>
+              <label>Categorías</label>
+
+              {/* Wrapper que oculta la lista gris interna del multiselect SOLO aquí */}
+              <div className="cms-hide-selected">
+                <CategoryMultiSelect
+                    apiBase={API_BASE}
+                    selected={selectedCategories}
+                    onChange={handleCategoriesChange}
+                />
               </div>
+
+              {/* Chips visibles controladas por EditProduct */}
+              {selectedCategories.length > 0 && (
+                <div className="chips-row">
+                  {selectedCategories.map((c) => {
+                    const isOriginal = originalCategories.some((o) => o.id === c.id);
+                    return (
+                      <span
+                        key={c.id}
+                        className={`chip ${isOriginal ? "chip-locked" : ""}`}
+                        title={isOriginal ? "Asignada previamente" : "Nueva"}
+                      >
+                        {c.description}
+                        {!isOriginal && (
+                          <button
+                            type="button"
+                            className="chip-x"
+                            onClick={() =>
+                              setSelectedCategories((prev) =>
+                                prev.filter((x) => x.id !== c.id)
+                              )
+                            }
+                            aria-label={`Remove ${c.description}`}
+                          >
+                            ×
+                          </button>
+                        )}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+
+              <p className="muted" style={{ marginTop: ".4rem" }}>
+                Las categorías ya asignadas están bloqueadas y no se vuelven a enviar al guardar.
+              </p>
             </div>
 
-            {/* Botones */}
+            {/* Imágenes existentes */}
+            <div className="form-group">
+              <label>Existing Photos</label>
+              {existingImages.length === 0 ? (
+                <p className="muted">No images uploaded yet.</p>
+              ) : (
+                <div className="thumbs-grid">
+                  {existingImages.map((img) => (
+                    <div key={img.id} className="thumb-card">
+                      <img
+                        src={`${API_BASE}/images/${img.id}`}
+                        alt={img.filename || `image-${img.id}`}
+                        onError={(e) => {
+                          e.currentTarget.src =
+                            "https://via.placeholder.com/200x200?text=No+image";
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="thumb-remove"
+                        onClick={() => handleRemoveExistingImage(img.id)}
+                        title="Eliminar imagen"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Imágenes nuevas */}
+            <div className="form-group">
+              <label>Nuevas fotos</label>
+              <ImageUploader onImagesChange={setNewImages} />
+              {newImages.length > 0 && (
+                <>
+                  <p className="muted" style={{ marginTop: ".5rem" }}>
+                    Aún no guardadas — se subirán al guardar.
+                  </p>
+                  <div className="thumbs-grid">
+                    {newImages.map((file, idx) => {
+                      const src = URL.createObjectURL(file);
+                      return (
+                        <div key={idx} className="thumb-card">
+                          <img
+                            src={src}
+                            alt={file.name}
+                            onLoad={() => URL.revokeObjectURL(src)}
+                          />
+                          <button
+                            type="button"
+                            className="thumb-remove"
+                            onClick={() => handleRemoveNewImage(idx)}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Acciones */}
             <div className="form-actions">
               <button
                 type="button"
                 className="btn cancel"
                 onClick={() => navigate(-1)}
+                disabled={saving}
               >
                 Cancel
               </button>
-              <button type="submit" className="btn save">
-                Save Changes
+              <button type="submit" className="btn save" disabled={saving}>
+                {saving ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </form>
