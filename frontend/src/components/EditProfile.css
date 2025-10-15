@@ -180,3 +180,78 @@
 .edit-profile-header p {
   animation-delay: 0.4s;
 }
+/* ---------- chips categorías ---------- */
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: .5rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  background: #e5f0ff;
+  color: #0f49c2;
+  border-radius: 9999px;
+  padding: .35rem .7rem;
+  font-size: .85rem;
+  font-weight: 600;
+}
+
+.chip .chip-x {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* ---------- thumbnails imágenes ---------- */
+.thumbs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: .75rem;
+  margin-top: .5rem;
+}
+
+.thumb-card {
+  position: relative;
+  border: 1px solid #e5e7eb;
+  border-radius: .5rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+.thumb-card img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+.thumb-remove {
+  position: absolute;
+  right: .5rem;
+  bottom: .5rem;
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  border-radius: .4rem;
+  padding: .35rem .6rem;
+  font-size: .8rem;
+  cursor: pointer;
+}
+
+.thumb-remove:hover {
+  opacity: .9;
+}
+
+.muted {
+  color: #6b7280;
+  font-size: .9rem;
+}
+
