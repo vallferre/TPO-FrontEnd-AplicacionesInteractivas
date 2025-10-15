@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../components/LandingPage.css";
+import CategoryCard from "../components/CategoryCard";
 
 export default function LandingPage() {
   const [categories, setCategories] = useState([]);
@@ -44,23 +45,12 @@ export default function LandingPage() {
           <h2 className="fade-down" style={{ animationDelay: "0s" }}>Featured Collections</h2>
           <div className="grid grid-4">
             {categories.map((cat, index) => (
-              <div
+              <CategoryCard
                 key={cat.id}
-                className="card category-card fade-down"
-                style={{ animationDelay: `${index * 0.2}s` }}
-                onClick={() => handleCategoryClick(cat.id)}
-              >
-                <img
-                  src={`https://via.placeholder.com/300x200?text=${encodeURIComponent(cat.description)}`}
-                  alt={cat.description}
-                />
-                <p
-                  className="fade-text"
-                  style={{ animationDelay: `${index * 0.2 + 0.2}s` }}
-                >
-                  {cat.description}
-                </p>
-              </div>
+                category={cat}
+                index={index}
+                onClick={handleCategoryClick}
+              />
             ))}
           </div>
         </section>
