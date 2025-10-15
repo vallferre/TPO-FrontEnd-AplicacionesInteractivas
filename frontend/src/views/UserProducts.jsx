@@ -11,7 +11,7 @@ const DeleteConfirmationModal = ({ isOpen, onConfirm, onCancel, productName }) =
       <div className="modal-container">
         <h2>Delete Product</h2>
         <p>
-          Are you sure you want to delete <strong>{productName}</strong>?<br />
+          Are you sure you want to delete <strong>"{productName}"</strong>?<br />
           This action cannot be undone.
         </p>
         <div className="modal-buttons">
@@ -87,7 +87,6 @@ const UserProducts = () => {
   const handleEdit = (productId) => navigate(`/edit/${productId}`);
 
   const handleRowClick = (e, id) => {
-    // 🔹 Evitamos que botones dentro de la fila disparen la navegación
     if (e.target.closest(".edit-btn") || e.target.closest(".delete-btn")) return;
     navigate(`/edit/${id}`);
   };
@@ -131,69 +130,84 @@ const UserProducts = () => {
     <div className="user-products-container">
       <div className="user-products-header">
         <h1>My Products</h1>
-        <button className="create-btn" onClick={handleCreate}>
-          <span className="material-symbols-outlined">add</span>
-          Create Product
-        </button>
+        <div className="user-products-subheader">
+          <p>Manage and track your product listings</p>
+          <button className="create-btn" onClick={handleCreate}>
+            <span className="material-symbols-outlined">add</span>
+            Create Product
+          </button>
+        </div>
       </div>
 
-      {loading && <p>Cargando productos...</p>}
+      {loading && <p>Loading products...</p>}
       {error && <p className="error">{error}</p>}
 
-      <div className="products-table-wrapper">
-        <table className="products-table">
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th className="text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product, idx) => (
-              <tr
-                key={idx}
-                className="product-row"
-                onClick={(e) => handleRowClick(e, product.id)}
-              >
-                <td>
-                  <div className="product-info">
-                    <div className="product-img-wrapper">
-                      {product.img ? (
-                        <img
-                          src={product.img}
-                          alt={product.name}
-                          className="product-img"
-                        />
-                      ) : (
-                        <div className="product-img placeholder">No image</div>
-                      )}
-                    </div>
-                    <span className="product-name">{product.name}</span>
-                  </div>
-                </td>
-                <td className="text-center actions-cell">
-                  <button
-                    className="edit-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(product.id);
-                    }}
-                  >
-                    <span className="material-symbols-outlined">edit</span>
-                  </button>
-
-                  <button
-                    className="delete-btn"
-                    onClick={(e) => handleDeleteClick(e, product)}
-                  >
-                    <span className="material-symbols-outlined">delete</span>
-                  </button>
-                </td>
+      {!loading && !error && products.length === 0 ? (
+        <div className="empty-products">
+          <p>You don't have any products yet.</p>
+        </div>
+      ) : (
+        <div className="products-table-wrapper">
+          <table className="products-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Status</th>
+                <th className="text-center">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {products.map((product, idx) => (
+                <tr
+                  key={idx}
+                  className="product-row"
+                  onClick={(e) => handleRowClick(e, product.id)}
+                >
+                  <td>
+                    <div className="product-info">
+                      <div className="product-img-wrapper">
+                        {product.img ? (
+                          <img
+                            src={product.img}
+                            alt={product.name}
+                            className="product-img"
+                          />
+                        ) : (
+                          <div className="product-img placeholder">No image</div>
+                        )}
+                      </div>
+                      <span className="product-name">{product.name}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span className={`status-badge ${product.statusClass}`}>
+                      {product.status}
+                    </span>
+                  </td>
+                  <td className="text-center actions-cell">
+                    <button
+                      className="edit-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(product.id);
+                      }}
+                    >
+                      <span className="material-symbols-outlined">edit</span>
+                    </button>
+
+                    <button
+                      className="delete-btn"
+                      onClick={(e) => handleDeleteClick(e, product)}
+                    >
+                      <span className="material-symbols-outlined">delete</span>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <DeleteConfirmationModal
         isOpen={modalOpen}

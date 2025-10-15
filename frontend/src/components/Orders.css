@@ -36,10 +36,11 @@
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.2s ease;
+  color: white;
 }
 
 .sort-button:hover {
-  background: #e9ecef;
+  background: #2d4a6b;
 }
 
 .orders-list {
@@ -69,8 +70,14 @@
 .order-basic-info {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 16px;
+}
+
+.order-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .order-title {
@@ -78,6 +85,11 @@
   color: #333;
   font-size: 1.3rem;
   font-weight: 600;
+}
+
+.order-date {
+  color: #666;
+  font-size: 0.85rem;
 }
 
 .order-stats {

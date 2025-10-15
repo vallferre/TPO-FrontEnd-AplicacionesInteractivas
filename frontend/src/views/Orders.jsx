@@ -20,6 +20,16 @@ const Orders = () => {
     navigate(`/order/${orderId}`);
   };
 
+  // ✅ Función para formatear fecha (sin hora)
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
   useEffect(() => {
     const fetchOrders = async () => {
       setLoading(true);
@@ -77,16 +87,19 @@ const Orders = () => {
           >
             <div className="order-card-content">
               <div className="order-basic-info">
-                <h3 className="order-title">Order #{order.orderId}</h3>
+                <div className="order-left">
+                  <h3 className="order-title">Order #{order.orderId}</h3>
+                  {order.orderDate && (
+                    <span className="order-date">{formatDate(order.orderDate)}</span>
+                  )}
+                </div>
                 <div className="order-stats">
                   <span className="items-count">{order.count} items</span>
                   <span className="total-amount">${order.totalAmount}</span>
                 </div>
               </div>
 
-              <div className="view-details">
-                Click to view details →
-              </div>
+              <div className="view-details">Click to view details →</div>
             </div>
           </div>
         ))}
@@ -100,7 +113,10 @@ const Orders = () => {
           <span>
             Page {page + 1} of {totalPages}
           </span>
-          <button onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page + 1 === totalPages}>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page + 1 === totalPages}
+          >
             Next →
           </button>
         </div>
