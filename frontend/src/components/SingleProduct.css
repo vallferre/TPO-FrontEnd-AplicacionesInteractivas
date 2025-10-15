@@ -117,3 +117,35 @@
     aspect-ratio: 16 / 9;
   }
 }
+button{
+  padding: 0;
+}
+
+.btn-favorite--dynamic {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 2.8rem;               /* ancho del círculo */
+  height: 2.8rem;              /* alto igual que el ancho para que sea círculo */
+  border-radius: 50%;           /* círculo perfecto */
+  background-color: rgba(255, 255, 255, 0.9); /* fondo semi-transparente */
+  border: none;
+  display: grid;                /* centra el contenido */
+  place-items: center;          /* centra la estrella */
+  font-size: 1.5rem;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s, background-color 0.2s;
+  z-index: 10;                  /* encima de la imagen */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.btn-favorite--dynamic.active {
+  color: gold;
+}
+
+.btn-favorite--dynamic:hover {
+  color: gold;
+  background-color: rgba(255, 255, 255, 1); /* fondo sólido al hover */
+}
+

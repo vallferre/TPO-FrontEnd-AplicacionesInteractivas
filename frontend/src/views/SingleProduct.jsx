@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import "../components/SingleProduct.css";
 
 const API_BASE = "http://localhost:8080";
@@ -8,17 +9,17 @@ const SingleProduct = ({ id, name, description, price, stock, categories, image 
   const navigate = useNavigate();
   const token = localStorage.getItem("jwtToken");
   const imageUrl = image ? `${API_BASE}/images/${image}` : null;
+  const [isFavorite, setIsFavorite] = useState(false);
 
   const handleCardClick = (e) => {
-    if (e.target.closest(".btn-add--dynamic")) return; // evita navegar al hacer click en el botón
+    if (e.target.closest(".btn-add--dynamic") || e.target.closest(".btn-favorite--dynamic")) return;
     navigate(`/product/${id}`);
   };
 
   const handleAddToCart = async (e) => {
-    e.stopPropagation(); // no dispara navigate
-
+    e.stopPropagation();
     if (!token) {
-      alert("Please log in to add products to the cart.");
+      toast.info("Please log in to add products to the cart.");
       navigate("/login");
       return;
     }
@@ -34,15 +35,45 @@ const SingleProduct = ({ id, name, description, price, stock, categories, image 
       });
 
       if (!response.ok) throw new Error(`Failed to add product: ${response.status}`);
-      alert(`${name} added to cart!`);
+      toast.error("Failed to add product to cart. Please try again.");
     } catch (err) {
       console.error("Error adding to cart:", err);
-      alert("Failed to add product to cart. Please try again.");
+      toast.error("Failed to add product to cart. Please try again.");
+    }
+  };
+
+  const handleFavorite = async (e) => {
+    e.stopPropagation(); // evita navegar
+    if (!token) {
+      toast.info("Please log in to add products to favorites.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      // Aquí podrías llamar al endpoint de favoritos
+      // const response = await fetch(`${API_BASE}/favorites/add`, { ... });
+      setIsFavorite(!isFavorite); // toggle visual
+      toast.success(
+      `${name} ${!isFavorite ? "added to" : "removed from"} favorites!`
+    );
+    } catch (err) {
+      console.error("Error updating favorites:", err);
+      toast.error("Failed to update favorites. Please try again.");
     }
   };
 
   return (
-    <div className="product-card--dynamic large-card" onClick={handleCardClick}>
+    <div className="product-card--dynamic large-card" onClick={handleCardClick} style={{ position: "relative" }}>
+      {/* Botón de favoritos */}
+      <button
+        className={`btn-favorite--dynamic ${isFavorite ? "active" : ""}`}
+        onClick={handleFavorite}
+        title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+      >
+        {isFavorite ? "★" : "☆"}
+      </button>
+
       {/* Imagen principal */}
       <div className="product-media--dynamic extra-large">
         {imageUrl ? (
