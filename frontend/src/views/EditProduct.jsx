@@ -167,7 +167,7 @@ const EditProduct = () => {
       description: description.trim(),
       price: Number(price),
       discount: Number(discount) || 0,
-      quantity: Number(stock),
+      stock: Number.isFinite(Number(stock)) ? parseInt(stock, 10) : 0,
       // Solo mandamos 'categories' si hay nuevas → evita el 400 del backend
       ...(newOnly.length > 0 && {
         categories: newOnly.map((c) => c.description),
@@ -303,40 +303,11 @@ const EditProduct = () => {
                     apiBase={API_BASE}
                     selected={selectedCategories}
                     onChange={handleCategoriesChange}
+                    lockedIds={originalCategories.map(c => c.id)} // ✅ bloqueadas
                 />
               </div>
 
-              {/* Chips visibles controladas por EditProduct */}
-              {selectedCategories.length > 0 && (
-                <div className="chips-row">
-                  {selectedCategories.map((c) => {
-                    const isOriginal = originalCategories.some((o) => o.id === c.id);
-                    return (
-                      <span
-                        key={c.id}
-                        className={`chip ${isOriginal ? "chip-locked" : ""}`}
-                        title={isOriginal ? "Asignada previamente" : "Nueva"}
-                      >
-                        {c.description}
-                        {!isOriginal && (
-                          <button
-                            type="button"
-                            className="chip-x"
-                            onClick={() =>
-                              setSelectedCategories((prev) =>
-                                prev.filter((x) => x.id !== c.id)
-                              )
-                            }
-                            aria-label={`Remove ${c.description}`}
-                          >
-                            ×
-                          </button>
-                        )}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
+              
 
               <p className="muted" style={{ marginTop: ".4rem" }}>
                 Las categorías ya asignadas están bloqueadas y no se vuelven a enviar al guardar.
@@ -383,27 +354,6 @@ const EditProduct = () => {
                   <p className="muted" style={{ marginTop: ".5rem" }}>
                     Aún no guardadas — se subirán al guardar.
                   </p>
-                  <div className="thumbs-grid">
-                    {newImages.map((file, idx) => {
-                      const src = URL.createObjectURL(file);
-                      return (
-                        <div key={idx} className="thumb-card">
-                          <img
-                            src={src}
-                            alt={file.name}
-                            onLoad={() => URL.revokeObjectURL(src)}
-                          />
-                          <button
-                            type="button"
-                            className="thumb-remove"
-                            onClick={() => handleRemoveNewImage(idx)}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
                 </>
               )}
             </div>

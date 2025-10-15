@@ -1,3 +1,6 @@
+/* =========================
+   ProductDetails.css – Estilos completos y centrados
+   ========================= */
 .product-details {
   display: grid;
   grid-template-columns: 1fr;

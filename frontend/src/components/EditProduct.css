@@ -1,5 +1,5 @@
 /* =========================
-   Edit Product – Base Layout
+   Edit Product.css – Base Layout
    ========================= */
 .edit-page {
   inline-size: 100%;
@@ -284,30 +284,14 @@
     inline-size: 100%;
   }
 }
-/* ===== Ocultar lista interna “gris” del CategoryMultiSelect SOLO en EditProduct ===== */
-
-/* Caso más robusto: muchas libs renderizan una fila de chips como primer hijo */
-.cms-hide-selected > * > :first-child {
-  display: none !important;
+/* Eleva el multiselect y evita recortes solo en EditProduct */
+.cms-hide-selected {
+  position: relative;      /* crea un stacking context local */
+  z-index: 50;             /* por encima del resto del form */
+  overflow: visible !important;  /* que no recorte el dropdown */
 }
 
-/* Extras por si tu CategoryMultiSelect usa clases comunes para esa fila */
-.cms-hide-selected :where(.cms-selected,
-                          .selected,
-                          .selected-list,
-                          .chips,
-                          .tags,
-                          .chosen,
-                          .tokens) {
-  display: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* No tocar el input ni el dropdown del selector */
-.cms-hide-selected input,
-.cms-hide-selected .cms-input,
-.cms-hide-selected .cms-menu {
-  display: initial;
-  visibility: initial;
+.cms-hide-selected .catms__dropdown {
+  position: absolute;      /* clave para superponer */
+  z-index: 9999;           /* bien arriba */
 }

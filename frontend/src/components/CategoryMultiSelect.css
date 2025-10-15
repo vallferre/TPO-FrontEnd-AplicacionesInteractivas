@@ -1,5 +1,8 @@
-/* ==== CategoryMultiSelect – Estilos completos y centrados ==== */
+/* =========================================================
+   CategoryMultiSelect.css
+   ========================================================= */
 
+/* --- Contenedor principal --- */
 .catms {
   display: flex;
   flex-direction: column;
@@ -7,150 +10,154 @@
   width: 100%;
   color: #111827;
   font-family: inherit;
+  position: relative;
+  z-index: 50;
 }
 
+/* --- Etiqueta --- */
 .catms__label {
+  font-size: 0.9rem;
   font-weight: 600;
-  font-size: 0.95rem;
+  color: #1f2937;
 }
 
-/* --- Chips seleccionadas --- */
+/* --- Chips (categorías seleccionadas) --- */
 .catms__chips {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 2px;
 }
 
 .catms__chip {
-  background: #f3f4f6;
-  color: #1f2937;
-  padding: 4px 10px;
-  border-radius: 12px;
   display: inline-flex;
   align-items: center;
+  gap: 4px;
+  padding: 0.35rem 0.6rem;
+  border-radius: 9999px;
+  background: #eaf0ff;
+  color: #1e3a8a;
+  font-weight: 600;
   font-size: 0.9rem;
+  border: 1px solid rgba(30, 58, 138, 0.15);
 }
 
 .catms__chip-close {
-  background: none;
-  border: none;
-  color: #6b7280;
-  margin-left: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  transition: color 0.2s ease;
-}
-
-.catms__chip-close:hover {
-  color: #374151;
-}
-
-/* --- Contenedor del input --- */
-.catms__inputwrap {
-  position: relative;
-  width: 100%;
-}
-
-/* --- Input de búsqueda --- */
-.catms__input {
-  width: 100%;
-  font-size: 0.95rem;
-  height: 42px; /* Altura uniforme */
-  padding: 0 44px 0 12px; /* espacio derecho para la flecha */
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  color: #111827;
-  background: #fff;
-  box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.catms__input:focus {
-  outline: none;
-  border-color: #93c5fd;
-  box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.35);
-}
-
-/* --- Botón flecha ▼ --- */
-.catms__toggle {
-  position: absolute;
-  top: 50%;
-  right: 8px;
-  transform: translateY(-50%);
-  height: 28px;
-  width: 32px;
   border: none;
   background: transparent;
   cursor: pointer;
+  color: #1e3a8a;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* --- Input --- */
+.catms__inputwrap {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  color: #6b7280;
-  transition: background 0.2s ease, color 0.2s ease;
 }
 
-.catms__toggle:hover {
-  background: #f3f4f6;
-  color: #374151;
-}
-
-/* --- Icono de flecha --- */
-.catms__caret {
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 6px solid #6b7280;
-}
-
-/* --- Dropdown (lista de categorías) --- */
-.catms__dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  z-index: 20;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  max-height: 240px;
-  overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-
-/* --- Items dentro del dropdown --- */
-.catms__item,
-.catms__itembtn {
+.catms__input {
   width: 100%;
-  text-align: left;
-  padding: 0.6rem 1rem;
+  padding: 0.6rem 2.5rem 0.6rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #1f2937;
   font-size: 0.95rem;
-  color: #111827;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.catms__item {
-  background: #fff;
+.catms__input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-.catms__item--error {
-  color: #ef4444;
-}
-
-.catms__itembtn {
-  background: #fff;
+/* --- Botón caret --- */
+.catms__toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
   border: none;
   cursor: pointer;
-  transition: background 0.2s ease;
+  padding: 4px;
+}
+
+.catms__caret {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #475569;
+  border-bottom: 2px solid #475569;
+  transform: rotate(45deg);
+  margin-top: -2px;
+  transition: transform 0.2s ease;
+}
+
+.catms__toggle[aria-label="Cerrar lista"] .catms__caret {
+  transform: rotate(-135deg);
+}
+
+/* =========================================================
+   🔽 DROPDOWN (lista de categorías)
+   ========================================================= */
+
+/* Se posiciona mediante portal (fixed) */
+.catms__dropdown {
+  max-height: 300px;
+  overflow-y: auto;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+  color: #1e293b !important;
+  z-index: 100000 !important;
+  animation: fadeIn 0.15s ease-out;
+}
+
+/* Ítems del menú */
+.catms__item,
+.catms__itembtn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.95rem;
+  background-color: #ffffff;
+  color: #1e293b;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .catms__itembtn:hover {
-  background: #f3f4f6;
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
 }
 
 .catms__itembtn.is-disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Mensajes de error */
+.catms__item--error {
+  color: #b91c1c !important;
+  background-color: #fee2e2 !important;
+  font-weight: 600;
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
