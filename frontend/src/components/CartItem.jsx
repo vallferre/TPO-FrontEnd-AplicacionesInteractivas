@@ -1,9 +1,10 @@
 import React from "react";
 
-export default function CartItem({ item, onRemove, onIncrease, onDecrease }) {
-  // URL de fallback si no hay imagen o no carga
-  const imageUrl = item.image || "https://via.placeholder.com/80?text=No+Image";
-
+export default function CartItem({ item, onRemove, onIncrease, onDecrease }) { 
+  const API_BASE = "http://localhost:8080";
+  const mainImageUrl = item.image
+    ? `${API_BASE}/images/${item.image.id}`
+    : "https://via.placeholder.com/800x600?text=Sin+imagen";
   return (
     <li
       className="cart-item"
@@ -17,7 +18,7 @@ export default function CartItem({ item, onRemove, onIncrease, onDecrease }) {
     >
       <div className="item-image">
         <img
-          src={imageUrl}
+          src={mainImageUrl}
           alt={item.name}
           style={{ width: "80px", height: "80px", borderRadius: "0.5rem", objectFit: "cover" }}
           onError={(e) => {

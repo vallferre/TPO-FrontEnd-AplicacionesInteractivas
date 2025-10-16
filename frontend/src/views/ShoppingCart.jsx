@@ -229,10 +229,9 @@ const ShoppingCart = () => {
                   <CartItem
                     key={item.productId}
                     item={{
+                      id: item.productId,
                       name: item.productName,
-                      image:
-                        item.imageUrl ||
-                        "https://via.placeholder.com/80",
+                      image: item.productImageUrl,
                       price: item.priceAtAddTime,
                       size: item.productDescription,
                       quantity: item.quantity,
