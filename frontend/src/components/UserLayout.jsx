@@ -109,7 +109,7 @@ const UserLayout = () => {
               </>
             )}
             {isAdmin && (
-              <Link to="/categories" className="nav-link">
+              <Link to="/profile/categories" className="nav-link">
                 🏷 Categories
               </Link>
             )}

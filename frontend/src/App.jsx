@@ -23,6 +23,7 @@ import EditProfile from "./views/EditProfile";
 import ProductDetails from "./views/ProductDetails";
 import Footer from "./components/Footer";
 import OrderDetails from "./views/OrderDetails";
+import AdminCategoriesProfile from "./views/AdminCategoriesProfile";
 
 const App = () => {
   return (
@@ -44,6 +45,7 @@ const App = () => {
           <Route path="/profile" element={<UserLayout />}>
             <Route path="products" element={<UserProducts />} />
             <Route path="orders" element={<Orders />} />
+            <Route path="categories" element={<AdminCategoriesProfile />} />
             {/* <Route path="settings" element={<Settings />} /> */}
           </Route>
 
@@ -54,8 +56,9 @@ const App = () => {
           <Route path="/cart" element={<Cart />} />
           <Route path="/create" element={<CreateProduct />} />
           <Route path="/edit/:id" element={<EditProduct />} />
-          <Route path="/categories" element={<AdminCreateCategory />} />
+          
           <Route path="/product/:id" element={<ProductDetails />} />
+          <Route path="/categories/create" element={<AdminCreateCategory />} />
         </Routes>
       </main>
 
