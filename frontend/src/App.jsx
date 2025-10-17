@@ -25,6 +25,9 @@ import Footer from "./components/Footer";
 import OrderDetails from "./views/OrderDetails";
 import AdminCategoriesProfile from "./views/AdminCategoriesProfile";
 import EditCategory from "./components/EditCategory";
+import About from "./views/About";
+import Contact from "./views/Contact";
+import Terms from "./views/Terms";
 
 const App = () => {
   return (
@@ -61,6 +64,11 @@ const App = () => {
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/categories/create" element={<AdminCreateCategory />} />
           <Route path="categories/edit/:id" element={<EditCategory />} />
+          {/* rutas del footer */}
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/terms" element={<Terms />} />
+
         </Routes>
       </main>
 
