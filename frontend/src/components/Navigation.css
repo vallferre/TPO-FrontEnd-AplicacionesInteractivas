@@ -6,7 +6,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   overflow-x: hidden;
 }
@@ -20,13 +21,13 @@ h1 {
   font-size: 1.6rem;
   font-weight: 700;
   color: #facc15;
-} 
+}
 
 /* Contenedor de íconos y acciones */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 1.5rem;       /* separa cada ícono un poco más */
+  gap: 1.5rem; /* separa cada ícono un poco más */
   margin-right: 1rem; /* espacio desde el borde derecho de la navbar */
 }
 
@@ -68,9 +69,9 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between; /* texto a la izq, casa a la der */
-  width: 100%;                    /* ocupa todo el ancho del contenedor */
-  color: #facc15;                 /* tu amarillo */
-  text-decoration: none;          /* sin subrayado */
+  width: 100%; /* ocupa todo el ancho del contenedor */
+  color: #facc15; /* tu amarillo */
+  text-decoration: none; /* sin subrayado */
 }
 
 .logo-text {
@@ -80,12 +81,12 @@ h1 {
 }
 
 .logo-icon {
-  width: 1em;                     /* ícono pequeño */
+  width: 1em; /* ícono pequeño */
   height: 1em;
-  fill: #facc15;             /* mismo color del texto */
-    margin-left: 0.3em;  /* separa un poco de la palabra */
+  fill: #facc15; /* mismo color del texto */
+  margin-left: 0.3em; /* separa un poco de la palabra */
   flex-shrink: 0;
-  transition: transform 0.2s ease;                /* evita que se deforme */
+  transition: transform 0.2s ease; /* evita que se deforme */
 }
 
 /* Links */
@@ -139,7 +140,7 @@ h1 {
   pointer-events: none;
 }
 
-.search-btn button{
+.search-btn button {
   padding: 0.6em 1.2em;
 }
 
@@ -176,8 +177,9 @@ h1 {
 .dropdown-menu {
   position: absolute;
   top: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%);
+  right: -10px;
+  left: auto;
+  transform: none;
   background-color: #1f2937;
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
@@ -206,7 +208,8 @@ h1 {
   content: "";
   position: absolute;
   top: -6px;
-  left: 50%;
+  right: 25px;
+  left: auto;
   transform: translateX(-50%);
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;

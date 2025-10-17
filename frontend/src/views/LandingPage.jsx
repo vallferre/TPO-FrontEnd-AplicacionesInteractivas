@@ -17,9 +17,9 @@ export default function LandingPage() {
         const res = await fetch(`${API_BASE}/categories`);
         if (!res.ok) throw new Error(`Error: ${res.status}`);
         const data = await res.json();
-        const allCategories = (data.content || []).map(cat => ({
+        const allCategories = (data.content || []).map((cat) => ({
           ...cat,
-          imageId: cat.imageId || null
+          imageId: cat.imageId || null,
         }));
         const shuffled = allCategories.sort(() => 0.5 - Math.random());
         setCategories(shuffled.slice(0, 4));
@@ -43,14 +43,18 @@ export default function LandingPage() {
 
   return (
     <div className="landing-page">
-
       {/* Hero */}
       <section className="hero-section fade-down">
-        <h1 className="hero-title">Bienvenido a <strong>Relicaria</strong></h1>
-        <p className="hero-subtitle">Descubrí productos únicos y experiencias inolvidables.</p>
+        <h1 className="hero-title">
+          Bienvenido a <strong>Relicaria</strong>
+        </h1>
+        <p className="hero-subtitle">
+          Descubrí productos únicos y experiencias inolvidables.
+        </p>
         <div className="hero-buttons">
-          <Link to="/products" className="btn btn-primary">Ver Productos</Link>
-          <Link to="/register" className="btn btn-secondary">Registrarse</Link>
+          <Link to="/products" className="btn btn-primary">
+            Ver Productos
+          </Link>
         </div>
       </section>
 
@@ -73,11 +77,11 @@ export default function LandingPage() {
       <section className="about-preview fade-up">
         <h2>Sobre Relicaria</h2>
         <p>
-          En <strong>Relicaria</strong> buscamos ofrecer productos que cuenten historias. 
-          Conocé más sobre nosotros en la página de <Link to="/about">About Us</Link>.
+          En <strong>Relicaria</strong> buscamos ofrecer productos que cuenten
+          historias. Conocé más sobre nosotros en la página de{" "}
+          <Link to="/about">About Us</Link>.
         </p>
       </section>
-
     </div>
   );
 }
