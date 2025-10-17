@@ -1,21 +1,28 @@
-// src/views/AdminCreateCategory.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../components/Categories.css";
 import { toast } from "react-toastify";
-import Toaster from "../components/Toaster"; // ✅ nuevo import
+import Toaster from "../components/Toaster";
+import ImageUploader from "../components/ImageUploader"; // ⚠️ Asegurate de tener este componente
 
 const API_BASE = "http://localhost:8080";
 
 const AdminCreateCategory = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [touched, setTouched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
+  const [imageFile, setImageFile] = useState(null); // solo una imagen
 
-  const error = !name.trim() ? "El nombre de la categoría es obligatorio." : null;
+  const error = !description.trim() ? "La descripción es obligatoria." : null;
   const isValid = !error && !submitting;
+
+  const token = localStorage.getItem("jwtToken");
+
+  const authHeaders = () => ({
+    Authorization: `Bearer ${token}`,
+  });
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -23,61 +30,48 @@ const AdminCreateCategory = () => {
     setServerError("");
     if (!isValid) return;
 
+    if (!token) {
+      toast.error("No estás autenticado. Iniciá sesión como ADMIN.", { closeButton: true });
+      return;
+    }
+
     try {
       setSubmitting(true);
 
-      const token = localStorage.getItem("jwtToken");
-      if (!token) {
-        setServerError("No estás autenticado. Iniciá sesión con una cuenta ADMIN.");
-        return;
-      }
-
-      const payload = { description: name.trim() };
+      // Usamos FormData para enviar descripción + imagen juntos
+      const fd = new FormData();
+      fd.append("description", description.trim());
+      if (imageFile) fd.append("file", imageFile);
 
       const res = await fetch(`${API_BASE}/categories`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          ...authHeaders(),
+          // NO poner Content-Type, lo maneja automáticamente FormData
         },
-        body: JSON.stringify(payload),
+        body: fd,
       });
 
-      if (res.status === 201 || res.ok) {
-        let createdDesc = name.trim();
-        try {
-          const data = await res.json();
-          if (data?.description) createdDesc = data.description;
-        } catch {}
-
-        toast.success(`✅ Categoría "${createdDesc}" creada con éxito`, {
-          closeButton: true,
-          autoClose: 3000,
-        });
-
-        // Espera a que se vea el popup, luego redirige
-        setTimeout(() => navigate("/"), 3200);
-        return;
+      if (!res.ok) {
+        let msg = `Error al crear la categoría (HTTP ${res.status})`;
+        const txt = await res.text();
+        if (txt) msg = txt;
+        throw new Error(msg);
       }
 
-      // Errores del servidor
-      let msg = "Error al crear la categoría.";
-      try {
-        const text = await res.text();
-        if (text) msg = text;
-      } catch {}
-      if (res.status === 409) msg = "La categoría ya existe.";
-      else if (res.status === 400) msg = "Solicitud inválida.";
-      else if (res.status === 403) msg = "No tenés permisos (requiere ROLE_ADMIN).";
-      else if (res.status === 401) msg = "No estás autenticado. Iniciá sesión.";
-      setServerError(msg);
-      toast.error(msg, { closeButton: true, autoClose: 3000 });
-    } catch {
-      setServerError("No se pudo conectar con el servidor.");
-      toast.error("No se pudo conectar con el servidor.", {
+      const data = await res.json();
+      toast.success(`✅ Categoría "${description.trim()}" creada con éxito`, {
         closeButton: true,
-        autoClose: 3000,
+        autoClose: 2500,
       });
+
+      // Redirigir al listado
+      setTimeout(() => navigate("/admin/categories"), 2000);
+
+    } catch (err) {
+      console.error(err);
+      setServerError(err.message);
+      toast.error(err.message || "Error al crear la categoría.", { closeButton: true, autoClose: 3000 });
     } finally {
       setSubmitting(false);
     }
@@ -88,31 +82,41 @@ const AdminCreateCategory = () => {
       <main className="main with-nav-offset">
         <div className="create-container">
           <h1 className="form-title">Crear categoría</h1>
-          <p className="form-subtitle">Ingresá el nombre de la nueva categoría.</p>
+          <p className="form-subtitle">Ingresá la descripción y una imagen para la categoría.</p>
 
           <div className="form-card">
             <form className="single-field-grid" onSubmit={onSubmit} noValidate>
               <div className="form-group">
-                <label htmlFor="cat-name">Nombre de la categoría *</label>
+                <label htmlFor="cat-description">Descripción *</label>
                 <input
-                  id="cat-name"
+                  id="cat-description"
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   onBlur={() => setTouched(true)}
                   placeholder="Ej: Zapatillas, Figuras, Comics…"
                   disabled={submitting}
                 />
-                {touched && error && <p className="error">{error}</p>}
-                {serverError && <p className="error">{serverError}</p>}
               </div>
+
+              <div className="form-group full">
+                <label>Imagen de la categoría</label>
+                <ImageUploader
+                  maxImages={1}
+                  onImagesChange={(files) => setImageFile(files[0] || null)}
+                />
+                <p className="helper">Solo se permite una imagen por categoría.</p>
+              </div>
+
+              {touched && error && <p className="error">{error}</p>}
+              {serverError && <p className="error">{serverError}</p>}
 
               <div className="actions">
                 <button
                   type="submit"
                   className="dotted-btn"
                   disabled={!isValid}
-                  title={!isValid ? "Completá el nombre" : "Crear categoría"}
+                  title={!isValid ? "Completá la descripción" : "Crear categoría"}
                 >
                   {submitting ? "Creando..." : "CREAR CATEGORÍA"}
                 </button>
@@ -122,7 +126,6 @@ const AdminCreateCategory = () => {
         </div>
       </main>
 
-      {/* ✅ Se usa el componente reusable */}
       <Toaster />
     </div>
   );
