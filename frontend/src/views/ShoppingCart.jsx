@@ -6,7 +6,7 @@ import OrderSummary from "../components/OrderSummary";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
 const ShoppingCart = () => {
-  const [cart, setCart] = useState(null);
+  const [cart, setCart] = useState({ items: [], total: 0 }); // ✅ estructura inicial segura
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -32,14 +32,20 @@ const ShoppingCart = () => {
 
       if (!response.ok) {
         if (response.status === 404) {
-          // si el usuario no tiene carrito
+          // ✅ si el usuario no tiene carrito, inicializar vacío
           setCart({ items: [], total: 0 });
         } else {
           throw new Error(`Error ${response.status}: Failed to fetch cart`);
         }
       } else {
         const data = await response.json();
-        setCart(data);
+
+        // ✅ Evitar errores si el back devuelve null, undefined o algo mal formado
+        if (!data || !Array.isArray(data.items)) {
+          setCart({ items: [], total: 0 });
+        } else {
+          setCart(data);
+        }
       }
     } catch (err) {
       console.error("Error fetching cart:", err);
@@ -152,7 +158,8 @@ const ShoppingCart = () => {
       </div>
     );
 
-  if (!cart || !cart.items?.length)
+  // ✅ Si el carrito está vacío, mostrar mensaje sin romper
+  if (!cart?.items?.length)
     return (
       <div
         className="app-container"
