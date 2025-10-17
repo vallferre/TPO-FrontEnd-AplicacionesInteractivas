@@ -1,4 +1,3 @@
-// src/views/UserLayout.jsx
 import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import "../components/UserProfile.css";
@@ -31,7 +30,7 @@ const UserLayout = () => {
 
     const fetchUserAndRole = async () => {
       try {
-        // 🔹 Fetch datos del usuario
+        // Fetch datos del usuario
         const userResponse = await fetch("http://localhost:8080/users/", {
           headers: {
             "Content-Type": "application/json",
@@ -47,7 +46,7 @@ const UserLayout = () => {
           avatar: userData.avatar || "",
         });
 
-        // 🔹 Fetch rol del usuario
+        // Fetch rol del usuario
         const roleResponse = await fetch("http://localhost:8080/users/role", {
           headers: {
             "Content-Type": "application/json",
@@ -56,8 +55,15 @@ const UserLayout = () => {
         });
         if (!roleResponse.ok)
           throw new Error(`Error fetching role: ${roleResponse.status}`);
-        const roleData = await roleResponse.json(); // <-- parseamos JSON
-        setRole(roleData.role); // <-- guardamos solo "ADMIN" o "USER"
+        const roleData = await roleResponse.json();
+        setRole(roleData.role);
+
+        // Redirigir automáticamente según rol
+        if (roleData.role === "ADMIN") {
+          navigate("/profile/categories", { replace: true });
+        } else {
+          navigate("/profile/products", { replace: true });
+        }
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -68,7 +74,7 @@ const UserLayout = () => {
     };
 
     fetchUserAndRole();
-  }, []);
+  }, [navigate]);
 
   if (loading) return <p>Cargando perfil...</p>;
   if (error) return <p className="error">{error}</p>;
@@ -77,7 +83,6 @@ const UserLayout = () => {
 
   return (
     <div className="profile-page">
-      {/* === Sidebar del usuario === */}
       <aside className="sidebar">
         <div className="profile-card">
           <div className="avatar-container">
@@ -120,9 +125,8 @@ const UserLayout = () => {
         </div>
       </aside>
 
-      {/* === Zona donde cambia el contenido === */}
       <main className="main-content">
-        <Outlet /> {/* Acá se renderiza cada subvista */}
+        <Outlet />
       </main>
     </div>
   );

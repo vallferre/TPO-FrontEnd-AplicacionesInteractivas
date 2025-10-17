@@ -13,8 +13,6 @@ export default function CategoryCard({ category, index, onClick }) {
     const fetchImage = async () => {
       try {
         const res = await fetch(`${API_BASE}/categories/${category.id}/image`, {
-          // Si tu endpoint requiere auth, agregá headers:
-          // headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!res.ok) throw new Error("Error cargando imagen");

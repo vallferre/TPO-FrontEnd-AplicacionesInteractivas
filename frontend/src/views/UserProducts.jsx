@@ -62,18 +62,8 @@ const UserProducts = () => {
         const formatted = data.map((p) => {
           const stock = Number(p.stock ?? p.quantity ?? 0);
 
-          let statusText = p.status || "Active";
+          let statusText = stock || "Sold-Out";
           let statusClass = "status-active";
-
-          if (stock <= 0) {
-            statusText = "Sold Out";
-            statusClass = "status-sold";
-          } else if (statusText === "Pending") {
-            statusClass = "status-pending";
-          } else {
-            statusText = "Active";
-            statusClass = "status-active";
-          }
 
           return {
             id: p.id,
@@ -158,7 +148,7 @@ const UserProducts = () => {
             <thead>
               <tr>
                 <th>Product</th>
-                <th>Status</th>
+                <th>Stock</th>
                 <th className="text-center">Actions</th>
               </tr>
             </thead>

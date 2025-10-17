@@ -24,6 +24,7 @@ import ProductDetails from "./views/ProductDetails";
 import Footer from "./components/Footer";
 import OrderDetails from "./views/OrderDetails";
 import AdminCategoriesProfile from "./views/AdminCategoriesProfile";
+import EditCategory from "./components/EditCategory";
 
 const App = () => {
   return (
@@ -59,6 +60,7 @@ const App = () => {
           
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/categories/create" element={<AdminCreateCategory />} />
+          <Route path="categories/edit/:id" element={<EditCategory />} />
         </Routes>
       </main>
 

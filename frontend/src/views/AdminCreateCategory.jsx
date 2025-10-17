@@ -66,7 +66,7 @@ const AdminCreateCategory = () => {
       });
 
       // Redirigir al listado
-      setTimeout(() => navigate("/admin/categories"), 2000);
+      setTimeout(() => navigate("/profile/categories"), 2000);
 
     } catch (err) {
       console.error(err);

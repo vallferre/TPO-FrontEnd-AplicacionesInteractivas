@@ -5,6 +5,42 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE = "http://localhost:8080";
 
+// Componente para mostrar la imagen de cada categoría
+const CategoryImage = ({ category }) => {
+  const [imageUrl, setImageUrl] = useState(
+    `https://via.placeholder.com/300x200?text=${encodeURIComponent(category.description)}`
+  );
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/categories/${category.id}/image`);
+        if (!res.ok) throw new Error("Error cargando imagen");
+
+        const blob = await res.blob();
+        setImageUrl(URL.createObjectURL(blob));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchImage();
+
+    return () => {
+      if (imageUrl.startsWith("blob:")) URL.revokeObjectURL(imageUrl);
+    };
+  }, [category.fileImageId]);
+
+  return (
+    <img
+      src={imageUrl}
+      alt={category.description}
+      style={{ width: "100px", height: "60px", objectFit: "cover" }}
+    />
+  );
+};
+
+// Modal de confirmación de borrado
 const DeleteConfirmationModal = ({ isOpen, onConfirm, onCancel, categoryName }) => {
   if (!isOpen) return null;
 
@@ -25,6 +61,7 @@ const DeleteConfirmationModal = ({ isOpen, onConfirm, onCancel, categoryName }) 
   );
 };
 
+// Componente principal
 const AdminCategoriesProfile = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
@@ -35,6 +72,7 @@ const AdminCategoriesProfile = () => {
 
   const token = localStorage.getItem("jwtToken");
 
+  // Fetch de categorías
   useEffect(() => {
     if (!token) {
       setError("No hay token, inicia sesión");
@@ -42,37 +80,41 @@ const AdminCategoriesProfile = () => {
       return;
     }
 
-    const URL = `${API_BASE}/categories`;
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/categories`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-    fetch(URL, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => {
         if (!res.ok) throw new Error(`Error: ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = await res.json();
+
+        // Formatear categorías y asegurarse de tener fileImageId si el backend lo devuelve
         const formatted = (data.content || []).map((c) => ({
-            id: c.id,
-            description: c.description || "No description",
-            imageUrl: c.image ? `http://localhost:8080/categories/images/${c.image.id}` : null,
+          id: c.id,
+          description: c.description || "No description",
+          fileImageId: c.image?.id || null, // importante para el fetch de la imagen
         }));
 
         setCategories(formatted);
-        })
-
-      .catch((err) => {
+      } catch (err) {
         console.error(err);
         setError(err.message);
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
   }, [token]);
 
+  // Navegación y acciones
   const handleCreate = () => navigate("/categories/create");
 
   const handleRowClick = (e, id) => {
@@ -108,6 +150,8 @@ const AdminCategoriesProfile = () => {
       alert("Error al eliminar la categoría. Revisa consola.");
     }
   };
+
+  const handleEdit = (id) => navigate(`/categories/edit/${id}`);
 
   return (
     <div className="user-products-container">
@@ -147,7 +191,7 @@ const AdminCategoriesProfile = () => {
                   onClick={(e) => handleRowClick(e, category.id)}
                 >
                   <td>
-                    <span className="up-product-name">{category.name}</span>
+                    <CategoryImage category={category} />
                   </td>
                   <td>
                     <span className="up-product-desc">{category.description}</span>
@@ -181,7 +225,7 @@ const AdminCategoriesProfile = () => {
         isOpen={modalOpen}
         onConfirm={handleConfirmDelete}
         onCancel={() => setModalOpen(false)}
-        categoryName={selectedCategory?.name || ""}
+        categoryName={selectedCategory?.description || ""}
       />
     </div>
   );
