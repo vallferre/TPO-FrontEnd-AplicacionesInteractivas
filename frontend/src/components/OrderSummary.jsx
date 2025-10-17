@@ -1,46 +1,19 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function OrderSummary({ subtotal, shipping, tax, total }) {
+export default function OrderSummary({ subtotal, shipping, tax, total, cartItems = [] }) {
   const navigate = useNavigate();
 
+  const totalDiscount = cartItems.reduce((sum, item) => {
+    if (item.discountedPrice && item.discountedPrice > 0) {
+      const discountAmount = (item.priceAtAddTime * item.discountedPrice) / 100;
+      return sum + discountAmount;
+    }
+    return sum;
+  }, 0);
+
   const handleCheckout = async () => {
-    const token = localStorage.getItem("jwtToken");
-
-    if (!token) {
-      alert("Please log in to continue with the checkout.");
-      navigate("/login");
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:8080/cart/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Checkout successful:", data);
-
-        // ✅ Redirige usando el orderId devuelto
-        navigate(`/order/${data.orderId}`, { state: { order: data } });
-      } else if (response.status === 400) {
-        const errorMessage = await response.text();
-        alert(`Error: ${errorMessage}`);
-      } else if (response.status === 401) {
-        alert("Unauthorized. Please log in again.");
-        navigate("/login");
-      } else {
-        throw new Error(`Checkout failed with status ${response.status}`);
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      alert("An error occurred during checkout. Please try again.");
-    }
+    // ... (tu código existente)
   };
 
   return (
@@ -52,6 +25,7 @@ export default function OrderSummary({ subtotal, shipping, tax, total }) {
         borderRadius: "0.75rem",
         boxShadow: "0 1px 4px rgba(0, 0, 0, 0.1)",
         height: "fit-content",
+        minWidth: "300px", // Ancho mínimo para evitar que sea muy estrecho
       }}
     >
       <h3
@@ -66,45 +40,100 @@ export default function OrderSummary({ subtotal, shipping, tax, total }) {
 
       <div
         className="summary-details"
-        style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+        style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
       >
-        <div
-          className="summary-row"
-          style={{ display: "flex", justifyContent: "space-between" }}
-        >
-          <p>Subtotal</p>
-          <p>${subtotal}</p>
-        </div>
-        <div
-          className="summary-row"
-          style={{ display: "flex", justifyContent: "space-between" }}
-        >
-          <p>Shipping</p>
-          <p>{shipping}</p>
-        </div>
-        <div
-          className="summary-row"
-          style={{ display: "flex", justifyContent: "space-between" }}
-        >
-          <p>Discount</p>
-          <p>${tax}</p>
+        {/* Subtotal */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <p style={{ flex: 1, margin: 0 }}>Subtotal</p>
+          <p style={{ margin: 0, minWidth: "80px", textAlign: "right" }}>${subtotal}</p>
         </div>
 
+        {/* Shipping */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <p style={{ flex: 1, margin: 0 }}>Shipping</p>
+          <p style={{ margin: 0, minWidth: "80px", textAlign: "right" }}>{shipping}</p>
+        </div>
+
+        {/* Discount Section */}
+        {totalDiscount > 0 && (
+          <>
+            {/* Total Discount */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <p style={{ flex: 1, margin: 0, fontWeight: "500" }}>Discount</p>
+              <p style={{ 
+                margin: 0, 
+                minWidth: "80px", 
+                textAlign: "right", 
+                color: "green",
+                fontWeight: "500"
+              }}>
+                - ${totalDiscount.toFixed(2)}
+              </p>
+            </div>
+
+            {/* Discount Breakdown */}
+            {cartItems
+              .filter((item) => item.discountedPrice && item.discountedPrice > 0)
+              .map((item) => {
+                const discountAmount = (item.priceAtAddTime * item.discountedPrice) / 100;
+                return (
+                  <div
+                    key={item.productId}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      fontSize: "0.9rem",
+                      color: "green",
+                    }}
+                  >
+                    <div style={{ flex: 1, margin: 0, marginLeft: "1rem" }}>
+                      <p style={{ 
+                        margin: 0, 
+                        lineHeight: "1.2",
+                        wordWrap: "break-word"
+                      }}>
+                        {item.productName} 
+                        <br />
+                        <span style={{ fontSize: "0.8rem", opacity: "0.8" }}>
+                          ({item.discountedPrice}% off)
+                        </span>
+                      </p>
+                    </div>
+                    <p style={{ 
+                      margin: 0, 
+                      minWidth: "80px", 
+                      textAlign: "right",
+                      fontWeight: "500"
+                    }}>
+                      - ${discountAmount.toFixed(2)}
+                    </p>
+                  </div>
+                );
+              })}
+          </>
+        )}
+
         <div
-          className="divider"
-          style={{ borderTop: "1px solid #e2e8f0", margin: "0.75rem 0" }}
+          style={{ borderTop: "1px solid #e2e8f0", margin: "1rem 0" }}
         ></div>
 
-        <div
-          className="summary-row total"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontWeight: "600",
-          }}
-        >
-          <p>Total</p>
-          <p>${total}</p>
+        {/* Total */}
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          fontWeight: "600",
+        }}>
+          <p style={{ flex: 1, margin: 0, fontSize: "1.1rem" }}>Total</p>
+          <p style={{ 
+            margin: 0, 
+            minWidth: "80px", 
+            textAlign: "right",
+            fontSize: "1.1rem"
+          }}>
+            ${total}
+          </p>
         </div>
       </div>
 
@@ -115,19 +144,18 @@ export default function OrderSummary({ subtotal, shipping, tax, total }) {
           color: "white",
           fontWeight: "600",
           width: "100%",
-          marginTop: "1rem",
+          marginTop: "1.5rem",
           padding: "0.75rem",
           borderRadius: "0.5rem",
           cursor: "pointer",
+          border: "none",
+          fontSize: "1rem",
         }}
       >
         Proceed to Checkout
       </button>
 
-      <p
-        className="continue-shopping"
-        style={{ textAlign: "center", marginTop: "1rem" }}
-      >
+      <p style={{ textAlign: "center", marginTop: "1rem", margin: 0 }}>
         or{" "}
         <Link
           to="/"

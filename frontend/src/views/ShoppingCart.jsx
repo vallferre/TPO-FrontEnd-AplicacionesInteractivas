@@ -252,9 +252,9 @@ const ShoppingCart = () => {
 
             {/* Order Summary */}
             <OrderSummary
+              cartItems={cart.items}
               subtotal={cart.total}
               shipping="Free"
-              discount={0}
               total={cart.total}
             />
           </div>
