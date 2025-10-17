@@ -64,6 +64,30 @@ h1 {
   color: #fde68a;
 }
 
+.logo-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* texto a la izq, casa a la der */
+  width: 100%;                    /* ocupa todo el ancho del contenedor */
+  color: #facc15;                 /* tu amarillo */
+  text-decoration: none;          /* sin subrayado */
+}
+
+.logo-text {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.logo-icon {
+  width: 1em;                     /* ícono pequeño */
+  height: 1em;
+  fill: #facc15;             /* mismo color del texto */
+    margin-left: 0.3em;  /* separa un poco de la palabra */
+  flex-shrink: 0;
+  transition: transform 0.2s ease;                /* evita que se deforme */
+}
+
 /* Links */
 .navbar-links {
   display: flex;
