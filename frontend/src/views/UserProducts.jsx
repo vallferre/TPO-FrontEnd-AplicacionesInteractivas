@@ -59,18 +59,30 @@ const UserProducts = () => {
         return res.json();
       })
       .then((data) => {
-        const formatted = data.map((p) => ({
-          id: p.id,
-          name: p.name,
-          img: p.imageIds?.[0] ? `${API_BASE}/images/${p.imageIds[0]}` : null,
-          status: p.status || "Active",
-          statusClass:
-            p.status === "Active"
-              ? "status-active"
-              : p.status === "Pending"
-              ? "status-pending"
-              : "status-sold",
-        }));
+        const formatted = data.map((p) => {
+          const stock = Number(p.stock ?? p.quantity ?? 0);
+
+          let statusText = p.status || "Active";
+          let statusClass = "status-active";
+
+          if (stock <= 0) {
+            statusText = "Sold Out";
+            statusClass = "status-sold";
+          } else if (statusText === "Pending") {
+            statusClass = "status-pending";
+          } else {
+            statusText = "Active";
+            statusClass = "status-active";
+          }
+
+          return {
+            id: p.id,
+            name: p.name,
+            img: p.imageIds?.[0] ? `${API_BASE}/images/${p.imageIds[0]}` : null,
+            status: statusText,
+            statusClass,
+          };
+        });
         setProducts(formatted);
       })
       .catch((err) => {
@@ -158,7 +170,6 @@ const UserProducts = () => {
                   onClick={(e) => handleRowClick(e, product.id)}
                 >
                   <td>
-                    {/* === NUEVA ESTRUCTURA NAMESPACED PARA EVITAR CHOQUES DE CSS === */}
                     <div className="up-product-info">
                       <div className="up-product-thumb">
                         {product.img ? (
