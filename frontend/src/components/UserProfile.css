@@ -41,7 +41,6 @@
 }
 
 .status-badge {
-  position: absolute;
   bottom: 0;
   right: 0;
   width: 24px;
@@ -49,8 +48,7 @@
   background: #1173d4;
   border: 2px solid white;
   border-radius: 50%;
-  color: white;
-  display: flex;
+  color: rgb(33, 13, 13);
   align-items: center;
   justify-content: center;
 }

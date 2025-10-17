@@ -35,6 +35,7 @@ const SingleProduct = ({ id }) => {
     if (e.target.closest(".btn-add--dynamic") || e.target.closest(".btn-favorite--dynamic")) return;
     navigate(`/product/${id}`);
   };
+  
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();

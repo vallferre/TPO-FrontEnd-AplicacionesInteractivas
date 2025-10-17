@@ -2,9 +2,12 @@ import React, { useState, useEffect } from "react";
 import "../components/ProductDetails.css";
 import { useParams } from "react-router-dom";
 import SingleProduct from "./SingleProduct.jsx";
+import { toast } from "react-toastify";
+
 
 const ProductDetails = () => {
   const { id } = useParams();
+  const token = localStorage.getItem("jwtToken");
 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -106,6 +109,31 @@ const ProductDetails = () => {
   const handleNext = () => {
     setCurrentImage((prev) => (prev === imageIds.length - 1 ? 0 : prev + 1));
   };
+  const handleAddToCart = async (e) => {
+      e.stopPropagation();
+      if (!token) {
+        toast.info("Please log in to add products to the cart.");
+        navigate("/login");
+        return;
+      }
+  
+      try {
+        const res = await fetch(`${API_BASE}/cart/add`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ productId: id, quantity: 1 }),
+        });
+  
+        if (!res.ok) throw new Error(`Failed to add product: ${res.status}`);
+        toast.success(`${product?.name || "Product"} added to cart!`);
+      } catch (err) {
+        console.error("Error adding to cart:", err);
+        toast.error("Failed to add product to cart. Please try again.");
+      }
+    };
 
   return (
     <div className="product-details-page">
@@ -150,7 +178,7 @@ const ProductDetails = () => {
           <button
             disabled={product.stock <= 0}
             className="add-to-cart-btn"
-            onClick={() => alert("Producto agregado al carrito")}
+            onClick={handleAddToCart}
           >
             Agregar al carrito
           </button>
