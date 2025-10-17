@@ -6,9 +6,14 @@ const ProductNavbar = ({ setProducts, setLoading, setError }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("keyword") || "");
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(
+    searchParams.get("keyword") || ""
+  );
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
+  const [selectedCategory, setSelectedCategory] = useState(
+    searchParams.get("category") || ""
+  );
   const [priceRange, setPriceRange] = useState(searchParams.get("price") || "");
   const [discount, setDiscount] = useState(searchParams.get("discount") || "");
   const [rating, setRating] = useState(searchParams.get("rating") || "");
@@ -69,7 +74,9 @@ const ProductNavbar = ({ setProducts, setLoading, setError }) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(endpoint, { headers: { "Content-Type": "application/json" } });
+      const res = await fetch(endpoint, {
+        headers: { "Content-Type": "application/json" },
+      });
       if (!res.ok) throw new Error(`Error: ${res.status}`);
       const data = await res.json();
       setProducts(data.content || data);
@@ -87,56 +94,77 @@ const ProductNavbar = ({ setProducts, setLoading, setError }) => {
   };
 
   return (
-    <div className="product-navbar sidebar-fade-in">
-      <div className="filters-section">
-        <input
-          type="text"
-          placeholder="Buscar..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
+    <>
+      {/* Botón hamburguesa */}
+      <button className="menu-toggle" onClick={() => setIsOpen(!isOpen)}>
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      {isOpen && (
+        <div className="product-navbar sidebar-fade-in">
+          <div className="filters-section">
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
 
-        {/* Categorías */}
-        <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-          <option value="">Todas las categorías</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>{cat.description}</option>
-          ))}
-        </select>
+            {/* Categorías */}
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+              <option value="">Todas las categorías</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.description}
+                </option>
+              ))}
+            </select>
 
-        {/* Precio */}
-        <select value={priceRange} onChange={(e) => setPriceRange(e.target.value)}>
-          <option value="">Precio</option>
-          <option value="0-50">0 - 50</option>
-          <option value="51-100">51 - 100</option>
-          <option value="101-200">101 - 200</option>
-          <option value="200+">200+</option>
-        </select>
+            {/* Precio */}
+            <select
+              value={priceRange}
+              onChange={(e) => setPriceRange(e.target.value)}
+            >
+              <option value="">Precio</option>
+              <option value="0-50">0 - 50</option>
+              <option value="51-100">51 - 100</option>
+              <option value="101-200">101 - 200</option>
+              <option value="200+">200+</option>
+            </select>
 
-        {/* Descuento */}
-        <select value={discount} onChange={(e) => setDiscount(e.target.value)}>
-          <option value="">Descuento</option>
-          <option value="10">10%+</option>
-          <option value="20">20%+</option>
-          <option value="50">50%+</option>
-        </select>
+            {/* Descuento */}
+            <select
+              value={discount}
+              onChange={(e) => setDiscount(e.target.value)}
+            >
+              <option value="">Descuento</option>
+              <option value="10">10%+</option>
+              <option value="20">20%+</option>
+              <option value="50">50%+</option>
+            </select>
 
-        {/* Rating */}
-        <select value={rating} onChange={(e) => setRating(e.target.value)}>
-          <option value="">Rating</option>
-          <option value="1">1 estrella+</option>
-          <option value="2">2 estrellas+</option>
-          <option value="3">3 estrellas+</option>
-          <option value="4">4 estrellas+</option>
-          <option value="5">5 estrellas</option>
-        </select>
+            {/* Rating */}
+            <select value={rating} onChange={(e) => setRating(e.target.value)}>
+              <option value="">Rating</option>
+              <option value="1">1 estrella+</option>
+              <option value="2">2 estrellas+</option>
+              <option value="3">3 estrellas+</option>
+              <option value="4">4 estrellas+</option>
+              <option value="5">5 estrellas</option>
+            </select>
 
-        <button className="apply-filters-btn" onClick={applyFilters}>
-          Aplicar filtros
-        </button>
-      </div>
-    </div>
+            <button className="apply-filters-btn" onClick={applyFilters}>
+              Aplicar filtros
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

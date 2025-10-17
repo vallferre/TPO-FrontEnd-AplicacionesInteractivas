@@ -88,5 +88,21 @@
     transform: translateX(0);
   }
 }
-
-
+/* Botón hamburguesa */
+.menu-toggle {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Alinea las rayas arriba */
+  gap: 5px; /* Espacio entre las rayas */
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.menu-toggle span {
+  display: block;
+  width: 20px;
+  height: 3px;
+  background-color: #101622;
+  border-radius: 2px;
+}
