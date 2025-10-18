@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import FavoriteButton from "../components/FavoriteButton"; // 👈 importa tu nuevo componente
 import "../assets/SingleProduct.css";
 
 const API_BASE = "http://localhost:8080";
@@ -10,7 +11,6 @@ const SingleProduct = ({ id }) => {
   const token = localStorage.getItem("jwtToken");
 
   const [product, setProduct] = useState(null);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // === Fetch product info ===
@@ -32,10 +32,13 @@ const SingleProduct = ({ id }) => {
   }, [id]);
 
   const handleCardClick = (e) => {
-    if (e.target.closest(".btn-add--dynamic") || e.target.closest(".btn-favorite--dynamic")) return;
+    if (
+      e.target.closest(".btn-add--dynamic") ||
+      e.target.closest(".btn-favorite--dynamic")
+    )
+      return;
     navigate(`/product/${id}`);
   };
-  
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();
@@ -63,41 +66,6 @@ const SingleProduct = ({ id }) => {
     }
   };
 
-  const handleFavorite = async (e) => {
-    e.stopPropagation();
-    if (!token) {
-      toast.info("Please log in to manage your favorites.");
-      navigate("/login");
-      return;
-    }
-
-    try {
-      const newFavoriteState = !isFavorite;
-      setIsFavorite(newFavoriteState);
-
-      const res = await fetch(`${API_BASE}/users/favorites`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ productId: id }),
-      });
-
-      if (!res.ok) throw new Error(`Failed to update favorites: ${res.status}`);
-
-      toast.success(
-        `${product?.name || "Product"} ${
-          newFavoriteState ? "added to" : "removed from"
-        } favorites!`
-      );
-    } catch (err) {
-      console.error("Error updating favorites:", err);
-      toast.error("Failed to update favorites. Please try again.");
-      setIsFavorite((prev) => !prev);
-    }
-  };
-
   if (loading) {
     return <div className="product-card--dynamic loading">Loading...</div>;
   }
@@ -117,14 +85,19 @@ const SingleProduct = ({ id }) => {
       onClick={handleCardClick}
       style={{ position: "relative" }}
     >
-      {/* Botón de favoritos */}
-      <button
-        className={`btn-favorite--dynamic ${isFavorite ? "active" : ""}`}
-        onClick={handleFavorite}
-        title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+      {/* ❤️ Botón de favorito en esquina superior derecha */}
+      <div
+        className="btn-favorite--dynamic"
+        style={{
+          position: "absolute",
+          top: "12px",
+          right: "12px",
+          zIndex: 10,
+        }}
+        onClick={(e) => e.stopPropagation()} // evita que se dispare el navigate
       >
-        {isFavorite ? "★" : "☆"}
-      </button>
+        <FavoriteButton productId={id} token={token} />
+      </div>
 
       {/* Imagen principal */}
       <div className="product-media--dynamic extra-large">
@@ -133,7 +106,8 @@ const SingleProduct = ({ id }) => {
           alt={product.name}
           loading="lazy"
           onError={(e) => {
-            e.currentTarget.src = "https://via.placeholder.com/800x600?text=Sin+imagen";
+            e.currentTarget.src =
+              "https://via.placeholder.com/800x600?text=Sin+imagen";
           }}
         />
       </div>
