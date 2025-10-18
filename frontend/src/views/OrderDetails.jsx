@@ -83,7 +83,7 @@ const OrderDetails = () => {
           <tbody>
             {order.items.map((item) => (
               <tr key={item.productId}>
-                <td>#{item.productId}</td>
+                <td>#{item.productName}</td>
                 <td>{item.description}</td>
                 <td>{item.quantity}</td>
                 <td>${item.priceAtPurchase}</td>
