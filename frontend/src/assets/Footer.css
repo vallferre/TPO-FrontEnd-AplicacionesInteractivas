@@ -1,33 +1,90 @@
 /* Footer.css */
 .footer {
-  background-color: var(--color-primary);
-  color: #f9fafb;
-  padding: 1.5rem 0;
+  background: linear-gradient(90deg, #3e2723 0%, #5d4037 100%);
+  color: #f4e4b0;
+  padding: 2rem 0;
   text-align: center;
   font-family: "Plus Jakarta Sans", sans-serif;
   width: 100%;
   margin-top: auto;
+  border-top: 2px solid #d4af37;
+  box-shadow: 0 -2px 12px rgba(62, 39, 35, 0.15);
 }
 
 .footer-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
 .footer-links {
   display: flex;
-  gap: 1.5rem;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .footer-links a {
-  color: #facc15;
+  color: #d4af37;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.footer-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #f4e4b0;
+  transition: width 0.3s ease;
 }
 
 .footer-links a:hover {
-  color: #fde68a;
+  color: #f4e4b0;
+}
+
+.footer-links a:hover::after {
+  width: 100%;
+}
+
+.footer-text {
+  color: #f4e4b0;
+  font-size: 0.9rem;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .footer {
+    padding: 1.5rem 0;
+  }
+
+  .footer-links {
+    gap: 1.5rem;
+  }
+
+  .footer-text {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-links {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .footer-links a {
+    font-size: 0.95rem;
+  }
 }

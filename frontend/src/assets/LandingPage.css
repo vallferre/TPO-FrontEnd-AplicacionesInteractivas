@@ -28,254 +28,208 @@ body::-webkit-scrollbar {
   box-sizing: border-box;
 }
 
-/* Header */
-.header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid #ddd;
-  padding: 0 1rem;
-}
+/* ==============================================
+   LANDING PAGE STYLES - Relicaria Marketplace
+   ============================================== */
 
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64px;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: bold;
-  color: #111;
-  text-decoration: none;
-  font-size: 1.5rem;
-}
-
-.logo-icon {
-  width: 28px;
-  height: 28px;
-  color: #facc15;
-}
-
-/* Nav */
-.nav {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.nav a {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #555;
-  text-decoration: none;
-  transition: 0.3s;
-}
-
-.nav a:hover {
-  color: #facc15;
-}
-
-/* Actions */
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(250, 204, 21, 0.15);
-  color: #facc15;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.icon-btn:hover {
-  background: rgba(250, 204, 21, 0.25);
-}
-
-.profile-btn img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-
-/* Hero */
+/* Hero Section */
 .hero-section {
   width: 100%;
-  padding: 4rem 1rem;
-  background: linear-gradient(90deg, #facc15 0%, #fff5c4 100%);
+  padding: 5rem 2rem;
+  background: linear-gradient(135deg, #d4af37 0%, #f4e4b0 50%, #d4af37 100%);
   text-align: center;
-  border-radius: 0 0 12px 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 4px 20px rgba(139, 98, 38, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(139, 98, 38, 0.03) 2px,
+      rgba(139, 98, 38, 0.03) 4px
+    );
+  pointer-events: none;
 }
 
 .hero-title {
-  font-size: 2.8rem;
-  font-weight: 800;
-  color: #101622;
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 700;
+  color: #3e2723;
   margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-title strong {
+  color: #5d4037;
+  font-weight: 800;
+  text-shadow: 1px 1px 2px rgba(212, 175, 55, 0.3);
 }
 
 .hero-subtitle {
-  font-size: 1.2rem;
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
   font-weight: 500;
-  color: #333;
+  color: #5d4037;
   margin-bottom: 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  z-index: 1;
 }
 
+/* Hero Buttons */
 .hero-buttons {
   display: flex;
   justify-content: center;
   gap: 1rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
 }
 
 .btn {
-  padding: 0.9rem 2rem;
-  border-radius: 999px;
+  padding: 0.9rem 2.5rem;
+  border-radius: 8px;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.3s ease;
+  font-family: "Plus Jakarta Sans", Arial, sans-serif;
+  display: inline-block;
+  border: 2px solid transparent;
 }
 
 .btn-primary {
-  background-color: #facc15;
-  color: #101622;
+  background-color: #5d4037;
+  color: #f4e4b0;
+  border-color: #3e2723;
+  box-shadow: 0 4px 12px rgba(62, 39, 35, 0.2);
 }
 
 .btn-primary:hover {
+  background-color: #3e2723;
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(250, 204, 21, 0.3);
+  box-shadow: 0 6px 16px rgba(62, 39, 35, 0.3);
 }
 
-.btn-secondary {
-  background-color: #101622;
-  color: #fff;
-}
-
-.btn-secondary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(16, 22, 34, 0.3);
-}
-
-/* Section general */
-.section {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-  margin: 2rem auto;
+/* Featured Section */
+.featured-section {
   max-width: 1200px;
+  margin: 4rem auto;
+  padding: 3rem 1rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
-.section h2 {
-  font-size: 1.8rem;
+.section-title {
+  font-size: clamp(2rem, 4vw, 2.5rem);
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 3rem;
   text-align: center;
-  color: #101622;
+  color: #3e2723;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #d4af37, transparent);
+  border-radius: 2px;
 }
 
 /* Grid */
 .grid {
   display: grid;
-  gap: 1rem;
+  gap: 2rem;
 }
 
 .grid-4 {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
 
-/* Card estilo Mercado Libre */
-.card {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.card img {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  transition: transform 0.3s;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.12);
-}
-
-.card p {
-  margin: 0.5rem;
-  font-weight: 600;
-}
-
-/* About preview */
+/* About Preview */
 .about-preview {
-  background: #fff5c4;
-  padding: 2rem;
-  border-radius: 12px;
+  max-width: 900px;
+  margin: 4rem auto 3rem;
+  background: linear-gradient(135deg, #f4e4b0 0%, #fef9e7 100%);
+  padding: 3rem 2rem;
+  border-radius: 16px;
   text-align: center;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.15);
+  border: 2px solid #d4af37;
 }
 
 .about-preview h2 {
-  font-size: 1.6rem;
-  color: #101622;
-  margin-bottom: 1rem;
+  font-size: clamp(1.8rem, 3vw, 2.2rem);
+  color: #3e2723;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
 }
 
 .about-preview p {
-  font-size: 1rem;
-  color: #333;
+  font-size: 1.1rem;
+  color: #5d4037;
+  line-height: 1.8;
+  font-weight: 500;
+}
+
+.about-preview strong {
+  color: #3e2723;
+  font-weight: 700;
 }
 
 .about-preview a {
-  color: #101622;
-  text-decoration: underline;
+  color: #5d4037;
+  text-decoration: none;
+  font-weight: 700;
+  border-bottom: 2px solid #d4af37;
+  transition: all 0.3s ease;
+  padding-bottom: 2px;
 }
 
 .about-preview a:hover {
-  color: #facc15;
+  color: #3e2723;
+  border-bottom-color: #3e2723;
 }
 
-/* Footer */
-.footer {
-  background-color: #101622;
-  color: white;
-  padding: 1.5rem;
+/* Loading & Error States */
+.loading-text,
+.error-text {
   text-align: center;
+  padding: 100px 20px;
+  font-size: 1.2rem;
+  color: #8d6e63;
+  font-weight: 500;
 }
 
-/* Animaciones */
-.fade-down {
-  opacity: 0;
-  transform: translateY(-20px);
-  animation: fadeDown 0.6s ease forwards;
+.error-text {
+  color: #c62828;
 }
 
-.fade-up {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeUp 0.6s ease forwards;
-}
-
+/* Animations */
 @keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
   to {
     opacity: 1;
     transform: translateY(0);
@@ -283,24 +237,81 @@ body::-webkit-scrollbar {
 }
 
 @keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* Responsive */
+.fade-down {
+  opacity: 0;
+  animation: fadeDown 0.6s ease forwards;
+}
+
+.fade-up {
+  opacity: 0;
+  animation: fadeUp 0.6s ease forwards;
+  animation-delay: 0.2s;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
+  .hero-section {
+    padding: 4rem 1.5rem;
+    border-radius: 0 0 12px 12px;
+  }
+
   .hero-title {
     font-size: 2.2rem;
+    margin-bottom: 0.8rem;
   }
 
   .hero-subtitle {
     font-size: 1.1rem;
+    margin-bottom: 1.5rem;
   }
 
-  .section h2 {
-    font-size: 1.5rem;
+  .btn {
+    padding: 0.8rem 2rem;
+    font-size: 0.95rem;
+  }
+
+  .featured-section {
+    margin: 3rem 1rem;
+    padding: 2rem 1rem;
+    border-radius: 12px;
+  }
+
+  .section-title {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+  }
+
+  .grid {
+    gap: 1.5rem;
+  }
+
+  .grid-4 {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .about-preview {
+    margin: 3rem 1rem 2rem;
+    padding: 2.5rem 1.5rem;
+    border-radius: 12px;
+  }
+
+  .about-preview h2 {
+    font-size: 1.6rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .about-preview p {
+    font-size: 1rem;
   }
 }
 
@@ -308,34 +319,44 @@ body::-webkit-scrollbar {
   .hero-section {
     padding: 3rem 1rem;
   }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .btn {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .about-preview {
+    padding: 2rem 1rem;
+  }
 }
 
-/* Sección Featured / Colecciones Destacadas */
-.featured-section {
-  max-width: 1200px;
-  margin: 4rem auto; /* más espacio arriba y abajo */
-  padding: 2rem 1rem;
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-/* Título de la sección */
-.featured-section .section-title {
-  margin-bottom: 2rem; /* más espacio debajo del título */
-}
-
-/* Grid de cards */
-.grid-4 {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 2rem; /* más espacio entre las cards */
-}
-
-/* Sección About Relicaria */
-.about-preview {
-  max-width: 800px;
-  margin: 4rem auto 2rem; /* más espacio arriba para separar de las cards */
-  background: #fff5c4;
-  padding: 2rem;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+/* Focus States */
+.btn:focus-visible,
+a:focus-visible {
+  outline: 3px solid #d4af37;
+  outline-offset: 3px;
 }

@@ -13,13 +13,21 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* 🎨 Colores principales de ColecXion */
-  --color-primary: #111827; /* azul gris oscuro → navbar */
-  --color-secondary: #3b5eb8; /* azul medio → botones y enlaces */
-  --color-hover: #234ab4; /* azul profundo → hover */
-  --color-bg: #f9fafb; /* fondo claro de las páginas */
-  --color-text: #1f2937; /* texto principal */
-  --color-accent: #facc15; /* amarillo suave opcional (para destacar o usar en logo) */
+  --gold: #d4af37;
+  --gold-dark: #b8941f;
+  --gold-light: #f4d56f;
+  --wood-dark: #3e2723;
+  --wood-medium: #5d4037;
+  --wood-light: #8d6e63;
+  --cream: #f5f5dc;
+  --bg-primary: #faf8f3;
+  --bg-secondary: #f0ede5;
+  --bg-card: #ffffff;
+  --text-primary: #2c1810;
+  --text-secondary: #5d4037;
+  --text-muted: #8d6e63;
+  --border: #d7ccc8;
+  --shadow: rgba(62, 39, 35, 0.1);
 }
 
 a {

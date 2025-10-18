@@ -30,12 +30,8 @@ const UserLayout = () => {
 
     const fetchUserAndRole = async () => {
       try {
-        // Fetch datos del usuario
         const userResponse = await fetch("http://localhost:8080/users/", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         });
         if (!userResponse.ok) throw new Error(`Error: ${userResponse.status}`);
         const userData = await userResponse.json();
@@ -46,23 +42,20 @@ const UserLayout = () => {
           avatar: userData.avatar || "",
         });
 
-        // Fetch rol del usuario
         const roleResponse = await fetch("http://localhost:8080/users/role", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         });
-        if (!roleResponse.ok)
-          throw new Error(`Error fetching role: ${roleResponse.status}`);
+        if (!roleResponse.ok) throw new Error(`Error fetching role: ${roleResponse.status}`);
         const roleData = await roleResponse.json();
         setRole(roleData.role);
 
-        // Redirigir automáticamente según rol
-        if (roleData.role === "ADMIN") {
-          navigate("/profile/categories", { replace: true });
-        } else {
-          navigate("/profile/products", { replace: true });
+        // Redirigir automáticamente solo si estamos en /profile sin ruta hija
+        if (window.location.pathname === "/profile") {
+          if (roleData.role === "ADMIN") {
+            navigate("/profile/categories", { replace: true });
+          } else {
+            navigate("/profile/products", { replace: true });
+          }
         }
       } catch (err) {
         console.error(err);
@@ -75,6 +68,7 @@ const UserLayout = () => {
 
     fetchUserAndRole();
   }, [navigate]);
+
 
   if (loading) return <p>Cargando perfil...</p>;
   if (error) return <p className="error">{error}</p>;
