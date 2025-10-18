@@ -113,7 +113,6 @@ const EditProduct = () => {
 
   // Imágenes
   const handleRemoveExistingImage = async (imageId) => {
-    if (!confirm("¿Eliminar esta imagen definitivamente?")) return;
     try {
       const res = await fetch(`${API_BASE}/images/${imageId}`, {
         method: "DELETE",
@@ -313,7 +312,11 @@ const EditProduct = () => {
 
             {/* Imágenes existentes */}
             <div className="form-group">
-              <label>Existing Photos</label>
+              <label>Fotos existentes</label>
+              <p className="muted" style={{ marginTop: ".025rem" }}>
+                Las imágenes ya cargadas, al ser eliminadas, no podrán ser recuperadas.
+              </p>
+              
               {existingImages.length === 0 ? (
                 <p className="muted">No images uploaded yet.</p>
               ) : (
@@ -337,8 +340,10 @@ const EditProduct = () => {
                         Remove
                       </button>
                     </div>
+                  
                   ))}
                 </div>
+                
               )}
             </div>
 
