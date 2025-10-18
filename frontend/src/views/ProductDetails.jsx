@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from "react";
 import "../assets/ProductDetails.css";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import SingleProduct from "./SingleProduct.jsx";
 import { toast } from "react-toastify";
-
 
 const ProductDetails = () => {
   const { id } = useParams();
   const token = localStorage.getItem("jwtToken");
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
+  const [quantity, setQuantity] = useState(1);
 
   const API_BASE = "http://localhost:8080";
 
@@ -22,6 +23,7 @@ const ProductDetails = () => {
     headers: { "Content-Type": "application/json" },
   };
 
+  // Cargar producto y productos relacionados
   useEffect(() => {
     const fetchProductAndRelated = async () => {
       try {
@@ -30,6 +32,10 @@ const ProductDetails = () => {
         const data = await resProduct.json();
         setProduct(data);
 
+        // Inicializar cantidad al cargar producto
+        if (data.stock > 0) setQuantity(1);
+
+        // Cargar productos relacionados
         if (data.categories?.length > 0) {
           const resCategories = await fetch(`${API_BASE}/categories`, options);
           if (!resCategories.ok)
@@ -109,31 +115,31 @@ const ProductDetails = () => {
   const handleNext = () => {
     setCurrentImage((prev) => (prev === imageIds.length - 1 ? 0 : prev + 1));
   };
+
   const handleAddToCart = async (e) => {
-      e.stopPropagation();
-      if (!token) {
-        toast.info("Please log in to add products to the cart.");
-        navigate("/login");
-        return;
-      }
-  
-      try {
-        const res = await fetch(`${API_BASE}/cart/add`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ productId: id, quantity: 1 }),
-        });
-  
-        if (!res.ok) throw new Error(`Failed to add product: ${res.status}`);
-        toast.success(`${product?.name || "Product"} added to cart!`);
-      } catch (err) {
-        console.error("Error adding to cart:", err);
-        toast.error("Failed to add product to cart. Please try again.");
-      }
-    };
+    e.stopPropagation();
+    if (!token) {
+      toast.info("Please log in to add products to the cart.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/cart/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productId: id, quantity: quantity }),
+      });
+      if (!res.ok) throw new Error(`Failed to add product: ${res.status}`);
+      toast.success(`${product?.name || "Product"} agregado al carrito!`);
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+      toast.error("Error al agregar al carrito. Intenta nuevamente.");
+    }
+  };
 
   return (
     <div className="product-details-page">
@@ -174,6 +180,26 @@ const ProductDetails = () => {
               {product.stock > 0 ? "En stock" : "Sin stock"}
             </span>
           </div>
+
+          {/* Selector de cantidad */}
+          {product.stock > 0 && (
+            <div className="quantity-selector">
+              <label htmlFor="quantity">Cantidad:</label>
+              <select
+                id="quantity"
+                value={quantity}
+                onChange={(e) => setQuantity(parseInt(e.target.value))}
+              >
+                {Array.from({ length: product.stock }, (_, i) => i + 1).map(
+                  (num) => (
+                    <option key={num} value={num}>
+                      {num}
+                    </option>
+                  )
+                )}
+              </select>
+            </div>
+          )}
 
           <button
             disabled={product.stock <= 0}
