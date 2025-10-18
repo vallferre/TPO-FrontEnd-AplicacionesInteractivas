@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-import "../components/CreateProduct.css";
+import "../assets/CreateProduct.css";
 import CategoryMultiSelect from "../components/CategoryMultiSelect";
 import ImageUploader from "../components/ImageUploader";
 

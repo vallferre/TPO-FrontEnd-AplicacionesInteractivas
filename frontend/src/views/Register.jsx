@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import "../components/Register.css";
+import "../assets/Register.css";
 
 export default function CreateAccount() {
   const { setIsLoggedIn } = useContext(AuthContext);

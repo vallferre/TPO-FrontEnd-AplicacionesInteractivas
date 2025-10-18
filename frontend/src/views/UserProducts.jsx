@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import "../components/UserProducts.css";
-import "../components/DeleteConfirmationModal.css";
+import "../assets/UserProducts.css";
+import "../assets/DeleteConfirmationModal.css";
 import { useNavigate } from "react-router-dom";
+import "../index.css";
 
 const API_BASE = "http://localhost:8080";
 

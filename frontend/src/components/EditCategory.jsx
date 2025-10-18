@@ -1,7 +1,7 @@
 // src/views/EditCategory.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-//import "../components/EditCategory.css";
+//import "../assets/EditCategory.css";
 import ImageUploader from "./ImageUploader";
 import { toast } from "react-toastify";
 

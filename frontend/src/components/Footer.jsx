@@ -1,5 +1,5 @@
 import React from "react";
-import "./Footer.css";
+import "../assets/Footer.css";
 
 const Footer = () => {
   return (
@@ -10,7 +10,6 @@ const Footer = () => {
         </p>
 
         <div className="footer-links">
-          <a href="/about">Acerca de</a>
           <a href="/contact">Contacto</a>
           <a href="/terms">Términos</a>
         </div>

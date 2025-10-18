@@ -1,5 +1,5 @@
 import React from "react";
-import "../components/EditProfile.css";
+import "../assets/EditProfile.css";
 
 const EditProfile = () => {
   return (

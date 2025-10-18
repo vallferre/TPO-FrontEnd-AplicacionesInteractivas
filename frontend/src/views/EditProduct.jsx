@@ -1,7 +1,7 @@
 // src/views/EditProduct.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import "../components/EditProduct.css";
+import "../assets/EditProduct.css";
 import CategoryMultiSelect from "../components/CategoryMultiSelect";
 import ImageUploader from "../components/ImageUploader";
 import {toast} from "react-toastify"

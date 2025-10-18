@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import "../components/UserProfile.css";
+import "../assets/UserProfile.css";
 
 const UserLayout = () => {
   const navigate = useNavigate();

@@ -5,7 +5,7 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import "./CategoryMultiSelect.css";
+import "../assets/CategoryMultiSelect.css";
 
 const CategoryMultiSelect = ({
   selected = [],              // [{ id, description }]

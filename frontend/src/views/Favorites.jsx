@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import SingleProduct from "../views/SingleProduct";
-import "../components/Favorites.css";
+import "../assets/Favorites.css";
 
 const API_BASE = "http://localhost:8080";
 

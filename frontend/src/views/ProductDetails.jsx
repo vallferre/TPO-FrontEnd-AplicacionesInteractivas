@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "../components/ProductDetails.css";
+import "../assets/ProductDetails.css";
 import { useParams } from "react-router-dom";
 import SingleProduct from "./SingleProduct.jsx";
 import { toast } from "react-toastify";

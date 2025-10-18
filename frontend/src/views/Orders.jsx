@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../components/Orders.css";
+import "../assets/Orders.css";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);

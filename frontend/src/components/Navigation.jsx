@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import "../components/Navigation.css";
+import "../assets/Navigation.css";
 
 const Navigation = () => {
   const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);

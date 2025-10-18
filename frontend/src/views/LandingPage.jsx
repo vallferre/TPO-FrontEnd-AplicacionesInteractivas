@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import "../components/LandingPage.css";
+import "../assets/LandingPage.css";
 import CategoryCard from "../components/CategoryCard";
 
 const API_BASE = "http://localhost:8080";

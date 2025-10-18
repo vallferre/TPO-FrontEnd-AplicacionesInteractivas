@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import "../components/ProductsNavbar.css";
+import "../assets/ProductsNavbar.css";
 
 const ProductNavbar = ({ setProducts, setLoading, setError }) => {
   const navigate = useNavigate();
@@ -95,22 +95,9 @@ const ProductNavbar = ({ setProducts, setLoading, setError }) => {
 
   return (
     <>
-      {/* Botón hamburguesa */}
-      <button className="menu-toggle" onClick={() => setIsOpen(!isOpen)}>
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-      {isOpen && (
         <div className="product-navbar sidebar-fade-in">
           <div className="filters-section">
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
+            <h2>Filtros</h2>
 
             {/* Categorías */}
             <select
@@ -163,7 +150,6 @@ const ProductNavbar = ({ setProducts, setLoading, setError }) => {
             </button>
           </div>
         </div>
-      )}
     </>
   );
 };

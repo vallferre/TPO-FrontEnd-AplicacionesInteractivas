@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import "../components/AllProducts.css";
+import "../assets/AllProducts.css";
 import SingleProduct from "./SingleProduct.jsx";
 import ProductsNavbar from "../components/ProductsNavbar.jsx";
 

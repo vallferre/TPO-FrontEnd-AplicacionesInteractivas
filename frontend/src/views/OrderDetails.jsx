@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import "../components/OrderDetails.css";
+import "../assets/OrderDetails.css";
 
 const OrderDetails = () => {
   const { orderId } = useParams(); // <- toma el id de la URL

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../components/Categories.css";
+import "../assets/Categories.css";
 import { toast } from "react-toastify";
 import Toaster from "../components/Toaster";
 import ImageUploader from "../components/ImageUploader"; // ⚠️ Asegurate de tener este componente

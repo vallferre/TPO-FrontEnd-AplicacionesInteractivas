@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import "../components/ShoppingCart.css";
+import "../assets/ShoppingCart.css";
 import CartItem from "../components/CartItem";
 import OrderSummary from "../components/OrderSummary";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
