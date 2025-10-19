@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { toast } from "react-toastify";
+import "../assets/FavoriteButton.css"
 
 const API_URL = "http://localhost:8080/users/favorites";
 
@@ -8,7 +9,7 @@ const FavoriteButton = ({ productId, token }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Verificar si el producto ya es favorito al montar
+  // Verificar si el producto ya es favorito al montar
   useEffect(() => {
     const checkFavorite = async () => {
       if (!token) return setLoading(false);
@@ -42,9 +43,10 @@ const FavoriteButton = ({ productId, token }) => {
     }
 
     try {
+      let res;
       if (isFavorite) {
-        // DELETE para remover
-        const res = await fetch(API_URL, {
+        // DELETE para remover de favoritos
+        res = await fetch(API_URL, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -53,12 +55,17 @@ const FavoriteButton = ({ productId, token }) => {
           body: JSON.stringify({ productId }),
         });
 
-        if (!res.ok) throw new Error(`Error removing favorite: ${res.status}`);
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          const msg = data.message || `Error removing favorite: ${res.status}`;
+          throw new Error(msg);
+        }
+
         setIsFavorite(false);
         toast.success("Producto eliminado de favoritos");
       } else {
-        // POST para agregar
-        const res = await fetch(API_URL, {
+        // POST para agregar a favoritos
+        res = await fetch(API_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -67,19 +74,24 @@ const FavoriteButton = ({ productId, token }) => {
           body: JSON.stringify({ productId }),
         });
 
-        if (!res.ok) throw new Error(`Error adding favorite: ${res.status}`);
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          const msg = data.message || `Error adding favorite: ${res.status}`;
+          throw new Error(msg);
+        }
 
-        // Backend devuelve favoriteProductIds
         const data = await res.json();
         const exists = data.favoriteProductIds.includes(productId);
         setIsFavorite(exists);
         toast.success("Producto agregado a favoritos");
       }
     } catch (err) {
-      console.error(err);
-      toast.error("Error al actualizar favoritos");
+      console.error(err.message);
+      toast.error(err.message || "Error al actualizar favoritos");
     }
+
   };
+
 
   if (loading) return <span>Cargando...</span>;
 

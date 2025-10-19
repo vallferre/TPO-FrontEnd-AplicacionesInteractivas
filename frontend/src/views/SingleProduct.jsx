@@ -96,7 +96,7 @@ const SingleProduct = ({ id }) => {
         flexDirection: "column"
       }}
     >
-      {/* ❤️ Botón de favorito en esquina superior derecha */}
+      {/* Botón de favorito en esquina superior derecha */}
       <div
         className="btn-favorite--dynamic"
         style={{
@@ -250,11 +250,14 @@ const SingleProduct = ({ id }) => {
         <button 
           className="btn-add--dynamic" 
           onClick={handleAddToCart}
+          disabled={product.stock === 0} // DESHABILITADO si no hay stock
           style={{
-            marginTop: "0.75rem"
+            marginTop: "0.75rem",
+            backgroundColor: product.stock === 0 ? "#9ca3af" : "#3b82f6",
+            cursor: product.stock === 0 ? "not-allowed" : "pointer"
           }}
         >
-          Add to Cart
+          {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
         </button>
       </div>
     </div>

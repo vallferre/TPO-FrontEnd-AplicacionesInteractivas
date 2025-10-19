@@ -1,0 +1,368 @@
+/* =========================
+   OrderSummary.css – Relicaria Theme
+   Order Summary Component with Discount Details
+   ========================= */
+
+/* Order Summary Container */
+.order-summary {
+  background: #ffffff;
+  border: 2px solid #d4af37;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(62, 39, 35, 0.1);
+  position: sticky;
+  top: 2rem;
+  overflow: hidden;
+  min-width: 300px;
+  height: fit-content;
+}
+
+.order-summary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #d4af37 0%, #b8941f 50%, #d4af37 100%);
+}
+
+/* Title */
+.order-summary h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #3e2723;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #d7ccc8;
+}
+
+/* Summary Details Container */
+.summary-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+/* Summary Row */
+.summary-details > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.summary-details > div p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Left Side (Label) */
+.summary-details > div p:first-child {
+  flex: 1;
+  color: #5d4037;
+  font-weight: 500;
+}
+
+/* Right Side (Value) */
+.summary-details > div p:last-child {
+  min-width: 80px;
+  text-align: right;
+  color: #3e2723;
+  font-weight: 600;
+}
+
+/* Shipping Value */
+.summary-details > div:nth-child(2) p:last-child {
+  color: #059669;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+/* Discount Section */
+.discount-total {
+  font-weight: 600 !important;
+}
+
+.discount-total p:last-child {
+  color: #059669 !important;
+  font-weight: 700 !important;
+}
+
+/* Individual Discount Items */
+.discount-item {
+  font-size: 0.9rem !important;
+  color: #059669;
+  padding-left: 1rem;
+  border-left: 2px solid rgba(5, 150, 105, 0.2);
+  margin-left: 0.5rem;
+}
+
+.discount-item p:first-child {
+  flex: 1;
+  margin: 0;
+  line-height: 1.3;
+  word-wrap: break-word;
+  color: #059669 !important;
+}
+
+.discount-item span {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  display: inline-block;
+  margin-top: 0.25rem;
+}
+
+.discount-item p:last-child {
+  margin: 0;
+  min-width: 80px;
+  text-align: right;
+  font-weight: 600;
+  color: #059669 !important;
+}
+
+/* Divider */
+.summary-details .divider {
+  border-top: 1px solid #d7ccc8;
+  margin: 0.5rem 0;
+}
+
+/* Total Row */
+.total-row {
+  padding-top: 1rem;
+  border-top: 2px solid #d4af37 !important;
+  margin-top: 0.5rem;
+}
+
+.total-row p:first-child {
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+  color: #3e2723 !important;
+}
+
+.total-row p:last-child {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  color: #d4af37 !important;
+  text-shadow: 0 1px 2px rgba(212, 175, 55, 0.2);
+}
+
+/* Checkout Button */
+.order-summary button {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+  color: #3e2723;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+  margin-top: 1.5rem;
+}
+
+.order-summary button:hover {
+  background: linear-gradient(135deg, #b8941f 0%, #d4af37 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.4);
+}
+
+.order-summary button:active {
+  transform: translateY(0);
+}
+
+.order-summary button:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Continue Shopping Link */
+.order-summary > p:last-child {
+  text-align: center;
+  margin: 1rem 0 0 0;
+  font-size: 0.95rem;
+  color: #5d4037;
+}
+
+.order-summary > p:last-child a {
+  color: #d4af37;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.order-summary > p:last-child a:hover {
+  color: #b8941f;
+  border-bottom-color: #b8941f;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.order-summary {
+  animation: fadeIn 0.6s ease-out 0.3s backwards;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+  .order-summary {
+    position: static;
+    padding: 1.75rem;
+    min-width: auto;
+  }
+
+  .order-summary h3 {
+    font-size: 1.35rem;
+  }
+
+  .summary-details > div p {
+    font-size: 0.95rem;
+  }
+
+  .total-row p:first-child {
+    font-size: 1.05rem !important;
+  }
+
+  .total-row p:last-child {
+    font-size: 1.35rem !important;
+  }
+
+  .order-summary button {
+    padding: 0.875rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .order-summary {
+    padding: 1.5rem;
+    border-radius: 8px;
+  }
+
+  .order-summary h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.875rem;
+  }
+
+  .summary-details {
+    gap: 0.75rem;
+  }
+
+  .summary-details > div p {
+    font-size: 0.9rem;
+  }
+
+  .discount-item {
+    font-size: 0.85rem !important;
+    padding-left: 0.75rem;
+    margin-left: 0.25rem;
+  }
+
+  .discount-item span {
+    font-size: 0.75rem;
+  }
+
+  .total-row p:first-child {
+    font-size: 1rem !important;
+  }
+
+  .total-row p:last-child {
+    font-size: 1.25rem !important;
+  }
+
+  .order-summary button {
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .order-summary > p:last-child {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .order-summary {
+    padding: 1.25rem;
+  }
+
+  .order-summary h3 {
+    font-size: 1.15rem;
+  }
+
+  .summary-details > div {
+    gap: 0.75rem;
+  }
+
+  .summary-details > div p {
+    font-size: 0.875rem;
+  }
+
+  .summary-details > div p:last-child {
+    min-width: 70px;
+  }
+
+  .discount-item {
+    font-size: 0.8rem !important;
+    padding-left: 0.5rem;
+  }
+
+  .discount-item span {
+    font-size: 0.7rem;
+  }
+
+  .discount-item p:last-child {
+    min-width: 70px;
+  }
+
+  .total-row p:first-child {
+    font-size: 0.95rem !important;
+  }
+
+  .total-row p:last-child {
+    font-size: 1.15rem !important;
+  }
+
+  .order-summary button {
+    padding: 0.7rem;
+    font-size: 0.9rem;
+  }
+
+  .order-summary > p:last-child {
+    font-size: 0.85rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .order-summary,
+  .order-summary button {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Focus States */
+.order-summary button:focus-visible,
+.order-summary a:focus-visible {
+  outline: 3px solid #d4af37;
+  outline-offset: 2px;
+}

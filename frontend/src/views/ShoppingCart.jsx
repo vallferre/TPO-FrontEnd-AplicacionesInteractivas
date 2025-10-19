@@ -79,7 +79,7 @@ const ShoppingCart = () => {
       fetchCart();
     } catch (err) {
       console.error(err);
-      setCartErrors((prev) => ({ ...prev, [productId]: "No stock" }));
+      setCartErrors((prev) => ({ ...prev, [productId]: "No hay más stock para agregar" }));
     }
   };
 

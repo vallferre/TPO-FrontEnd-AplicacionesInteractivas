@@ -16,6 +16,12 @@ const Navigation = () => {
     else navigate("/login");
   };
 
+  const handleCartClick = (e) => {
+    e.preventDefault();
+    if (isLoggedIn) navigate("/cart");
+    else navigate("/login");
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("jwtToken");
     setIsLoggedIn(false);
@@ -88,9 +94,9 @@ const Navigation = () => {
               <span className="material-symbols-outlined">favorite</span>
             </button>
 
-            <Link to="/cart" className="icon-btn">
+            <button onClick={handleCartClick} className="icon-btn">
               <span className="material-symbols-outlined">shopping_bag</span>
-            </Link>
+            </button>
 
             <div className="profile-dropdown" ref={dropdownRef}>
               <button

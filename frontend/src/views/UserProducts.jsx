@@ -63,8 +63,9 @@ const UserProducts = () => {
         const formatted = data.map((p) => {
           const stock = Number(p.stock ?? p.quantity ?? 0);
 
-          let statusText = stock || "Sold-Out";
-          let statusClass = "status-active";
+          let statusText = stock > 0 ? stock : "Sold-Out";
+          let statusClass = stock > 0 ? "status-active" : "status-soldout";
+
 
           return {
             id: p.id,

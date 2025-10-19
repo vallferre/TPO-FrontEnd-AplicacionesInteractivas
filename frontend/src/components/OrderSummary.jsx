@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import "../assets/OrderSummary.css"
 
 export default function OrderSummary({ subtotal, shipping, tax, total, cartItems = [] }) {
   const navigate = useNavigate();
@@ -52,55 +53,30 @@ export default function OrderSummary({ subtotal, shipping, tax, total, cartItems
   };
 
   return (
-    <div
-      className="order-summary"
-      style={{
-        backgroundColor: "white",
-        padding: "1.5rem",
-        borderRadius: "0.75rem",
-        boxShadow: "0 1px 4px rgba(0, 0, 0, 0.1)",
-        height: "fit-content",
-        minWidth: "300px",
-      }}
-    >
-      <h3
-        style={{
-          fontSize: "1.25rem",
-          fontWeight: "bold",
-          marginBottom: "1rem",
-        }}
-      >
+    <div className="order-summary">
+      <h3>
         Order Summary
       </h3>
 
-      <div
-        className="summary-details"
-        style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}
-      >
+      <div className="summary-details">
         {/* Subtotal */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <p style={{ flex: 1, margin: 0 }}>Subtotal</p>
-          <p style={{ margin: 0, minWidth: "80px", textAlign: "right" }}>${subtotal}</p>
+        <div>
+          <p>Subtotal</p>
+          <p>${subtotal}</p>
         </div>
 
         {/* Shipping */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <p style={{ flex: 1, margin: 0 }}>Shipping</p>
-          <p style={{ margin: 0, minWidth: "80px", textAlign: "right" }}>{shipping}</p>
+        <div>
+          <p>Shipping</p>
+          <p>{shipping}</p>
         </div>
 
         {/* Discount Section */}
         {totalDiscount > 0 && (
           <>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <p style={{ flex: 1, margin: 0, fontWeight: "500" }}>Discount</p>
-              <p style={{
-                margin: 0,
-                minWidth: "80px",
-                textAlign: "right",
-                color: "green",
-                fontWeight: "500"
-              }}>
+            <div>
+              <p>Discount</p>
+              <p>
                 - ${totalDiscount.toFixed(2)}
               </p>
             </div>
@@ -110,35 +86,17 @@ export default function OrderSummary({ subtotal, shipping, tax, total, cartItems
               .map((item) => {
                 const discountAmount = ((item.priceAtAddTime * item.discountedPrice) / 100) * item.quantity;
                 return (
-                  <div
-                    key={item.productId}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      fontSize: "0.9rem",
-                      color: "green",
-                    }}
-                  >
-                    <div style={{ flex: 1, margin: 0, marginLeft: "1rem" }}>
-                      <p style={{
-                        margin: 0,
-                        lineHeight: "1.2",
-                        wordWrap: "break-word"
-                      }}>
+                  <div key={item.productId}>
+                    <div>
+                      <p>
                         {item.productName}
                         <br />
-                        <span style={{ fontSize: "0.8rem", opacity: "0.8" }}>
+                        <span>
                           ({item.discountedPrice}% off)
                         </span>
                       </p>
                     </div>
-                    <p style={{
-                      margin: 0,
-                      minWidth: "80px",
-                      textAlign: "right",
-                      fontWeight: "500"
-                    }}>
+                    <p>
                       - ${discountAmount.toFixed(2)}
                     </p>
                   </div>
@@ -147,55 +105,24 @@ export default function OrderSummary({ subtotal, shipping, tax, total, cartItems
           </>
         )}
 
-        <div style={{ borderTop: "1px solid #e2e8f0", margin: "1rem 0" }}></div>
+        <div></div>
 
         {/* Total */}
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          fontWeight: "600",
-        }}>
-          <p style={{ flex: 1, margin: 0, fontSize: "1.1rem" }}>Total</p>
-          <p style={{
-            margin: 0,
-            minWidth: "80px",
-            textAlign: "right",
-            fontSize: "1.1rem"
-          }}>
+        <div>
+          <p>Total</p>
+          <p>
             ${(total - totalDiscount).toFixed(2)}
           </p>
         </div>
       </div>
 
-      <button
-        onClick={handleCheckout}
-        style={{
-          backgroundColor: "#1173d4",
-          color: "white",
-          fontWeight: "600",
-          width: "100%",
-          marginTop: "1.5rem",
-          padding: "0.75rem",
-          borderRadius: "0.5rem",
-          cursor: "pointer",
-          border: "none",
-          fontSize: "1rem",
-        }}
-      >
+      <button onClick={handleCheckout}>
         Proceed to Checkout
       </button>
 
-      <p style={{ textAlign: "center", marginTop: "1rem", margin: 0 }}>
+      <p>
         or{" "}
-        <Link
-          to="/"
-          style={{
-            color: "#1173d4",
-            fontWeight: "500",
-            textDecoration: "none",
-          }}
-        >
+        <Link to="/">
           Continue Shopping →
         </Link>
       </p>

@@ -1,29 +1,109 @@
-/* ===== Tarjeta base ===== */
+/* =========================
+   SingleProduct.css – Relicaria Theme
+   Individual Product Card Component
+   ========================= */
+
+/* Product Card - Fixed Size Container */
 .product-card--dynamic {
+  position: relative;
+  width: 100%;
+  height: 400px; /* Fixed height for all cards */
+  background: #ffffff;
+  border: 1px solid #d7ccc8;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(62, 39, 35, 0.08);
   display: flex;
   flex-direction: column;
-  background-color: #fff;
-  border-radius: 1rem;
-  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  cursor: pointer;
-  overflow: hidden;
-  max-width: 25rem;
-  margin: auto;
-  height: 360px; /* Altura total reducida */
 }
 
-/* ===== Imagen ===== */
+.product-card--dynamic:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.25);
+  border-color: #d4af37;
+}
+
+/* Loading State */
+.product-card--dynamic.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5d4037;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: default;
+  background: #f0ede5;
+}
+
+.product-card--dynamic.loading:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(62, 39, 35, 0.08);
+}
+
+/* Error State */
+.product-card--dynamic.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c62828;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: default;
+  background: #fee;
+  border-color: #f44336;
+}
+
+/* Favorite Button Container */
+.btn-favorite--dynamic {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(62, 39, 35, 0.15);
+  transition: all 0.3s ease;
+}
+
+.btn-favorite--dynamic:hover {
+  background: #ffffff;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+/* Discount Badge */
+.discount-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  letter-spacing: 0.5px;
+}
+
+/* Product Image Container - Flexible */
 .product-media--dynamic {
-  width: 100%;
-  flex: 1 1 auto; /* Ocupa todo el espacio disponible */
-  min-height: 0; /* Permite que se redimensione */
-  background: #f3f4f6;
+  flex: 1 1 auto;
+  min-height: 0; /* Allows proper flexbox sizing */
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-bottom: 0.05rem solid #e5e7eb;
+  background: #f0ede5;
+  position: relative;
 }
 
 .product-media--dynamic img {
@@ -33,114 +113,295 @@
   transition: transform 0.3s ease;
 }
 
-/* ===== Información del producto ===== */
+.product-card--dynamic:hover .product-media--dynamic img {
+  transform: scale(1.05);
+}
+
+/* Product Info Container - Fixed Height */
 .product-info--dynamic {
-  padding: 0.5rem 1.25rem; /* REDUCIDO de 1rem a 0.5rem */
+  flex: 0 0 auto;
+  padding: 1rem;
+  min-height: 140px; /* Fixed minimum height for consistency */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.2rem; /* REDUCIDO de 0.4rem a 0.2rem */
-  background-color: #fff;
-  flex-grow: 0; /* NO crece - importante */
-  flex-shrink: 0; /* NO se encoge - importante */
-  min-height: 80px; /* Altura fija para la parte blanca */
+  justify-content: space-between;
+  background: #ffffff;
 }
 
-/* 🔹 Versión compacta (reduce área blanca) */
-.product-info--dynamic.compact {
-  padding: 0.4rem 1.25rem; /* AÚN MÁS COMPACTO */
-  gap: 0.1rem;
-  min-height: 70px; /* AÚN MÁS COMPACTO */
-}
-
+/* Product Name - Fixed Height with Ellipsis */
 .product-name--dynamic {
-  font-size: clamp(1rem, 1.6vw, 1.25rem);
-  font-weight: 700;
-  color: #111827;
-  margin: 0;
-  line-height: 1.2; /* REDUCIDO para menos espacio */
-}
-
-.product-price--dynamic {
-  font-size: clamp(1rem, 2vw, 1.25rem);
-  font-weight: 800;
-  color: #2563eb;
-  margin: 0.1rem 0 0.2rem 0; /* REDUCIDO de 0.3rem 0 0.5rem 0 */
-}
-
-/* ===== Botón ===== */
-.btn-add--dynamic {
-  background-color: #2563eb;
-  color: #fff;
-  border: 0;
-  border-radius: 0.75rem;
-  padding: 0.4rem 0.8rem; /* REDUCIDO de 0.5rem 1rem */
-  font-size: clamp(0.85rem, 1.3vw, 1rem);
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
   font-weight: 600;
+  line-height: 1.4;
+  color: #3e2723;
+  height: 2.8rem; /* Fixed height for 2 lines */
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+/* Price Container */
+.price-container {
+  margin-bottom: 0.75rem;
+}
+
+/* Original Price (Strikethrough) */
+.price-original {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.price-original span:first-child {
+  font-size: 0.875rem;
+  color: #8d6e63;
+  text-decoration: line-through;
+  font-weight: 400;
+}
+
+.price-original .discount-tag {
+  font-size: 0.75rem;
+  color: #059669;
+  font-weight: 700;
+  background: #d1fae5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Final Price */
+.price-final {
+  color: #d4af37;
+  font-weight: 700;
+  font-size: 1.25rem;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(212, 175, 55, 0.2);
+}
+
+/* Regular Price (No Discount) */
+.price-regular {
+  color: #d4af37;
+  font-weight: 700;
+  font-size: 1.25rem;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(212, 175, 55, 0.2);
+}
+
+/* Add to Cart Button */
+.btn-add--dynamic {
+  width: 100%;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+  color: #3e2723;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   cursor: pointer;
-  transition: background-color 0.25s ease, transform 0.2s ease;
-  width: 90%;
-  max-width: 15rem;
-  margin-top: 0.3rem; /* REDUCIDO espacio superior */
-}
-
-
-.product-card--dynamic:hover {
-  transform: translateY(-0.25rem);
-  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.12);
-}
-
-.product-card--dynamic:hover .product-media--dynamic img {
-  transform: scale(1.02);
-}
-
-.product-media__placeholder--dynamic {
-  display: grid;
-  place-items: center;
-  color: #9ca3af;
-  font-size: clamp(0.9rem, 1.5vw, 1rem);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+  margin-top: 0.75rem;
 }
 
 .btn-add--dynamic:hover {
-  background-color: #1d4ed8;
-  transform: translateY(-0.05rem);
+  background: linear-gradient(135deg, #b8941f 0%, #d4af37 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
 }
 
 .btn-add--dynamic:active {
-  transform: scale(0.98);
+  transform: translateY(0);
 }
 
-@media (max-width: 48rem) {
+/* Large Card Variant */
+.product-card--dynamic.large-card {
+  height: 420px;
+}
+
+.product-card--dynamic.large-card .product-info--dynamic {
+  min-height: 150px;
+}
+
+/* Compact Info Variant */
+.product-info--dynamic.compact {
+  padding: 1rem;
+  min-height: 120px;
+}
+
+.product-info--dynamic.compact .product-name--dynamic {
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+}
+
+.product-info--dynamic.compact .price-final,
+.product-info--dynamic.compact .price-regular {
+  font-size: 1.125rem;
+}
+
+/* Extra Large Image Variant */
+.product-media--dynamic.extra-large {
+  flex: 1 1 auto;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
   .product-card--dynamic {
-    max-width: 92%;
+    height: 380px;
+  }
+
+  .product-info--dynamic {
+    min-height: 130px;
+    padding: 0.875rem;
+  }
+
+  .product-name--dynamic {
+    font-size: 0.95rem;
+    height: 2.6rem;
+  }
+
+  .price-final,
+  .price-regular {
+    font-size: 1.15rem;
+  }
+
+  .btn-add--dynamic {
+    padding: 0.65rem;
+    font-size: 0.9rem;
+  }
+
+  .btn-favorite--dynamic {
+    width: 36px;
+    height: 36px;
+  }
+
+  .discount-badge {
+    padding: 5px 8px;
+    font-size: 0.75rem;
   }
 }
 
-.btn-favorite--dynamic {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 2.8rem;
-  height: 2.8rem;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: none;
-  display: grid;
-  place-items: center;
-  font-size: 1.5rem;
-  color: #ccc;
-  cursor: pointer;
-  transition: color 0.2s, background-color 0.2s;
-  z-index: 10;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  padding: 0;
+@media (max-width: 768px) {
+  .product-card--dynamic {
+    height: 360px;
+  }
+
+  .product-info--dynamic {
+    min-height: 120px;
+    padding: 0.75rem;
+  }
+
+  .product-name--dynamic {
+    font-size: 0.9rem;
+    height: 2.5rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .price-container {
+    margin-bottom: 0.5rem;
+  }
+
+  .price-final,
+  .price-regular {
+    font-size: 1.1rem;
+  }
+
+  .btn-add--dynamic {
+    padding: 0.6rem;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+  }
+
+  .btn-favorite--dynamic {
+    width: 34px;
+    height: 34px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .discount-badge {
+    top: 10px;
+    left: 10px;
+    padding: 4px 7px;
+    font-size: 0.7rem;
+  }
 }
 
-.btn-favorite--dynamic.active {
-  color: gold;
+@media (max-width: 480px) {
+  .product-card--dynamic {
+    height: 340px;
+    border-radius: 8px;
+  }
+
+  .product-info--dynamic {
+    min-height: 110px;
+    padding: 0.65rem;
+  }
+
+  .product-name--dynamic {
+    font-size: 0.875rem;
+    height: 2.4rem;
+  }
+
+  .price-final,
+  .price-regular {
+    font-size: 1rem;
+  }
+
+  .price-original span:first-child {
+    font-size: 0.8rem;
+  }
+
+  .price-original .discount-tag {
+    font-size: 0.7rem;
+    padding: 2px 5px;
+  }
+
+  .btn-add--dynamic {
+    padding: 0.55rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+  }
+
+  .btn-favorite--dynamic {
+    width: 32px;
+    height: 32px;
+    top: 8px;
+    right: 8px;
+  }
+
+  .discount-badge {
+    top: 8px;
+    left: 8px;
+    padding: 4px 6px;
+    font-size: 0.65rem;
+    border-radius: 4px;
+  }
 }
 
-.btn-favorite--dynamic:hover {
-  color: gold;
-  background-color: rgba(255, 255, 255, 1);
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .product-card--dynamic,
+  .product-media--dynamic img,
+  .btn-add--dynamic,
+  .btn-favorite--dynamic {
+    transition: none !important;
+  }
+}
+
+/* Focus States for Keyboard Navigation */
+.product-card--dynamic:focus-visible {
+  outline: 3px solid #d4af37;
+  outline-offset: 2px;
+}
+
+.btn-add--dynamic:focus-visible,
+.btn-favorite--dynamic:focus-visible {
+  outline: 3px solid #d4af37;
+  outline-offset: 2px;
 }

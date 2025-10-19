@@ -135,6 +135,15 @@ body::-webkit-scrollbar {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
+.discount-section {
+  max-width: 1200px;
+  margin: 4rem auto;
+  padding: 3rem 1rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
 .section-title {
   font-size: clamp(2rem, 4vw, 2.5rem);
   font-weight: 700;
@@ -211,6 +220,18 @@ body::-webkit-scrollbar {
   color: #3e2723;
   border-bottom-color: #3e2723;
 }
+
+.discount-carousel-infinite {
+  display: flex;
+  overflow-x: hidden;
+  gap: 1rem;
+}
+
+.discount-carousel-item {
+  flex: 0 0 auto;
+  width: 250px;
+}
+
 
 /* Loading & Error States */
 .loading-text,
