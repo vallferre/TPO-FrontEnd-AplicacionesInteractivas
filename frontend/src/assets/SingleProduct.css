@@ -1,5 +1,4 @@
 /* ===== Tarjeta base ===== */
-/* SingleProduct.css */
 .product-card--dynamic {
   display: flex;
   flex-direction: column;
@@ -11,29 +10,84 @@
   overflow: hidden;
   max-width: 25rem;
   margin: auto;
-}
-
-.product-card--dynamic:hover {
-  transform: translateY(-0.25rem);
-  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.12);
+  height: 360px; /* Altura total reducida */
 }
 
 /* ===== Imagen ===== */
 .product-media--dynamic {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  flex: 1 1 auto; /* Ocupa todo el espacio disponible */
+  min-height: 0; /* Permite que se redimensione */
   background: #f3f4f6;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
   border-bottom: 0.05rem solid #e5e7eb;
 }
 
 .product-media--dynamic img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   transition: transform 0.3s ease;
+}
+
+/* ===== Información del producto ===== */
+.product-info--dynamic {
+  padding: 0.5rem 1.25rem; /* REDUCIDO de 1rem a 0.5rem */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem; /* REDUCIDO de 0.4rem a 0.2rem */
+  background-color: #fff;
+  flex-grow: 0; /* NO crece - importante */
+  flex-shrink: 0; /* NO se encoge - importante */
+  min-height: 80px; /* Altura fija para la parte blanca */
+}
+
+/* 🔹 Versión compacta (reduce área blanca) */
+.product-info--dynamic.compact {
+  padding: 0.4rem 1.25rem; /* AÚN MÁS COMPACTO */
+  gap: 0.1rem;
+  min-height: 70px; /* AÚN MÁS COMPACTO */
+}
+
+.product-name--dynamic {
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1.2; /* REDUCIDO para menos espacio */
+}
+
+.product-price--dynamic {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 800;
+  color: #2563eb;
+  margin: 0.1rem 0 0.2rem 0; /* REDUCIDO de 0.3rem 0 0.5rem 0 */
+}
+
+/* ===== Botón ===== */
+.btn-add--dynamic {
+  background-color: #2563eb;
+  color: #fff;
+  border: 0;
+  border-radius: 0.75rem;
+  padding: 0.4rem 0.8rem; /* REDUCIDO de 0.5rem 1rem */
+  font-size: clamp(0.85rem, 1.3vw, 1rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.25s ease, transform 0.2s ease;
+  width: 90%;
+  max-width: 15rem;
+  margin-top: 0.3rem; /* REDUCIDO espacio superior */
+}
+
+
+.product-card--dynamic:hover {
+  transform: translateY(-0.25rem);
+  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.12);
 }
 
 .product-card--dynamic:hover .product-media--dynamic img {
@@ -47,52 +101,6 @@
   font-size: clamp(0.9rem, 1.5vw, 1rem);
 }
 
-/* ===== Información del producto ===== */
-.product-info--dynamic {
-  padding: 1rem 1.25rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-  background-color: #fff;
-  flex-grow: 1;
-}
-
-/* 🔹 Versión compacta (reduce área blanca) */
-.product-info--dynamic.compact {
-  padding-block: 0.75rem; /* menos alto arriba y abajo */
-  gap: 0.25rem;
-}
-
-.product-name--dynamic {
-  font-size: clamp(1rem, 1.6vw, 1.25rem);
-  font-weight: 700;
-  color: #111827;
-  margin: 0;
-}
-
-.product-price--dynamic {
-  font-size: clamp(1rem, 2vw, 1.25rem);
-  font-weight: 800;
-  color: #2563eb;
-  margin: 0.3rem 0 0.5rem 0;
-}
-
-/* ===== Botón ===== */
-.btn-add--dynamic {
-  background-color: #2563eb;
-  color: #fff;
-  border: 0;
-  border-radius: 0.75rem;
-  padding: 0.5rem 1rem;
-  font-size: clamp(0.85rem, 1.3vw, 1rem);
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.25s ease, transform 0.2s ease;
-  width: 90%;
-  max-width: 15rem;
-}
-
 .btn-add--dynamic:hover {
   background-color: #1d4ed8;
   transform: translateY(-0.05rem);
@@ -102,20 +110,9 @@
   transform: scale(0.98);
 }
 
-/* ===== Responsive ===== */
 @media (max-width: 48rem) {
   .product-card--dynamic {
     max-width: 92%;
-  }
-
-  .product-media--dynamic {
-    aspect-ratio: 3 / 4;
-  }
-}
-
-@media (min-width: 80rem) {
-  .product-media--dynamic {
-    aspect-ratio: 16 / 9;
   }
 }
 
@@ -123,18 +120,18 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  width: 2.8rem;               /* ancho del círculo */
-  height: 2.8rem;              /* alto igual que el ancho para que sea círculo */
-  border-radius: 50%;           /* círculo perfecto */
-  background-color: rgba(255, 255, 255, 0.9); /* fondo semi-transparente */
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
   border: none;
-  display: grid;                /* centra el contenido */
-  place-items: center;          /* centra la estrella */
+  display: grid;
+  place-items: center;
   font-size: 1.5rem;
   color: #ccc;
   cursor: pointer;
   transition: color 0.2s, background-color 0.2s;
-  z-index: 10;                  /* encima de la imagen */
+  z-index: 10;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   padding: 0;
 }
@@ -145,6 +142,5 @@
 
 .btn-favorite--dynamic:hover {
   color: gold;
-  background-color: rgba(255, 255, 255, 1); /* fondo sólido al hover */
+  background-color: rgba(255, 255, 255, 1);
 }
-

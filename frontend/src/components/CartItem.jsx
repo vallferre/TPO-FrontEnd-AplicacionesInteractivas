@@ -1,10 +1,11 @@
 import React from "react";
 
-export default function CartItem({ item, onRemove, onIncrease, onDecrease }) { 
+export default function CartItem({ item, onRemove, onIncrease, onDecrease }) {
   const API_BASE = "http://localhost:8080";
   const mainImageUrl = item.image
     ? `${API_BASE}/images/${item.image.id}`
-    : "https://via.placeholder.com/800x600?text=Sin+imagen";
+    : "https://via.placeholder.com/80?text=No+Image";
+
   return (
     <li
       className="cart-item"
@@ -22,7 +23,7 @@ export default function CartItem({ item, onRemove, onIncrease, onDecrease }) {
           alt={item.name}
           style={{ width: "80px", height: "80px", borderRadius: "0.5rem", objectFit: "cover" }}
           onError={(e) => {
-            e.target.onerror = null; // previene loop infinito
+            e.target.onerror = null;
             e.target.src = "https://via.placeholder.com/80?text=No+Image";
           }}
         />
@@ -51,22 +52,46 @@ export default function CartItem({ item, onRemove, onIncrease, onDecrease }) {
             marginTop: "1rem",
           }}
         >
-          <div className="quantity" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <button
-              onClick={onDecrease}
-              style={{ backgroundColor: "#e2e8f0", padding: "0.3rem 0.6rem", borderRadius: "0.375rem" }}
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div
+              className="quantity"
+              style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
             >
-              -
-            </button>
-            <span>{item.quantity}</span>
-            <button
-              onClick={onIncrease}
-              style={{ backgroundColor: "#e2e8f0", padding: "0.3rem 0.6rem", borderRadius: "0.375rem" }}
-            >
-              +
-            </button>
+              <button
+                onClick={onDecrease}
+                style={{
+                  backgroundColor: "#e2e8f0",
+                  padding: "0.3rem 0.6rem",
+                  borderRadius: "0.375rem",
+                  cursor: "pointer",
+                }}
+              >
+                -
+              </button>
+              <span>{item.quantity}</span>
+              <button
+                onClick={onIncrease}
+                style={{
+                  backgroundColor: "#e2e8f0",
+                  padding: "0.3rem 0.6rem",
+                  borderRadius: "0.375rem",
+                  cursor: "pointer",
+                }}
+              >
+                +
+              </button>
+            </div>
+            {item.error && (
+              <span style={{ color: "red", fontSize: "0.75rem", marginTop: "0.25rem" }}>
+                {item.error}
+              </span>
+            )}
           </div>
-          <button onClick={onRemove} className="remove-btn" style={{ color: "#ef4444" }}>
+          <button
+            onClick={onRemove}
+            className="remove-btn"
+            style={{ color: "#ef4444" }}
+          >
             Remove
           </button>
         </div>

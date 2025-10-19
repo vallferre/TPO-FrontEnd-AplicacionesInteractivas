@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import "../assets/ShoppingCart.css";
 import CartItem from "../components/CartItem";
 import OrderSummary from "../components/OrderSummary";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
 const ShoppingCart = () => {
-  const [cart, setCart] = useState({ items: [], total: 0 }); 
+  const [cart, setCart] = useState({ items: [], total: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [cartErrors, setCartErrors] = useState({}); // Errores solo de "aumentar"
 
   const token = localStorage.getItem("jwtToken");
 
@@ -32,15 +32,12 @@ const ShoppingCart = () => {
 
       if (!response.ok) {
         if (response.status === 404) {
-          // si el usuario no tiene carrito, inicializar vacío
           setCart({ items: [], total: 0 });
         } else {
           throw new Error(`Error ${response.status}: Failed to fetch cart`);
         }
       } else {
         const data = await response.json();
-
-        // Evitar errores si el back devuelve null, undefined o algo mal formado
         if (!data || !Array.isArray(data.items)) {
           setCart({ items: [], total: 0 });
         } else {
@@ -59,6 +56,7 @@ const ShoppingCart = () => {
     fetchCart();
   }, []);
 
+  // 🔹 Agregar producto
   const handleAdd = async (productId) => {
     try {
       const response = await fetch("http://localhost:8080/cart/add", {
@@ -69,13 +67,23 @@ const ShoppingCart = () => {
         },
         body: JSON.stringify({ productId, quantity: 1 }),
       });
-      if (!response.ok) throw new Error("Failed to add product");
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setCartErrors((prev) => ({ ...prev, [productId]: errorData.message || "Insufficient stock" }));
+        return;
+      }
+
+      // Si se agregó correctamente, borramos el error
+      setCartErrors((prev) => ({ ...prev, [productId]: null }));
       fetchCart();
     } catch (err) {
       console.error(err);
+      setCartErrors((prev) => ({ ...prev, [productId]: "No stock" }));
     }
   };
 
+  // 🔹 Quitar producto
   const handleRemove = async (productId) => {
     try {
       const response = await fetch(
@@ -91,18 +99,20 @@ const ShoppingCart = () => {
       );
       if (!response.ok) throw new Error("Failed to remove product");
       fetchCart();
+
+      // Al bajar cantidad, borramos error si existía
+      setCartErrors((prev) => ({ ...prev, [productId]: null }));
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Mostrar modal antes de eliminar todo el producto
+  // 🔹 Modal eliminar todo
   const handleDeleteAll = (productId, quantity, productName) => {
     setSelectedProduct({ productId, quantity, productName });
     setShowModal(true);
   };
 
-  // Confirmar eliminación completa del producto
   const confirmDelete = async () => {
     if (!selectedProduct) return;
     const { productId, quantity } = selectedProduct;
@@ -121,6 +131,7 @@ const ShoppingCart = () => {
       );
       if (!response.ok) throw new Error("Failed to delete product");
       fetchCart();
+      setCartErrors((prev) => ({ ...prev, [productId]: null }));
     } catch (err) {
       console.error(err);
     } finally {
@@ -136,10 +147,7 @@ const ShoppingCart = () => {
 
   if (loading)
     return (
-      <div
-        className="app-container"
-        style={{ padding: "2rem", textAlign: "center" }}
-      >
+      <div className="app-container" style={{ padding: "2rem", textAlign: "center" }}>
         Loading...
       </div>
     );
@@ -158,25 +166,17 @@ const ShoppingCart = () => {
       </div>
     );
 
-  // Filtrar items con cantidad mayor a 0 para no mostrar items en 0
-  const validCartItems = cart?.items?.filter(item => item.quantity > 0) || [];
+  const validCartItems = cart?.items?.filter((item) => item.quantity > 0) || [];
 
-  // Si el carrito está vacío después de filtrar, mostrar mensaje
   if (!validCartItems.length)
     return (
-      <div
-        className="app-container"
-        style={{ padding: "2rem", textAlign: "center" }}
-      >
+      <div className="app-container" style={{ padding: "2rem", textAlign: "center" }}>
         Your cart is empty.
       </div>
     );
 
   return (
-    <div
-      className="app-container"
-      style={{ padding: "2rem", backgroundColor: "#f9fafb" }}
-    >
+    <div className="app-container" style={{ padding: "2rem", backgroundColor: "#f9fafb" }}>
       <main
         className="main"
         style={{
@@ -245,22 +245,19 @@ const ShoppingCart = () => {
                       price: item.priceAtAddTime,
                       size: item.productDescription,
                       quantity: item.quantity,
+                      stock: item.productStock,
+                      error: cartErrors[item.productId], // ⚡ Solo mostrar cuando falla "onIncrease"
                     }}
                     onIncrease={() => handleAdd(item.productId)}
                     onDecrease={() => handleRemove(item.productId)}
                     onRemove={() =>
-                      handleDeleteAll(
-                        item.productId,
-                        item.quantity,
-                        item.productName
-                      )
+                      handleDeleteAll(item.productId, item.quantity, item.productName)
                     }
                   />
                 ))}
               </ul>
             </div>
 
-            {/* Order Summary */}
             <OrderSummary
               cartItems={validCartItems}
               subtotal={cart.total}
@@ -271,7 +268,6 @@ const ShoppingCart = () => {
         </div>
       </main>
 
-      {/* 🔹 Modal de confirmación */}
       <DeleteConfirmationModal
         isOpen={showModal}
         onConfirm={confirmDelete}
