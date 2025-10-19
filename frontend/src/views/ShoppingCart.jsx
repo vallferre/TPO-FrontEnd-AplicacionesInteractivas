@@ -6,7 +6,7 @@ import OrderSummary from "../components/OrderSummary";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
 const ShoppingCart = () => {
-  const [cart, setCart] = useState({ items: [], total: 0 }); // ✅ estructura inicial segura
+  const [cart, setCart] = useState({ items: [], total: 0 }); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -32,7 +32,7 @@ const ShoppingCart = () => {
 
       if (!response.ok) {
         if (response.status === 404) {
-          // ✅ si el usuario no tiene carrito, inicializar vacío
+          // si el usuario no tiene carrito, inicializar vacío
           setCart({ items: [], total: 0 });
         } else {
           throw new Error(`Error ${response.status}: Failed to fetch cart`);
@@ -40,7 +40,7 @@ const ShoppingCart = () => {
       } else {
         const data = await response.json();
 
-        // ✅ Evitar errores si el back devuelve null, undefined o algo mal formado
+        // Evitar errores si el back devuelve null, undefined o algo mal formado
         if (!data || !Array.isArray(data.items)) {
           setCart({ items: [], total: 0 });
         } else {
@@ -79,7 +79,7 @@ const ShoppingCart = () => {
   const handleRemove = async (productId) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/cart/remove/1?number=1`,
+        `http://localhost:8080/cart/remove/${productId}?number=1`,
         {
           method: "DELETE",
           headers: {
@@ -96,20 +96,20 @@ const ShoppingCart = () => {
     }
   };
 
-  // ✅ Mostrar modal antes de eliminar todo el producto
+  // Mostrar modal antes de eliminar todo el producto
   const handleDeleteAll = (productId, quantity, productName) => {
     setSelectedProduct({ productId, quantity, productName });
     setShowModal(true);
   };
 
-  // ✅ Confirmar eliminación completa del producto
+  // Confirmar eliminación completa del producto
   const confirmDelete = async () => {
     if (!selectedProduct) return;
     const { productId, quantity } = selectedProduct;
 
     try {
       const response = await fetch(
-        `http://localhost:8080/cart/remove/${quantity}?number=${quantity}`,
+        `http://localhost:8080/cart/remove/${productId}?number=${quantity}`,
         {
           method: "DELETE",
           headers: {
@@ -158,8 +158,11 @@ const ShoppingCart = () => {
       </div>
     );
 
-  // ✅ Si el carrito está vacío, mostrar mensaje sin romper
-  if (!cart?.items?.length)
+  // Filtrar items con cantidad mayor a 0 para no mostrar items en 0
+  const validCartItems = cart?.items?.filter(item => item.quantity > 0) || [];
+
+  // Si el carrito está vacío después de filtrar, mostrar mensaje
+  if (!validCartItems.length)
     return (
       <div
         className="app-container"
@@ -232,7 +235,7 @@ const ShoppingCart = () => {
                   padding: 0,
                 }}
               >
-                {cart.items.map((item) => (
+                {validCartItems.map((item) => (
                   <CartItem
                     key={item.productId}
                     item={{
@@ -259,7 +262,7 @@ const ShoppingCart = () => {
 
             {/* Order Summary */}
             <OrderSummary
-              cartItems={cart.items}
+              cartItems={validCartItems}
               subtotal={cart.total}
               shipping="Free"
               total={cart.total}
