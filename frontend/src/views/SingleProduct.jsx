@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import FavoriteButton from "../components/FavoriteButton"; // 👈 importa tu nuevo componente
+import FavoriteButton from "../components/FavoriteButton";
 import "../assets/SingleProduct.css";
 
 const API_BASE = "http://localhost:8080";
@@ -74,7 +74,13 @@ const SingleProduct = ({ id }) => {
     return <div className="product-card--dynamic error">Product not found</div>;
   }
 
-  // === Obtener imagen principal (la primera del array) ===
+  // === Verificar si tiene descuento ===
+  const hasDiscount = product.finalPrice && product.finalPrice < product.price;
+  const discountPercentage = hasDiscount 
+    ? Math.round(((product.price - product.finalPrice) / product.price) * 100)
+    : 0;
+
+  // === Obtener imagen principal ===
   const mainImageUrl = product.imageIds?.[0]
     ? `${API_BASE}/images/${product.imageIds[0]}`
     : "https://via.placeholder.com/800x600?text=Sin+imagen";
@@ -83,7 +89,12 @@ const SingleProduct = ({ id }) => {
     <div
       className="product-card--dynamic large-card"
       onClick={handleCardClick}
-      style={{ position: "relative" }}
+      style={{ 
+        position: "relative",
+        height: "400px", // Altura fija para todas las tarjetas
+        display: "flex",
+        flexDirection: "column"
+      }}
     >
       {/* ❤️ Botón de favorito en esquina superior derecha */}
       <div
@@ -94,17 +105,52 @@ const SingleProduct = ({ id }) => {
           right: "12px",
           zIndex: 10,
         }}
-        onClick={(e) => e.stopPropagation()} // evita que se dispare el navigate
+        onClick={(e) => e.stopPropagation()}
       >
         <FavoriteButton productId={id} token={token} />
       </div>
 
-      {/* Imagen principal */}
-      <div className="product-media--dynamic extra-large">
+      {/* Etiqueta de descuento */}
+      {hasDiscount && (
+        <div
+          style={{
+            position: "absolute",
+            top: "12px",
+            left: "12px",
+            backgroundColor: "#10b981",
+            color: "white",
+            padding: "4px 8px",
+            borderRadius: "4px",
+            fontSize: "0.75rem",
+            fontWeight: "600",
+            zIndex: 10,
+          }}
+        >
+          {discountPercentage}% OFF
+        </div>
+      )}
+
+      {/* Imagen principal - Se expande para ocupar el espacio disponible */}
+      <div 
+        className="product-media--dynamic extra-large"
+        style={{ 
+          flex: "1 1 auto",
+          minHeight: "0", // Permite que la imagen se redimensione
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden"
+        }}
+      >
         <img
           src={mainImageUrl}
           alt={product.name}
           loading="lazy"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover"
+          }}
           onError={(e) => {
             e.currentTarget.src =
               "https://via.placeholder.com/800x600?text=Sin+imagen";
@@ -112,17 +158,102 @@ const SingleProduct = ({ id }) => {
         />
       </div>
 
-      {/* Información */}
-      <div className="product-info--dynamic compact">
-        <h3 className="product-name--dynamic">{product.name}</h3>
+      {/* Información - Altura fija para mantener consistencia */}
+      <div 
+        className="product-info--dynamic compact"
+        style={{
+          flex: "0 0 auto",
+          padding: "1rem",
+          minHeight: "120px", // Altura mínima para el área de información
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between"
+        }}
+      >
+        <div>
+          {/* Nombre del producto */}
+          <h3 
+            className="product-name--dynamic"
+            style={{
+              margin: "0 0 0.5rem 0",
+              fontSize: "1rem",
+              lineHeight: "1.4",
+              height: "2.8rem", // Altura fija para 2 líneas
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical"
+            }}
+          >
+            {product.name}
+          </h3>
 
-        {product.finalPrice != null && (
-          <p className="product-price--dynamic">
-            ${Number(product.finalPrice).toLocaleString()}
-          </p>
-        )}
+          {/* Precios - PRECIO ORIGINAL ARRIBA, PRECIO CON DESCUENTO ABAJO */}
+          <div className="price-container">
+            {hasDiscount ? (
+              <>
+                {/* Precio original tachado (ARRIBA) */}
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
+                  <span
+                    style={{
+                      fontSize: "0.875rem",
+                      color: "#6b7280",
+                      textDecoration: "line-through",
+                      fontWeight: "400",
+                    }}
+                  >
+                    ${Number(product.price).toLocaleString()}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "#10b981",
+                      fontWeight: "600",
+                      backgroundColor: "#ecfdf5",
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {discountPercentage}% off
+                  </span>
+                </div>
+                
+                {/* Precio final con descuento (ABAJO) */}
+                <p
+                  style={{
+                    color: "#1f2937",
+                    fontWeight: "600",
+                    fontSize: "1.125rem",
+                    margin: "0",
+                  }}
+                >
+                  ${Number(product.finalPrice).toLocaleString()}
+                </p>
+              </>
+            ) : (
+              // Precio normal sin descuento
+              <p
+                style={{
+                  color: "#1f2937",
+                  fontWeight: "600",
+                  fontSize: "1.125rem",
+                  margin: "0",
+                }}
+              >
+                ${Number(product.price).toLocaleString()}
+              </p>
+            )}
+          </div>
+        </div>
 
-        <button className="btn-add--dynamic" onClick={handleAddToCart}>
+        {/* Botón Add to Cart - Siempre en la misma posición */}
+        <button 
+          className="btn-add--dynamic" 
+          onClick={handleAddToCart}
+          style={{
+            marginTop: "0.75rem"
+          }}
+        >
           Add to Cart
         </button>
       </div>
