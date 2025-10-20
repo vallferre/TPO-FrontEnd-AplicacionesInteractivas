@@ -6,7 +6,7 @@ import "../assets/Navigation.css";
 const API_BASE = "http://localhost:8080";
 
 const Navigation = () => {
-  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
+  const { isLoggedIn, setIsLoggedIn, userUpdated } = useContext(AuthContext);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [userImage, setUserImage] = useState(null);
@@ -39,6 +39,7 @@ const Navigation = () => {
 
         if (!imageRes.ok) {
           console.warn("El usuario no tiene imagen cargada");
+          setUserImage(null);
           return;
         }
 
@@ -51,7 +52,7 @@ const Navigation = () => {
     };
 
     fetchUserAndImage();
-  }, [isLoggedIn]);
+  }, [isLoggedIn, userUpdated]); // 👈 se actualiza cuando cambia la imagen o el login
 
   const handleFavoritesClick = (e) => {
     e.preventDefault();
@@ -85,7 +86,7 @@ const Navigation = () => {
     }
   };
 
-  // Cerrar menú al hacer clic fuera
+  // 🔒 Cerrar menú al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {

@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react"; // ✅ agregado useContext
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { toast } from "react-toastify";
 import "../assets/EditProfile.css";
 
 const EditProfile = () => {
   const navigate = useNavigate();
+  const { updateUser } = useContext(AuthContext); // ✅ obtener updateUser del contexto
 
   const [formData, setFormData] = useState({
     name: "",
@@ -30,26 +33,21 @@ const EditProfile = () => {
     const file = e.target.files[0];
     if (file) {
       setProfileImage(file);
-      
-      // Crear preview de la imagen
+
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
+      reader.onloadend = () => setImagePreview(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
-  // Eliminar imagen seleccionada
   const handleRemoveImage = () => {
     setProfileImage(null);
     setImagePreview(null);
-    // También puedes resetear el input file
-    const fileInput = document.getElementById('profile-image');
-    if (fileInput) fileInput.value = '';
+    const fileInput = document.getElementById("profile-image");
+    if (fileInput) fileInput.value = "";
   };
 
-  // Manejar envío del formulario
+  // Envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage(null);
@@ -57,25 +55,16 @@ const EditProfile = () => {
 
     try {
       const token = localStorage.getItem("jwtToken");
-
-      // Crear FormData
       const submitData = new FormData();
 
-      // Convertir formData a JSON y agregar como Blob
       const userJson = JSON.stringify(formData);
       submitData.append("user", new Blob([userJson], { type: "application/json" }));
 
-      // Agregar imagen si existe
-      if (profileImage) {
-        submitData.append("fileImage", profileImage);
-      }
+      if (profileImage) submitData.append("fileImage", profileImage);
 
       const response = await fetch("http://localhost:8080/users/edit", {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          // NO poner Content-Type, lo hace automáticamente el navegador
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: submitData,
       });
 
@@ -85,24 +74,30 @@ const EditProfile = () => {
       }
 
       const data = await response.json();
-      setMessage(data.message || "Profile updated successfully!");
+      toast.success(data.message || "Profile updated successfully!");
+
+      // ✅ Actualizar los datos del usuario globalmente (para Navigation.jsx)
+      // Si el backend devuelve la nueva URL o el id, la usamos
+      updateUser({
+        username: data.username || formData.username,
+        email: data.email || formData.email,
+        name: data.name || formData.name,
+        surname: data.surname || formData.surname,
+        profileImageUrl: data.profileImageUrl || null,
+      });
 
       // Limpiar campos
       setFormData((prev) => ({ ...prev, password: "" }));
       setProfileImage(null);
       setImagePreview(null);
 
-      // Redirigir tras 1.5 segundos
-      setTimeout(() => {
-        navigate("/profile");
-      }, 1500);
-
+      // Esperar un momento para mostrar el mensaje antes de redirigir
+      setTimeout(() => navigate("/profile"), 800);
     } catch (err) {
       console.error("Error updating profile:", err);
       setError(err.message || "An error occurred while updating profile");
     }
   };
-
 
   return (
     <div className="edit-profile-container">
@@ -112,14 +107,13 @@ const EditProfile = () => {
           <p>Update your profile information.</p>
         </div>
 
-        {/* Sección de imagen de perfil */}
         <div className="profile-image-section">
           <div className="profile-image-container">
             <div className="profile-image-wrapper">
               {imagePreview ? (
-                <img 
-                  src={imagePreview} 
-                  alt="Profile preview" 
+                <img
+                  src={imagePreview}
+                  alt="Profile preview"
                   className="profile-image-preview"
                 />
               ) : (
@@ -128,7 +122,7 @@ const EditProfile = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="profile-image-actions">
               <label htmlFor="profile-image" className="image-upload-btn">
                 <span className="material-symbols-outlined">photo_camera</span>
@@ -139,12 +133,12 @@ const EditProfile = () => {
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                style={{ display: 'none' }}
+                style={{ display: "none" }}
               />
-              
+
               {imagePreview && (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="image-remove-btn"
                   onClick={handleRemoveImage}
                 >
@@ -157,59 +151,24 @@ const EditProfile = () => {
         </div>
 
         <form className="edit-profile-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Name</label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              placeholder="John"
-              value={formData.name}
-              onChange={handleChange}
-              pattern="[A-Za-zÀ-ÿ\s]{2,40}"
-              title="Solo letras y espacios (2 a 40 caracteres)"
-            />
-          </div>
+          {/* Campos de texto */}
+          {["name", "surname", "email", "username"].map((field) => (
+            <div className="form-group" key={field}>
+              <label htmlFor={field}>
+                {field.charAt(0).toUpperCase() + field.slice(1)}
+              </label>
+              <input
+                id={field}
+                name={field}
+                type={field === "email" ? "email" : "text"}
+                value={formData[field]}
+                placeholder={`Enter ${field}`}
+                onChange={handleChange}
+              />
+            </div>
+          ))}
 
-          <div className="form-group">
-            <label htmlFor="surname">Surname</label>
-            <input
-              id="surname"
-              name="surname"
-              type="text"
-              placeholder="Doe"
-              value={formData.surname}
-              onChange={handleChange}
-              pattern="[A-Za-zÀ-ÿ\s]{2,40}"
-              title="Solo letras y espacios (2 a 40 caracteres)"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              value={formData.email}
-              onChange={handleChange}
-              title="Ingresá un email válido"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              placeholder="johndoe"
-              value={formData.username}
-              onChange={handleChange}
-            />
-          </div>
-
+          {/* Campo de contraseña */}
           <div className="form-group password-group">
             <label htmlFor="password">New Password</label>
             <div className="password-input-wrapper">
@@ -220,8 +179,6 @@ const EditProfile = () => {
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={handleChange}
-                pattern="(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}"
-                title="Al menos 6 caracteres, una letra y un número"
               />
               <button
                 type="button"
@@ -233,7 +190,6 @@ const EditProfile = () => {
                 </span>
               </button>
             </div>
-            <p className="form-note">Leave blank to keep your current password.</p>
           </div>
 
           <div className="form-actions">

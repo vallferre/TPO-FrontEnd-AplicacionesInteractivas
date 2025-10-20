@@ -20,7 +20,6 @@ function authHeaders() {
   const t = getToken();
   if (!t) return {};
   // Diagnóstico: ver si hay token
-  console.debug("[CreateProduct] Using token (first 20 chars):", t.slice(0, 20));
   return { Authorization: `Bearer ${t}` };
 }
 
@@ -99,8 +98,6 @@ const CreateProduct = () => {
       body: JSON.stringify(payload),
     });
 
-    console.debug("[CreateProduct] Response status:", res.status);
-
     if (!res.ok) {
       let msg = `Error al crear producto (HTTP ${res.status})`;
       try {
@@ -134,7 +131,6 @@ const CreateProduct = () => {
       fd.append("file", file);
 
       const url = `${API_BASE}/products/${productId}/images`;
-      console.debug("[CreateProduct] Upload image", file.name, "->", url);
 
       const res = await fetch(url, {
         method: "POST",
