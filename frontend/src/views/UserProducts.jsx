@@ -6,7 +6,12 @@ import "../index.css";
 
 const API_BASE = "http://localhost:8080";
 
-const DeleteConfirmationModal = ({ isOpen, onConfirm, onCancel, productName }) => {
+const DeleteConfirmationModal = ({
+  isOpen,
+  onConfirm,
+  onCancel,
+  productName,
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -18,8 +23,12 @@ const DeleteConfirmationModal = ({ isOpen, onConfirm, onCancel, productName }) =
           Esta acción no puede ser deshecha.
         </p>
         <div className="modal-buttons">
-          <button className="btn-cancel" onClick={onCancel}>Cancel</button>
-          <button className="btn-confirm" onClick={onConfirm}>Delete</button>
+          <button className="btn-cancel" onClick={onCancel}>
+            Cancel
+          </button>
+          <button className="btn-confirm" onClick={onConfirm}>
+            Delete
+          </button>
         </div>
       </div>
     </div>
@@ -66,7 +75,6 @@ const UserProducts = () => {
           let statusText = stock > 0 ? stock : "Sold-Out";
           let statusClass = stock > 0 ? "status-active" : "status-soldout";
 
-
           return {
             id: p.id,
             name: p.name,
@@ -88,7 +96,8 @@ const UserProducts = () => {
   const handleEdit = (productId) => navigate(`/edit/${productId}`);
 
   const handleRowClick = (e, id) => {
-    if (e.target.closest(".edit-btn") || e.target.closest(".delete-btn")) return;
+    if (e.target.closest(".edit-btn") || e.target.closest(".delete-btn"))
+      return;
     navigate(`/edit/${id}`);
   };
 
@@ -129,7 +138,7 @@ const UserProducts = () => {
       <div className="user-products-header">
         <h1>Mis Productos</h1>
         <div className="user-products-subheader">
-          <p>Administrar y seguir tus productos.</p>
+          <p>Administra y segui tus productos.</p>
           <button className="create-btn" onClick={handleCreate}>
             <span className="material-symbols-outlined">add</span>
             Crear Producto
