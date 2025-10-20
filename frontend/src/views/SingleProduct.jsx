@@ -107,7 +107,7 @@ const SingleProduct = ({ id }) => {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <FavoriteButton productId={id} token={token} />
+        <FavoriteButton productId={id} productName={product.name} token={token} />
       </div>
 
       {/* Etiqueta de descuento */}
