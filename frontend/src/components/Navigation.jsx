@@ -3,12 +3,55 @@ import { useState, useRef, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import "../assets/Navigation.css";
 
+const API_BASE = "http://localhost:8080";
+
 const Navigation = () => {
   const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [userImage, setUserImage] = useState(null);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  // 🧠 Cargar imagen del usuario usando el token JWT
+  useEffect(() => {
+    const token = localStorage.getItem("jwtToken");
+    if (!isLoggedIn || !token) return;
+
+    const fetchUserAndImage = async () => {
+      try {
+        // 1️⃣ Obtener el usuario actual a partir del token
+        const userRes = await fetch(`${API_BASE}/users/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!userRes.ok) throw new Error("No se pudo obtener el usuario");
+
+        const userData = await userRes.json();
+        const userId = userData.id;
+
+        if (!userId) throw new Error("El ID del usuario no está definido");
+
+        // 2️⃣ Obtener la imagen de ese usuario
+        const imageRes = await fetch(`${API_BASE}/users/${userId}/image`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!imageRes.ok) {
+          console.warn("El usuario no tiene imagen cargada");
+          return;
+        }
+
+        const blob = await imageRes.blob();
+        setUserImage(URL.createObjectURL(blob));
+      } catch (err) {
+        console.error("Error al obtener imagen de usuario:", err);
+        setUserImage(null);
+      }
+    };
+
+    fetchUserAndImage();
+  }, [isLoggedIn]);
 
   const handleFavoritesClick = (e) => {
     e.preventDefault();
@@ -58,13 +101,13 @@ const Navigation = () => {
       <div className="navbar-brand">
         <Link to="/" className="logo-link">
           <h1 className="logo-text">Relicaria</h1>
-          <svg 
-            version="1.0" 
-            xmlns="http://www.w3.org/2000/svg" 
-            className="logo-icon" 
+          <svg
+            version="1.0"
+            xmlns="http://www.w3.org/2000/svg"
+            className="logo-icon"
             viewBox="0 0 64 64"
           >
-            <path 
+            <path
               d="M62.79,29.172l-28-28C34.009,0.391,32.985,0,31.962,0s-2.047,0.391-2.828,1.172l-28,28
               c-1.562,1.566-1.484,4.016,0.078,5.578c1.566,1.57,3.855,1.801,5.422,0.234L8,33.617V60c0,2.211,1.789,4,4,4h16V48h8v16h16
               c2.211,0,4-1.789,4-4V33.695l1.195,1.195c1.562,1.562,3.949,1.422,5.516-0.141C64.274,33.188,64.356,30.734,62.79,29.172z"
@@ -104,8 +147,12 @@ const Navigation = () => {
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
                 <img
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBaTsKRVIvCahzr9M3KsusOGKT2BvLMbZee-jkK1P7OPWNfWFM9b2nS2yMMsX-alJGES8YLdV3ijzIsE7GEYZKb2W0GK0ydmXrKqXcVmJkcGaaJqGd_zHxXQv5GxbvnQQH4TCiQiAHDokR-pZQ9h1EojFL5p8blcGn4V1Fptp5RZWBEA-78HFsEBaPeuae3tzKDrKMttWZA7QxGGM9LLDNrF_gzrc436KakDSecADDhqSoWd5HedyuGQQ4EoJ_ewShuw-kavWztcQ"
+                  src={
+                    userImage ||
+                    "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                  }
                   alt="User"
+                  className="user-avatar"
                 />
               </button>
 

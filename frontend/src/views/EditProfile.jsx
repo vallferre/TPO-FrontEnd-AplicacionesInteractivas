@@ -58,26 +58,23 @@ const EditProfile = () => {
     try {
       const token = localStorage.getItem("jwtToken");
 
-      // Crear FormData para enviar imagen y datos del formulario
+      // Crear FormData
       const submitData = new FormData();
-      
-      // Agregar campos del formulario
-      Object.keys(formData).forEach(key => {
-        if (formData[key]) { // Solo enviar campos que no estén vacíos
-          submitData.append(key, formData[key]);
-        }
-      });
+
+      // Convertir formData a JSON y agregar como Blob
+      const userJson = JSON.stringify(formData);
+      submitData.append("user", new Blob([userJson], { type: "application/json" }));
 
       // Agregar imagen si existe
       if (profileImage) {
-        submitData.append('profileImage', profileImage);
+        submitData.append("fileImage", profileImage);
       }
 
       const response = await fetch("http://localhost:8080/users/edit", {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
-          // No establecer Content-Type cuando se usa FormData, el navegador lo hará automáticamente
+          // NO poner Content-Type, lo hace automáticamente el navegador
         },
         body: submitData,
       });
@@ -105,6 +102,7 @@ const EditProfile = () => {
       setError(err.message || "An error occurred while updating profile");
     }
   };
+
 
   return (
     <div className="edit-profile-container">

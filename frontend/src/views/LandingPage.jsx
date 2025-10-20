@@ -14,33 +14,18 @@ export default function LandingPage() {
   const [errorCategories, setErrorCategories] = useState(null);
   const [errorDiscounts, setErrorDiscounts] = useState(null);
 
+  const [infiniteItems, setInfiniteItems] = useState([]);
   const carouselRef = useRef(null);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const container = carouselRef.current;
-    if (!container) return;
+  // ===== Generar items infinitos para pasarela =====
+  const generateInfiniteItems = (products) => {
+    if (!products || products.length === 0) return [];
+    const repeatCount = Math.ceil(10 / products.length); // repetir mínimo para permitir scroll
+    return Array.from({ length: repeatCount }, () => products).flat();
+  };
 
-    let scrollPos = 0;
-    const speed = 0.5; // velocidad del scroll (px por frame)
-
-    let animationFrame;
-
-    const step = () => {
-      scrollPos += speed;
-      if (scrollPos >= container.scrollWidth / 2) {
-        // reiniciar cuando pase la mitad (porque duplicamos items)
-        scrollPos = 0;
-      }
-      container.scrollLeft = scrollPos;
-      animationFrame = requestAnimationFrame(step);
-    };
-
-    step();
-
-    return () => cancelAnimationFrame(animationFrame);
-  }, [discountedProducts]);
-
-  // Traer categorías
+  // ===== Traer categorías =====
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -63,7 +48,7 @@ export default function LandingPage() {
     fetchCategories();
   }, []);
 
-  // Traer productos en descuento
+  // ===== Traer productos en descuento =====
   useEffect(() => {
     const fetchDiscountedProducts = async () => {
       try {
@@ -72,11 +57,10 @@ export default function LandingPage() {
         const data = await res.json();
         let list = Array.isArray(data.content) ? data.content : data;
 
-        // Filtrar productos con algún descuento y ordenar por mayor dto
         const discounted = list
           .filter((p) => (p.discountPercentage || 0) > 0)
           .sort((a, b) => b.discountPercentage - a.discountPercentage)
-          .slice(0, 5); // Tomar máximo 5
+          .slice(0, 5);
 
         setDiscountedProducts(discounted);
       } catch (err) {
@@ -89,6 +73,32 @@ export default function LandingPage() {
     fetchDiscountedProducts();
   }, []);
 
+  // ===== Actualizar items infinitos =====
+  useEffect(() => {
+    setInfiniteItems(generateInfiniteItems(discountedProducts));
+  }, [discountedProducts]);
+
+  // ===== Scroll infinito =====
+  useEffect(() => {
+    const container = carouselRef.current;
+    if (!container || infiniteItems.length === 0) return;
+
+    let scrollPos = 0;
+    const speed = 0.5;
+
+    const step = () => {
+      scrollPos += speed;
+      if (scrollPos >= container.scrollWidth / 2) {
+        scrollPos = 0;
+      }
+      container.scrollLeft = scrollPos;
+      requestAnimationFrame(step);
+    };
+
+    step();
+  }, [infiniteItems]);
+
+  // ===== Manejar click en categoría =====
   const handleCategoryClick = (categoryDescription) => {
     navigate(`/products?category=${encodeURIComponent(categoryDescription)}`);
   };
@@ -113,26 +123,24 @@ export default function LandingPage() {
       {/* Productos en Descuento */}
       <section className="discount-section fade-up">
         <h2 className="section-title">Productos en Descuento</h2>
-
         {loadingDiscounts ? (
           <p className="loading-text">Cargando productos...</p>
         ) : errorDiscounts ? (
           <p className="error-text">{errorDiscounts}</p>
         ) : discountedProducts.length > 0 ? (
-          <div className="discount-carousel-infinite" ref={carouselRef}>
-            {/* Duplicamos los productos para efecto infinito */}
-            {[...discountedProducts, ...discountedProducts].map((prod, index) => (
-              <div key={`${prod.id}-${index}`} className="discount-carousel-item">
-                <SingleProduct id={prod.id} />
-              </div>
-            ))}
+          <div className="discount-carousel-wrapper">
+            <div className="discount-carousel-infinite" ref={carouselRef}>
+              {infiniteItems.map((prod, index) => (
+                <div key={`${prod.id}-${index}`} className="discount-carousel-item">
+                  <SingleProduct id={prod.id} />
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <p>No hay productos en descuento disponibles.</p>
         )}
       </section>
-
-
 
       {/* Categorías Destacadas */}
       <section className="featured-section fade-up">

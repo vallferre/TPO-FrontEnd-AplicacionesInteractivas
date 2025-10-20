@@ -5,12 +5,13 @@ import "../assets/UserLayout.css";
 const UserLayout = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState({
+    id: null,
     fullName: "",
     email: "",
     username: "",
     avatar: "",
   });
-  const [role, setRole] = useState(""); // rol del usuario: "USER" o "ADMIN"
+  const [role, setRole] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -30,32 +31,46 @@ const UserLayout = () => {
 
     const fetchUserAndRole = async () => {
       try {
+        // Obtener datos del usuario
         const userResponse = await fetch("http://localhost:8080/users/", {
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (!userResponse.ok) throw new Error(`Error: ${userResponse.status}`);
         const userData = await userResponse.json();
+
+        // Intentar obtener la imagen del usuario
+        let avatarUrl = "";
+        try {
+          const imageResponse = await fetch(`http://localhost:8080/users/${userData.id}/image`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (imageResponse.ok) {
+            const blob = await imageResponse.blob();
+            avatarUrl = URL.createObjectURL(blob);
+          }
+        } catch (imgErr) {
+          console.warn("No se pudo obtener la imagen de perfil:", imgErr);
+        }
+
         setUser({
+          id: userData.id,
           fullName: `${userData.name} ${userData.surname}`.trim() || "Usuario",
           email: userData.email || "",
           username: userData.username || "",
-          avatar: userData.avatar || "",
+          avatar: avatarUrl,
         });
 
+        // Obtener el rol del usuario
         const roleResponse = await fetch("http://localhost:8080/users/role", {
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (!roleResponse.ok) throw new Error(`Error fetching role: ${roleResponse.status}`);
         const roleData = await roleResponse.json();
         setRole(roleData.role);
 
-        // Redirigir automáticamente solo si estamos en /profile sin ruta hija
+        // Redirigir automáticamente según el rol
         if (window.location.pathname === "/profile") {
-          if (roleData.role === "ADMIN") {
-            navigate("/profile/categories", { replace: true });
-          } else {
-            navigate("/profile/products", { replace: true });
-          }
+          navigate(roleData.role === "ADMIN" ? "/profile/categories" : "/profile/products", { replace: true });
         }
       } catch (err) {
         console.error(err);
@@ -69,7 +84,6 @@ const UserLayout = () => {
     fetchUserAndRole();
   }, [navigate]);
 
-
   if (loading) return <p>Cargando perfil...</p>;
   if (error) return <p className="error">{error}</p>;
 
@@ -80,15 +94,13 @@ const UserLayout = () => {
       <aside className="sidebar">
         <div className="profile-card">
           <div className="avatar-container">
-            <div
-              className="avatar"
-              style={{
-                backgroundImage: `url("${
-                  user.avatar ||
-                  "https://lh3.googleusercontent.com/aida-public/AB6AXuDfxBzW11MXXkqOvQ1L8OuOOALYsKHFwbQxml2-rowcOj9Xomdwn8fJc3jtXM7hJzEx1E9bkZmCI8V89RTrZBKsqfI5EBca9J2mEalb62mYZxtiJ0-FDfXP8cCR-1wNInR2X-n6hTH09vnIHe_OzwMjbFTmSNJWQcsyUZ_W9QwSKynQigt7FmVj8HjcsjIe9r40HTQo_EK7o12GjWEy2vomFkSqroYp4ewrKHFUvMhEA57a_1TK3MuFw49bZ1ShzpBxX0jgWrPz9fxr"
-                }")`,
-              }}
-            ></div>
+            {user.avatar ? (
+              <img src={user.avatar} alt="User avatar" className="avatar" />
+            ) : (
+              <div className="avatar placeholder">
+                <span className="material-symbols-outlined">person</span>
+              </div>
+            )}
           </div>
           <h2>{user.fullName}</h2>
           <p className="username">{user.username}</p>
