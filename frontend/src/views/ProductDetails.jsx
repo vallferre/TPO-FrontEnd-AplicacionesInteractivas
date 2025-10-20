@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 const ProductDetails = () => {
   const { id } = useParams();
   const token = localStorage.getItem("jwtToken");
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
 
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -107,7 +107,7 @@ const ProductDetails = () => {
   const imageUrl =
     imageIds.length > 0
       ? `${API_BASE}/images/${imageIds[currentImage]}`
-      : "https://via.placeholder.com/600x400?text=Sin+imagen";
+      : null;
 
   const handlePrev = () => {
     setCurrentImage((prev) => (prev === 0 ? imageIds.length - 1 : prev - 1));
@@ -159,26 +159,20 @@ const ProductDetails = () => {
           >
             <FavoriteButton productId={id} productName={product.name} token={token} />
           </div>
-          {imageIds.length > 1 && (
-            <>
-              <button className="carousel-btn left" onClick={handlePrev}>
-                ❮
-              </button>
-              <button className="carousel-btn right" onClick={handleNext}>
-                ❯
-              </button>
-            </>
+          {imageIds.length > 0 ? (
+            <img
+              src={`${API_BASE}/images/${imageIds[currentImage]}`}
+              alt={product.name}
+              className="productImageSpecial"
+              onError={(e) => {
+                e.currentTarget.style.display = "none"; // ocultar img rota
+              }}
+            />
+          ) : (
+            <div className="no-image-placeholder">
+              {product.name}
+            </div>
           )}
-
-          <img
-            src={imageUrl}
-            alt={product.name}
-            className="productImageSpecial"
-            onError={(e) => {
-              e.currentTarget.src =
-                "https://via.placeholder.com/600x400?text=Sin+imagen";
-            }}
-          />
         </div>
 
         <div className="product-info">

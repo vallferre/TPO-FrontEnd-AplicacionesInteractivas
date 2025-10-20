@@ -74,7 +74,6 @@ const CreateProduct = () => {
   const markTouched = (field) =>
     setTouched((t) => ({ ...t, [field]: true }));
 
-  // ---- API calls
   async function createProductOnServer() {
     const payload = {
       name: name.trim(),
@@ -82,7 +81,6 @@ const CreateProduct = () => {
       price: Number(price),
       stock: Number(stock),
       discount: String(discount).trim() === "" ? null : Number(discount),
-      // el backend espera nombres (description) de categorías
       categories: categories.map((c) => c.description),
     };
 
@@ -101,20 +99,24 @@ const CreateProduct = () => {
     if (!res.ok) {
       let msg = `Error al crear producto (HTTP ${res.status})`;
       try {
-        const text = await res.text();
-        if (text) msg = text;
-      } catch {}
+        const body = await res.json();
+        if (body && body.message) msg = body.message;
+      } catch {
+        // fallback si no es JSON
+        try {
+          const text = await res.text();
+          if (text) msg = text;
+        } catch {}
+      }
       throw new Error(msg);
     }
 
-    // obtener id del body o del header Location
     let id = null;
     try {
       const body = await res.json();
       if (body && body.id != null) id = body.id;
-    } catch {
-      // ignore json parse error (quizá vino vacío)
-    }
+    } catch {}
+
     if (!id) {
       const loc = res.headers.get("Location");
       if (loc) id = Number(loc.split("/").pop());
@@ -127,7 +129,6 @@ const CreateProduct = () => {
   async function uploadImagesSequential(productId, files) {
     for (const file of files) {
       const fd = new FormData();
-      // tu backend espera @RequestParam("file")
       fd.append("file", file);
 
       const url = `${API_BASE}/products/${productId}/images`;
@@ -135,7 +136,6 @@ const CreateProduct = () => {
       const res = await fetch(url, {
         method: "POST",
         headers: {
-          // NO setear Content-Type manual con FormData
           ...authHeaders(),
         },
         body: fd,
@@ -143,27 +143,47 @@ const CreateProduct = () => {
 
       if (!res.ok) {
         let msg = `Error al subir imagen "${file.name}" (HTTP ${res.status})`;
+
         try {
-          const txt = await res.text();
-          if (txt) msg = txt;
-        } catch {}
+          // Primero intentamos parsear JSON con 'message'
+          const body = await res.json();
+          if (body && body.message) {
+            msg = body.message;
+
+            // Interceptamos mensaje específico de tamaño
+            if (msg.includes("Maximum upload size exceeded")) {
+              msg = `La imagen "${file.name}" es demasiado grande. Subí una más liviana.`;
+            }
+          }
+        } catch {
+          // fallback a texto plano
+          try {
+            const txt = await res.text();
+            if (txt) {
+              msg = txt;
+              if (msg.includes("Maximum upload size exceeded")) {
+                msg = `La imagen "${file.name}" es demasiado grande. Subí una más liviana.`;
+              }
+            }
+          } catch {}
+        }
+
         throw new Error(msg);
       }
     }
   }
 
-  // ---- submit
+  const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB
+
   const onSubmit = async (e) => {
     e.preventDefault();
 
-    // Requiere sesión (token)
     const token = getToken();
     if (!token) {
       toast.error("Necesitás iniciar sesión para crear productos.");
       return;
     }
 
-    // marcar todo tocado para mostrar errores si los hay
     setTouched({
       name: true,
       desc: true,
@@ -172,16 +192,28 @@ const CreateProduct = () => {
       discount: true,
       categories: true,
     });
+
     if (!isValid) return;
+
+    // ---- Validar imágenes ANTES de crear el producto ----
+    if (imageFiles.length === 0) {
+      toast.error("Debés subir al menos una imagen del producto.");
+      return;
+    }
+
+    for (const file of imageFiles) {
+      if (file.size > MAX_IMAGE_SIZE) {
+        toast.error(`La imagen "${file.name}" es demasiado grande. Máximo permitido: 1MB.`);
+        return; // salir del submit
+      }
+    }
 
     try {
       // 1) crear producto
       const productId = await createProductOnServer();
 
-      // 2) subir imágenes (una por request)
-      if (imageFiles.length > 0) {
-        await uploadImagesSequential(productId, imageFiles);
-      }
+      // 2) subir imágenes (seguridad extra)
+      await uploadImagesSequential(productId, imageFiles);
 
       toast.success("✅ Producto creado y fotos subidas.");
 
@@ -195,13 +227,18 @@ const CreateProduct = () => {
       setImageFiles([]);
       setTouched({});
 
-      // ➜ Redirigir al catálogo
       navigate("/products");
     } catch (err) {
       console.error(err);
+
+      // Si falla la subida de imágenes, podés opcionalmente:
+      // 1) eliminar el producto creado (rollback)
+      // 2) mostrar mensaje amigable
       toast.error(err.message || "Error al crear el producto.");
     }
   };
+
+
 
   return (
     <div className="app">

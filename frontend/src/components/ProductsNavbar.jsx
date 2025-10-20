@@ -16,9 +16,10 @@ const ProductsNavbar = ({ setProducts, setLoading, setError }) => {
   const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "");
   const [discount, setDiscount] = useState(searchParams.get("discount") || "");
   const [rating, setRating] = useState(searchParams.get("rating") || "");
+  const [sortOrder, setSortOrder] = useState(searchParams.get("sort") || "");
 
   const hasActiveFilters =
-    searchTerm || selectedCategories.length > 0 || minPrice || maxPrice || discount || rating;
+    searchTerm || selectedCategories.length > 0 || minPrice || maxPrice || discount || rating || sortOrder;
 
   // Traer categorías
   useEffect(() => {
@@ -63,11 +64,16 @@ const ProductsNavbar = ({ setProducts, setLoading, setError }) => {
       if (filters.minPrice) list = list.filter((p) => p.finalPrice >= parseFloat(filters.minPrice));
       if (filters.maxPrice) list = list.filter((p) => p.finalPrice <= parseFloat(filters.maxPrice));
       if (filters.discount)
-        list = list.filter(
-          (p) => (p.discountPercentage || 0) >= parseFloat(filters.discount)
-        );
+        list = list.filter((p) => (p.discountPercentage || 0) >= parseFloat(filters.discount));
       if (filters.rating)
         list = list.filter((p) => (p.rating || 0) >= parseInt(filters.rating));
+
+      // Ordenar por finalPrice
+      if (filters.sortOrder === "asc") {
+        list = list.sort((a, b) => a.finalPrice - b.finalPrice);
+      } else if (filters.sortOrder === "desc") {
+        list = list.sort((a, b) => b.finalPrice - a.finalPrice);
+      }
 
       setProducts(list);
     } catch (err) {
@@ -88,6 +94,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError }) => {
       maxPrice,
       discount,
       rating,
+      sortOrder,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -101,6 +108,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError }) => {
     if (maxPrice) params.maxPrice = maxPrice;
     if (discount) params.discount = discount;
     if (rating) params.rating = rating;
+    if (sortOrder) params.sort = sortOrder;
 
     setSearchParams(params);
     navigate(`/products?${new URLSearchParams(params).toString()}`);
@@ -112,6 +120,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError }) => {
       maxPrice,
       discount,
       rating,
+      sortOrder,
     });
   };
 
@@ -123,6 +132,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError }) => {
     setMaxPrice("");
     setDiscount("");
     setRating("");
+    setSortOrder("");
     setSearchParams({});
     navigate("/products");
 
@@ -179,6 +189,15 @@ const ProductsNavbar = ({ setProducts, setLoading, setError }) => {
             <option value="10">10%+</option>
             <option value="20">20%+</option>
             <option value="50">50%+</option>
+          </select>
+        </div>
+
+        <div className="filter-group">
+          <h3>Ordenar por precio</h3>
+          <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+            <option value="">Por defecto</option>
+            <option value="asc">Menor a mayor</option>
+            <option value="desc">Mayor a menor</option>
           </select>
         </div>
 

@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import "../assets/EditProduct.css";
 import CategoryMultiSelect from "../components/CategoryMultiSelect";
 import ImageUploader from "../components/ImageUploader";
-import {toast} from "react-toastify"
+import { toast } from "react-toastify";
 
 const API_BASE = "http://localhost:8080";
 
@@ -25,19 +25,22 @@ const EditProduct = () => {
   const [stock, setStock] = useState(0);
 
   // Categorías
-  const [originalCategories, setOriginalCategories] = useState([]); // [{id, description}] bloqueadas
-  const [selectedCategories, setSelectedCategories] = useState([]); // originales + nuevas
+  const [originalCategories, setOriginalCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
   // Imágenes
-  const [existingImages, setExistingImages] = useState([]); // [{id, filename, ...}]
-  const [newImages, setNewImages] = useState([]); // File[]
+  const [existingImages, setExistingImages] = useState([]);
+  const [newImages, setNewImages] = useState([]);
+  const [imagesToDelete, setImagesToDelete] = useState([]); // <-- marcar para eliminar
 
   // Estado
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  // Helpers fetch
+  const MAX_IMAGE_SIZE = 1 * 1024 * 1024;
+
+  // Fetchers
   const fetchProduct = async () => {
     const res = await fetch(`${API_BASE}/products/id/${id}`, {
       headers: { "Content-Type": "application/json" },
@@ -77,19 +80,17 @@ const EditProduct = () => {
 
         setName(product.name ?? "");
         setDescription(product.description ?? "");
-        setPrice(String(product.price ?? "")); // sin pattern para evitar falsos errores
+        setPrice(String(product.price ?? ""));
         setDiscount(Number(product.discount ?? 0));
         setStock(Number(product.quantity ?? product.stock ?? 0));
 
-        // Mapear categorías del producto (strings) -> objetos {id, description}
         const prodCats = Array.isArray(product.categories) ? product.categories : [];
         const mappedOriginals = prodCats
           .map((desc) => catsList.find((c) => c.description === desc))
           .filter(Boolean);
 
         setOriginalCategories(mappedOriginals);
-        setSelectedCategories(mappedOriginals); // al inicio = solo originales
-
+        setSelectedCategories(mappedOriginals);
         setExistingImages(Array.isArray(imgs) ? imgs : []);
       } catch (e) {
         console.error(e);
@@ -101,9 +102,8 @@ const EditProduct = () => {
     load();
   }, [id]);
 
-  // CategoryMultiSelect: nunca permitir quitar originales
+  // Categories
   const handleCategoriesChange = (picked) => {
-    // picked: arreglo devuelto por el selector (posibles nuevas)
     const merged = [
       ...originalCategories,
       ...picked.filter((c) => !originalCategories.some((o) => o.id === c.id)),
@@ -111,19 +111,9 @@ const EditProduct = () => {
     setSelectedCategories(merged);
   };
 
-  // Imágenes
-  const handleRemoveExistingImage = async (imageId) => {
-    try {
-      const res = await fetch(`${API_BASE}/images/${imageId}`, {
-        method: "DELETE",
-        headers: { ...authHeaders(), "Content-Type": "application/json" },
-      });
-      if (!res.ok) throw new Error(`Error al eliminar (HTTP ${res.status})`);
-      setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
-    } catch (err) {
-      console.error(err);
-      alert("No se pudo eliminar la imagen.");
-    }
+  // Images
+  const handleMarkImageForDeletion = (imageId) => {
+    setImagesToDelete((prev) => [...prev, imageId]);
   };
 
   const handleRemoveNewImage = (idx) => {
@@ -136,14 +126,12 @@ const EditProduct = () => {
       fd.append("file", file);
       const res = await fetch(`${API_BASE}/products/${productId}/images`, {
         method: "POST",
-        headers: { ...authHeaders() }, // NO setear Content-Type con FormData
+        headers: { ...authHeaders() },
         body: fd,
       });
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(
-          `Error subiendo "${file.name}" (HTTP ${res.status}) ${text || ""}`
-        );
+        throw new Error(`Error subiendo "${file.name}" (HTTP ${res.status}) ${text || ""}`);
       }
     }
   };
@@ -153,11 +141,30 @@ const EditProduct = () => {
 
     const token = localStorage.getItem("jwtToken");
     if (!token) {
-      alert("⚠️ Iniciá sesión nuevamente.");
+      toast.error("⚠️ Iniciá sesión nuevamente.");
       return;
     }
 
-    // Solo categorías NUEVAS (las que no están en originalCategories)
+    const totalImagesAfterDelete =
+      existingImages.length - imagesToDelete.length + newImages.length;
+    if (totalImagesAfterDelete === 0) {
+      toast.error("⚠️ Debe haber al menos una imagen antes de guardar el producto.");
+      return;
+    }
+
+    for (const file of newImages) {
+      if (file.size > MAX_IMAGE_SIZE) {
+        toast.error(
+          `La imagen "${file.name}" es demasiado grande. Máximo permitido: ${MAX_IMAGE_SIZE / 1024 / 1024}MB.`
+        );
+        return;
+      }
+      if (file.size === 0) {
+        toast.error(`La imagen "${file.name}" no es válida.`);
+        return;
+      }
+    }
+
     const newOnly = selectedCategories.filter(
       (c) => !originalCategories.some((o) => o.id === c.id)
     );
@@ -168,7 +175,6 @@ const EditProduct = () => {
       price: Number(price),
       discount: Number(discount) || 0,
       stock: Number.isFinite(Number(stock)) ? parseInt(stock, 10) : 0,
-      // Solo mandamos 'categories' si hay nuevas → evita el 400 del backend
       ...(newOnly.length > 0 && {
         categories: newOnly.map((c) => c.description),
       }),
@@ -177,13 +183,18 @@ const EditProduct = () => {
     try {
       setSaving(true);
 
-      // 1) actualizar producto
+      // Primero eliminar imágenes marcadas
+      for (const imgId of imagesToDelete) {
+        await fetch(`${API_BASE}/images/${imgId}`, {
+          method: "DELETE",
+          headers: authHeaders(),
+        });
+      }
+
+      // Actualizar producto
       const res = await fetch(`${API_BASE}/products/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeaders(),
-        },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
@@ -191,7 +202,7 @@ const EditProduct = () => {
         throw new Error(`Error al actualizar: ${msg || res.status}`);
       }
 
-      // 2) subir nuevas imágenes
+      // Subir nuevas imágenes
       if (newImages.length > 0) {
         await uploadNewImagesSequential(id, newImages);
       }
@@ -200,7 +211,7 @@ const EditProduct = () => {
       navigate(-1);
     } catch (err) {
       console.error(err);
-      alert(err.message || "Hubo un error al actualizar el producto");
+      toast.error(err.message || "Hubo un error al actualizar el producto");
     } finally {
       setSaving(false);
     }
@@ -208,6 +219,10 @@ const EditProduct = () => {
 
   if (loading) return <p>Cargando producto...</p>;
   if (error) return <p className="error">{error}</p>;
+
+  const totalImagesAfterDelete =
+    existingImages.length - imagesToDelete.length + newImages.length;
+  const noImages = totalImagesAfterDelete === 0;
 
   return (
     <div className="edit-page">
@@ -240,7 +255,7 @@ const EditProduct = () => {
               <textarea
                 id="description"
                 name="description"
-                rows="4"
+                rows={4}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
@@ -294,17 +309,14 @@ const EditProduct = () => {
 
             {/* Categorías */}
             <div className="form-group">
-
-              {/* Wrapper que oculta la lista gris interna del multiselect SOLO aquí */}
               <div className="cms-hide-selected">
                 <CategoryMultiSelect
-                    apiBase={API_BASE}
-                    selected={selectedCategories}
-                    onChange={handleCategoriesChange}
-                    lockedIds={originalCategories.map(c => c.id)} // ✅ bloqueadas
+                  apiBase={API_BASE}
+                  selected={selectedCategories}
+                  onChange={handleCategoriesChange}
+                  lockedIds={originalCategories.map((c) => c.id)}
                 />
               </div>
-
               <p className="muted" style={{ marginTop: ".4rem" }}>
                 Las categorías ya asignadas están bloqueadas y no se vuelven a enviar al guardar.
               </p>
@@ -314,36 +326,36 @@ const EditProduct = () => {
             <div className="form-group">
               <label>Fotos existentes</label>
               <p className="muted" style={{ marginTop: ".025rem" }}>
-                Las imágenes ya cargadas, al ser eliminadas, no podrán ser recuperadas.
+                Las imágenes ya cargadas, al ser eliminadas, no podrán ser recuperadas hasta guardar.
               </p>
-              
+
               {existingImages.length === 0 ? (
                 <p className="muted">No images uploaded yet.</p>
               ) : (
                 <div className="thumbs-grid">
-                  {existingImages.map((img) => (
-                    <div key={img.id} className="thumb-card">
-                      <img
-                        src={`${API_BASE}/images/${img.id}`}
-                        alt={img.filename || `image-${img.id}`}
-                        onError={(e) => {
-                          e.currentTarget.src =
-                            "https://via.placeholder.com/200x200?text=No+image";
-                        }}
-                      />
-                      <button
-                        type="button"
-                        className="thumb-remove"
-                        onClick={() => handleRemoveExistingImage(img.id)}
-                        title="Eliminar imagen"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  
-                  ))}
+                  {existingImages
+                    .filter((img) => !imagesToDelete.includes(img.id))
+                    .map((img) => (
+                      <div key={img.id} className="thumb-card">
+                        <img
+                          src={`${API_BASE}/images/${img.id}`}
+                          alt={img.filename || `image-${img.id}`}
+                          onError={(e) => {
+                            e.currentTarget.src =
+                              "https://via.placeholder.com/200x200?text=No+image";
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="thumb-remove"
+                          onClick={() => handleMarkImageForDeletion(img.id)}
+                          title="Eliminar imagen"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
                 </div>
-                
               )}
             </div>
 
@@ -352,13 +364,17 @@ const EditProduct = () => {
               <label>Nuevas fotos</label>
               <ImageUploader onImagesChange={setNewImages} />
               {newImages.length > 0 && (
-                <>
-                  <p className="muted" style={{ marginTop: ".5rem" }}>
-                    Aún no guardadas — se subirán al guardar.
-                  </p>
-                </>
+                <p className="muted" style={{ marginTop: ".5rem" }}>
+                  Aún no guardadas — se subirán al guardar.
+                </p>
               )}
             </div>
+
+            {noImages && (
+              <p className="error" style={{ marginBottom: ".5rem" }}>
+                ⚠️ Debe haber al menos una imagen antes de guardar.
+              </p>
+            )}
 
             {/* Acciones */}
             <div className="form-actions">
@@ -370,7 +386,7 @@ const EditProduct = () => {
               >
                 Cancel
               </button>
-              <button type="submit" className="btn save" disabled={saving}>
+              <button type="submit" className="btn save" disabled={saving || noImages}>
                 {saving ? "Saving..." : "Save Changes"}
               </button>
             </div>

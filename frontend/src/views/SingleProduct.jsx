@@ -83,7 +83,7 @@ const SingleProduct = ({ id }) => {
   // === Obtener imagen principal ===
   const mainImageUrl = product.imageIds?.[0]
     ? `${API_BASE}/images/${product.imageIds[0]}`
-    : "https://via.placeholder.com/800x600?text=Sin+imagen";
+    : "/assets/no-image.jpg";;
 
   return (
     <div
@@ -152,8 +152,9 @@ const SingleProduct = ({ id }) => {
             objectFit: "cover"
           }}
           onError={(e) => {
-            e.currentTarget.src =
-              "https://via.placeholder.com/800x600?text=Sin+imagen";
+            <div className="no-image-placeholder">
+              {product.name}
+            </div>
           }}
         />
       </div>
