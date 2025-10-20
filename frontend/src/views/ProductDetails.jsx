@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../assets/ProductDetails.css";
 import { useParams, useNavigate } from "react-router-dom";
 import SingleProduct from "./SingleProduct.jsx";
+import FavoriteButton from "../components/FavoriteButton";
 import { toast } from "react-toastify";
 
 const ProductDetails = () => {
@@ -145,6 +146,19 @@ const ProductDetails = () => {
     <div className="product-details-page">
       <div className="product-details">
         <div className="image-carousel-container">
+          {/* Botón de favorito en esquina superior derecha */}
+          <div
+            className="btn-favorite--dynamic"
+            style={{
+              position: "absolute",
+              top: "12px",
+              right: "12px",
+              zIndex: 10,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <FavoriteButton productId={id} productName={product.name} token={token} />
+          </div>
           {imageIds.length > 1 && (
             <>
               <button className="carousel-btn left" onClick={handlePrev}>
