@@ -80,17 +80,17 @@ export default function CreateAccount() {
         <main className="main">
           <div className="form-wrapper">
             <div>
-              <h2 className="form-title">Create an account</h2>
+              <h2 className="form-title">Crea una cuenta</h2>
               <p className="form-subtitle">
-                Already have an account?{" "}
-                <Link to="/login" className="link">Sign in</Link>
+                Ya tienes una cuenta?{" "}
+                <Link to="/login" className="link">Inicia sesión</Link>
               </p>
             </div>
 
             <div className="form-card">
               <form className="form" onSubmit={handleSubmit}>
                 <div className="form-group">
-                  <label htmlFor="username">Username</label>
+                  <label htmlFor="username">Nombre de usuario</label>
                   <input
                     id="username"
                     name="username"
@@ -102,7 +102,7 @@ export default function CreateAccount() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="name">First Name</label>
+                  <label htmlFor="name">Primer Nombre</label>
                   <input
                     id="name"
                     name="name"
@@ -114,7 +114,7 @@ export default function CreateAccount() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="surname">Last Name</label>
+                  <label htmlFor="surname">Apellido</label>
                   <input
                     id="surname"
                     name="surname"
@@ -126,7 +126,7 @@ export default function CreateAccount() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="email">Email address</label>
+                  <label htmlFor="email">Email</label>
                   <input
                     id="email"
                     name="email"
@@ -138,7 +138,7 @@ export default function CreateAccount() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="password">Password</label>
+                  <label htmlFor="password">Contraseña</label>
                   <input
                     id="password"
                     name="password"
@@ -150,7 +150,7 @@ export default function CreateAccount() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="confirmPassword">Confirm Password</label>
+                  <label htmlFor="confirmPassword">Confirma Contraseña</label>
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
@@ -165,15 +165,15 @@ export default function CreateAccount() {
                 {loading && <p>Loading...</p>}
 
                 <button type="submit" className="btn-submit" disabled={loading}>
-                  Create Account
+                  Crear cuenta
                 </button>
               </form>
             </div>
 
             <p className="form-footer">
-              By creating an account, you agree to our <br />
-              <a href="#" className="link">Terms of Service</a> and{" "}
-              <a href="#" className="link">Privacy Policy</a>.
+              Creando tu cuenta, das consentimiento a nuestros <br />
+              <a href="#" className="link">Términos de servicio</a> y{" "}
+              <a href="#" className="link">Políticas de privacidad</a>.
             </p>
           </div>
         </main>

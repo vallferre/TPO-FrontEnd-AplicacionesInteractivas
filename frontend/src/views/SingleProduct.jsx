@@ -67,11 +67,11 @@ const SingleProduct = ({ id }) => {
   };
 
   if (loading) {
-    return <div className="product-card--dynamic loading">Loading...</div>;
+    return <div className="product-card--dynamic loading">Cargando...</div>;
   }
 
   if (!product) {
-    return <div className="product-card--dynamic error">Product not found</div>;
+    return <div className="product-card--dynamic error">Producto no encontrado</div>;
   }
 
   // === Verificar si tiene descuento ===
@@ -257,7 +257,7 @@ const SingleProduct = ({ id }) => {
             cursor: product.stock === 0 ? "not-allowed" : "pointer"
           }}
         >
-          {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+          {product.stock === 0 ? "Sin Stock" : "Agregar al Carrito"}
         </button>
       </div>
     </div>

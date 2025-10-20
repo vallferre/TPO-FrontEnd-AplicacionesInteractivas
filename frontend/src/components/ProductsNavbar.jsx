@@ -60,8 +60,8 @@ const ProductsNavbar = ({ setProducts, setLoading, setError }) => {
           p.categories.some((cat) => filters.selectedCategories.includes(cat))
         );
 
-      if (filters.minPrice) list = list.filter((p) => p.price >= parseFloat(filters.minPrice));
-      if (filters.maxPrice) list = list.filter((p) => p.price <= parseFloat(filters.maxPrice));
+      if (filters.minPrice) list = list.filter((p) => p.finalPrice >= parseFloat(filters.minPrice));
+      if (filters.maxPrice) list = list.filter((p) => p.finalPrice <= parseFloat(filters.maxPrice));
       if (filters.discount)
         list = list.filter(
           (p) => (p.discountPercentage || 0) >= parseFloat(filters.discount)

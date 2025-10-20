@@ -160,10 +160,10 @@ const Navigation = () => {
               {isDropdownOpen && (
                 <div className="dropdown-menu">
                   <button onClick={handleProfile} className="dropdown-item">
-                    Profile
+                    Perfil
                   </button>
                   <button onClick={handleLogout} className="dropdown-item">
-                    Logout
+                    Cerrar sesión
                   </button>
                 </div>
               )}
@@ -172,10 +172,10 @@ const Navigation = () => {
         ) : (
           <div className="auth-buttons">
             <Link to="/login" className="auth-btn login-btn">
-              Login
+              Iniciar sesión
             </Link>
             <Link to="/register" className="auth-btn register-btn">
-              Register
+              Registrarse
             </Link>
           </div>
         )}

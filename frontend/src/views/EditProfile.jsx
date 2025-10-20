@@ -103,8 +103,8 @@ const EditProfile = () => {
     <div className="edit-profile-container">
       <div className="edit-profile-card">
         <div className="edit-profile-header">
-          <h1>Edit Profile</h1>
-          <p>Update your profile information.</p>
+          <h1>Editar Perfil</h1>
+          <p>Actualiza la información de tu perfil.</p>
         </div>
 
         <div className="profile-image-section">
@@ -126,7 +126,7 @@ const EditProfile = () => {
             <div className="profile-image-actions">
               <label htmlFor="profile-image" className="image-upload-btn">
                 <span className="material-symbols-outlined">photo_camera</span>
-                Change Photo
+                Cambiar foto
               </label>
               <input
                 id="profile-image"
@@ -143,7 +143,7 @@ const EditProfile = () => {
                   onClick={handleRemoveImage}
                 >
                   <span className="material-symbols-outlined">delete</span>
-                  Remove
+                  Eliminar
                 </button>
               )}
             </div>
@@ -198,10 +198,10 @@ const EditProfile = () => {
               className="cancel-btn"
               onClick={() => navigate("/profile")}
             >
-              Cancel
+              Cancelar
             </button>
             <button type="submit" className="update-btn">
-              Update Profile
+              Actualizar Perfil
             </button>
           </div>
         </form>

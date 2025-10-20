@@ -60,8 +60,8 @@ export default function Login() {
         <main className="main">
           <div className="login-box">
             <div>
-              <h2 className="welcome">Welcome back</h2>
-              <p className="subtitle">Log in to your Relicaria account</p>
+              <h2 className="welcome">Bienvenido de vuelta</h2>
+              <p className="subtitle">Inicia sesión en tu cuenta de Relicaria</p>
             </div>
 
             <form className="form" onSubmit={handleSubmit}>
@@ -69,7 +69,7 @@ export default function Login() {
                 <input
                   type="text"
                   name="username"
-                  placeholder="Username"
+                  placeholder="Nombre de usuario"
                   value={form.username}
                   onChange={handleChange}
                   required
@@ -77,7 +77,7 @@ export default function Login() {
                 <input
                   type="password"
                   name="password"
-                  placeholder="Password"
+                  placeholder="Contraseña"
                   value={form.password}
                   onChange={handleChange}
                   required
@@ -85,7 +85,7 @@ export default function Login() {
               </div>
 
               {error && <p className="error">{error}</p>}
-              {loading && <p>Loading...</p>}
+              {loading && <p>Cargando...</p>}
 
               <button type="submit" className="btn-submit" disabled={loading}>
                 Log In

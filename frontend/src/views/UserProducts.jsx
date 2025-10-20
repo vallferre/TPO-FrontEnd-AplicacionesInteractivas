@@ -12,10 +12,10 @@ const DeleteConfirmationModal = ({ isOpen, onConfirm, onCancel, productName }) =
   return (
     <div className="modal-overlay">
       <div className="modal-container">
-        <h2>Delete Product</h2>
+        <h2>Eliminar Producto</h2>
         <p>
-          Are you sure you want to delete <strong>"{productName}"</strong>?<br />
-          This action cannot be undone.
+          Seguro que quieres eliminar <strong>"{productName}"</strong>?<br />
+          Esta acción no puede ser deshecha.
         </p>
         <div className="modal-buttons">
           <button className="btn-cancel" onClick={onCancel}>Cancel</button>
@@ -127,31 +127,31 @@ const UserProducts = () => {
   return (
     <div className="user-products-container">
       <div className="user-products-header">
-        <h1>My Products</h1>
+        <h1>Mis Productos</h1>
         <div className="user-products-subheader">
-          <p>Manage and track your product listings</p>
+          <p>Administrar y seguir tus productos.</p>
           <button className="create-btn" onClick={handleCreate}>
             <span className="material-symbols-outlined">add</span>
-            Create Product
+            Crear Producto
           </button>
         </div>
       </div>
 
-      {loading && <p>Loading products...</p>}
+      {loading && <p>Cargando productos...</p>}
       {error && <p className="error">{error}</p>}
 
       {!loading && !error && products.length === 0 ? (
         <div className="empty-products">
-          <p>You don't have any products yet.</p>
+          <p>No tienes ningun producto aún.</p>
         </div>
       ) : (
         <div className="products-table-wrapper">
           <table className="products-table">
             <thead>
               <tr>
-                <th>Product</th>
+                <th>Producto</th>
                 <th>Stock</th>
-                <th className="text-center">Actions</th>
+                <th className="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>

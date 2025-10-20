@@ -105,27 +105,27 @@ const UserLayout = () => {
           <h2>{user.fullName}</h2>
           <p className="username">{user.username}</p>
           <Link to="/editProfile" className="edit-link">
-            Edit Profile
+            Editar Perfil
           </Link>
 
           <nav className="sidebar-nav">
             {!isAdmin && (
               <>
                 <Link to="/profile/orders" className="nav-link">
-                  🛍 Orders
+                  🛍 Mis Órdenes
                 </Link>
                 <Link to="/profile/products" className="nav-link">
-                  🏪 My Products
+                  🏪 Mis Productos
                 </Link>
               </>
             )}
             {isAdmin && (
               <Link to="/profile/categories" className="nav-link">
-                🏷 Categories
+                🏷 Categorías
               </Link>
             )}
             <button onClick={handleLogout} className="nav-link logout">
-              Logout
+              Cerrar sesión
             </button>
           </nav>
         </div>
