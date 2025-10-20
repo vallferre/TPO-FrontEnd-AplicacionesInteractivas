@@ -6,7 +6,7 @@ import "../assets/SingleProduct.css";
 
 const API_BASE = "http://localhost:8080";
 
-const SingleProduct = ({ id }) => {
+const SingleProduct = ({ id, onRemoveFavorite }) => {
   const navigate = useNavigate();
   const token = localStorage.getItem("jwtToken");
 
@@ -107,7 +107,13 @@ const SingleProduct = ({ id }) => {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <FavoriteButton productId={id} productName={product.name} token={token} />
+        <FavoriteButton 
+          productId={id}
+          productName={product.name}
+          token={token}
+          onRemoveFavorite={onRemoveFavorite}
+        />
+
       </div>
 
       {/* Etiqueta de descuento */}

@@ -88,7 +88,7 @@ export default function Login() {
               {loading && <p>Cargando...</p>}
 
               <button type="submit" className="btn-submit" disabled={loading}>
-                Log In
+                Inicia sesión
               </button>
             </form>
           </div>

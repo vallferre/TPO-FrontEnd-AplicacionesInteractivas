@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "../assets/ProductsNavbar.css";
 
-const ProductsNavbar = ({ setProducts, setLoading, setError }) => {
+const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) => { // ✅ agregado
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -41,6 +41,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError }) => {
     try {
       setLoading(true);
       setError(null);
+      setHasQueried(true); // ✅ marcamos que ya hubo intento de búsqueda
 
       const res = await fetch("http://localhost:8080/products", {
         headers: { "Content-Type": "application/json" },
@@ -101,6 +102,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError }) => {
 
   // Aplicar filtros
   const applyFilters = () => {
+    setHasQueried(true); // ✅ también marcamos cuando aplica filtros
     const params = {};
     if (searchTerm.trim()) params.keyword = searchTerm.trim();
     if (selectedCategories.length > 0) params.category = selectedCategories;
@@ -126,6 +128,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError }) => {
 
   // Limpiar filtros
   const clearFilters = () => {
+    setHasQueried(true); // ✅ marcamos que también se hizo acción de limpieza
     setSearchTerm("");
     setSelectedCategories([]);
     setMinPrice("");
@@ -136,7 +139,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError }) => {
     setSearchParams({});
     navigate("/products");
 
-    fetchAndFilterProducts({}); // Mostrar todos los productos
+    fetchAndFilterProducts({});
   };
 
   const toggleCategory = (catDescription) => {

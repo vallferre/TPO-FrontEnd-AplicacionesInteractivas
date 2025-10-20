@@ -121,7 +121,7 @@ const Navigation = () => {
         <input
           type="text"
           className="search-input"
-          placeholder="Search..."
+          placeholder="Busca..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={(e) => {

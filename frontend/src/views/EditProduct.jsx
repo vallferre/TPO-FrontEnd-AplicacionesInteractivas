@@ -229,14 +229,14 @@ const EditProduct = () => {
       <main className="edit-main">
         <div className="edit-container">
           <div className="edit-header">
-            <h2>Edit Product</h2>
-            <p>Update the details of your product below.</p>
+            <h2>Editar Producto</h2>
+            <p>Actualice los detalles de su producto a continuación.</p>
           </div>
 
           <form className="edit-form" onSubmit={handleSubmit}>
             {/* Nombre */}
             <div className="form-group">
-              <label htmlFor="name">Product Name</label>
+              <label htmlFor="name">Nombre del Producto</label>
               <input
                 id="name"
                 name="name"
@@ -251,7 +251,7 @@ const EditProduct = () => {
 
             {/* Descripción */}
             <div className="form-group">
-              <label htmlFor="description">Description</label>
+              <label htmlFor="description">Descripción</label>
               <textarea
                 id="description"
                 name="description"
@@ -266,7 +266,7 @@ const EditProduct = () => {
             {/* Precio y descuento */}
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="price">Price ($)</label>
+                <label htmlFor="price">Precio ($)</label>
                 <div className="price-wrapper">
                   <input
                     id="price"
@@ -281,7 +281,7 @@ const EditProduct = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="discount">Discount (%)</label>
+                <label htmlFor="discount">Descuento (%)</label>
                 <input
                   id="discount"
                   name="discount"
@@ -296,7 +296,7 @@ const EditProduct = () => {
 
             {/* Stock */}
             <div className="form-group">
-              <label htmlFor="quantity">Quantity</label>
+              <label htmlFor="quantity">Cantidad</label>
               <input
                 id="quantity"
                 name="quantity"
@@ -330,7 +330,7 @@ const EditProduct = () => {
               </p>
 
               {existingImages.length === 0 ? (
-                <p className="muted">No images uploaded yet.</p>
+                <p className="muted">Aún no hay imágenes cargadas</p>
               ) : (
                 <div className="thumbs-grid">
                   {existingImages

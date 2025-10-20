@@ -102,7 +102,7 @@ export default function CreateAccount() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="name">Primer Nombre</label>
+                  <label htmlFor="name">Nombre</label>
                   <input
                     id="name"
                     name="name"
@@ -126,7 +126,7 @@ export default function CreateAccount() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="email">Email</label>
+                  <label htmlFor="email">Dirección email</label>
                   <input
                     id="email"
                     name="email"
@@ -162,7 +162,7 @@ export default function CreateAccount() {
                 </div>
 
                 {error && <p className="error">{error}</p>}
-                {loading && <p>Loading...</p>}
+                {loading && <p>Cargando...</p>}
 
                 <button type="submit" className="btn-submit" disabled={loading}>
                   Crear cuenta

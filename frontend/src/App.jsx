@@ -28,6 +28,7 @@ import EditCategory from "./components/EditCategory";
 import About from "./views/About";
 import Contact from "./views/Contact";
 import Terms from "./views/Terms";
+import ErrorView from "./components/ErrorView"
 
 const App = () => {
   return (
@@ -69,6 +70,7 @@ const App = () => {
           <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<Terms />} />
 
+          <Route path="/error" element={<ErrorView />}/>
         </Routes>
       </main>
 

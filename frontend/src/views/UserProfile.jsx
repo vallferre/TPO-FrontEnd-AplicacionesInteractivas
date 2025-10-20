@@ -7,9 +7,9 @@ const UserProfile = () => {
     <div className="profile-page">
       <main className="main-content">
         <div className="header">
-          <h1>My Products</h1>
+          <h1>Mis Products</h1>
           <Link to="/create">
-            <button className="add-button">＋ Add Product</button>
+            <button className="add-button">＋ Agregar Producto</button>
           </Link>
         </div>
 

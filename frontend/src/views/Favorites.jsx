@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import SingleProduct from "../views/SingleProduct";
+import ErrorView from "../components/ErrorView.jsx"; // ✅ importamos ErrorView
 import "../assets/Favorites.css";
 
 const API_BASE = "http://localhost:8080";
@@ -31,12 +32,9 @@ const Favorites = () => {
 
         const data = await response.json();
 
-        // ✅ Ahora el backend devuelve un objeto con un array dentro
-        // Ejemplo: { username: "user_1", favoriteProductIds: [1,2,3], message: "..." }
         if (Array.isArray(data.favoriteProductIds)) {
           setFavoriteIds(data.favoriteProductIds);
         } else if (Array.isArray(data)) {
-          // fallback si por algún motivo devuelve una lista de FavoriteResponse
           setFavoriteIds(
             data.flatMap((fav) => fav.favoriteProductIds || [])
           );
@@ -54,14 +52,13 @@ const Favorites = () => {
     fetchFavorites();
   }, []);
 
-  // ✅ Eliminar un favorito localmente
   const handleRemoveFavorite = (productId) => {
     setFavoriteIds((prev) => prev.filter((id) => id !== productId));
   };
 
   if (loading) return <p>Loading favorites...</p>;
   if (error) return <p className="error">{error}</p>;
-  if (!favoriteIds.length) return <p>You have no favorites yet.</p>;
+  if (!favoriteIds.length) return <ErrorView />; // ✅ usamos ErrorView
 
   return (
     <div className="favorites-page">
@@ -83,4 +80,4 @@ const Favorites = () => {
   );
 };
 
-export default Favorites
+export default Favorites;
