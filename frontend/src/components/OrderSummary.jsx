@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import "../assets/OrderSummary.css"
 
 export default function OrderSummary({ subtotal, shipping, tax, total, cartItems = [] }) {
@@ -17,7 +18,7 @@ export default function OrderSummary({ subtotal, shipping, tax, total, cartItems
     const token = localStorage.getItem("jwtToken");
 
     if (!token) {
-      alert("Please log in to continue with the checkout.");
+      toast.warning("Please log in to continue with the checkout.");
       navigate("/login");
       return;
     }
@@ -27,36 +28,31 @@ export default function OrderSummary({ subtotal, shipping, tax, total, cartItems
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // ✅ corregido (template string)
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Checkout successful:", data);
-
-        // ✅ Redirige usando el orderId devuelto
         navigate(`/order/${data.orderId}`, { state: { order: data } });
       } else if (response.status === 400) {
         const errorMessage = await response.text();
-        alert(`Error: ${errorMessage}`); // ✅ corregido (template string)
+        toast.error(`Error: ${errorMessage}`);
       } else if (response.status === 401) {
-        alert("Unauthorized. Please log in again.");
+        toast.warning("Unauthorized. Please log in again.");
         navigate("/login");
       } else {
-        throw new Error(`Checkout failed with status ${response.status}`); // ✅ corregido (template string)
+        throw new Error(`Checkout failed with status ${response.status}`);
       }
     } catch (error) {
-      console.error("Checkout error:", error);
-      alert("An error occurred during checkout. Please try again.");
+      toast.error("An error occurred during checkout. Please try again.");
+      console.error(error);
     }
   };
 
   return (
     <div className="order-summary">
-      <h3>
-        Order Summary
-      </h3>
+      <h3>Order Summary</h3>
 
       <div className="summary-details">
         {/* Subtotal */}
@@ -76,9 +72,7 @@ export default function OrderSummary({ subtotal, shipping, tax, total, cartItems
           <>
             <div>
               <p>Discount</p>
-              <p>
-                - ${totalDiscount.toFixed(2)}
-              </p>
+              <p>- ${totalDiscount.toFixed(2)}</p>
             </div>
 
             {cartItems
@@ -91,14 +85,10 @@ export default function OrderSummary({ subtotal, shipping, tax, total, cartItems
                       <p>
                         {item.productName}
                         <br />
-                        <span>
-                          ({item.discountedPrice}% off)
-                        </span>
+                        <span>({item.discountedPrice}% off)</span>
                       </p>
                     </div>
-                    <p>
-                      - ${discountAmount.toFixed(2)}
-                    </p>
+                    <p>- ${discountAmount.toFixed(2)}</p>
                   </div>
                 );
               })}
@@ -110,21 +100,15 @@ export default function OrderSummary({ subtotal, shipping, tax, total, cartItems
         {/* Total */}
         <div>
           <p>Total</p>
-          <p>
-            ${(total - totalDiscount).toFixed(2)}
-          </p>
+          <p>${(total - totalDiscount).toFixed(2)}</p>
         </div>
       </div>
 
-      <button onClick={handleCheckout}>
-        Proceed to Checkout
-      </button>
+      <button onClick={handleCheckout}>Proceed to Checkout</button>
 
       <p>
         or{" "}
-        <Link to="/">
-          Continue Shopping →
-        </Link>
+        <Link to="/">Continue Shopping →</Link>
       </p>
     </div>
   );

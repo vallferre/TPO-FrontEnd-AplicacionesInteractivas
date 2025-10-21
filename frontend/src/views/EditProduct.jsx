@@ -24,6 +24,10 @@ const EditProduct = () => {
   const [discount, setDiscount] = useState(0);
   const [stock, setStock] = useState(0);
 
+  // Guardar valores originales para detectar cambios
+  const [originalStock, setOriginalStock] = useState(0);
+  const [originalDiscount, setOriginalDiscount] = useState(0);
+
   // Categorías
   const [originalCategories, setOriginalCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -31,7 +35,7 @@ const EditProduct = () => {
   // Imágenes
   const [existingImages, setExistingImages] = useState([]);
   const [newImages, setNewImages] = useState([]);
-  const [imagesToDelete, setImagesToDelete] = useState([]); // <-- marcar para eliminar
+  const [imagesToDelete, setImagesToDelete] = useState([]);
 
   // Estado
   const [loading, setLoading] = useState(true);
@@ -83,6 +87,10 @@ const EditProduct = () => {
         setPrice(String(product.price ?? ""));
         setDiscount(Number(product.discount ?? 0));
         setStock(Number(product.quantity ?? product.stock ?? 0));
+
+        // Guardamos valores originales para comparación
+        setOriginalStock(Number(product.quantity ?? product.stock ?? 0));
+        setOriginalDiscount(Number(product.discount ?? 0));
 
         const prodCats = Array.isArray(product.categories) ? product.categories : [];
         const mappedOriginals = prodCats
@@ -205,6 +213,19 @@ const EditProduct = () => {
       // Subir nuevas imágenes
       if (newImages.length > 0) {
         await uploadNewImagesSequential(id, newImages);
+      }
+
+      // Si cambió stock o descuento, avisar a los usuarios
+      if (Number(stock) !== originalStock || Number(discount) !== originalDiscount) {
+        try {
+          console.log("Llamando a endpoint de notificación para producto", id);
+          await fetch(`${API_BASE}/api/notifications/product/${id}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...authHeaders() },
+          });
+        } catch (err) {
+          console.error("Error notificando usuarios:", err);
+        }
       }
 
       toast.success("Producto actualizado correctamente");
