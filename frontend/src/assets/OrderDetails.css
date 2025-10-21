@@ -110,16 +110,37 @@ body {
   border-top: 1px solid #e5e7eb;
 }
 
-/* Responsive */
-@media (max-width: 640px) {
-  .order-table th:nth-child(1),
-  .order-table td:nth-child(1) {
-    display: none;
-  }
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 223, 0, 0.7); /* dorado semitransparente */
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 5;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50%;
+  transition: background 0.3s ease;
+  color: #1e293b; /* texto/ícono oscuro para contraste */
+  font-weight: bold;
 }
 
-@media (max-width: 480px) {
-  .summary-card {
-    flex: 100%;
-  }
+.carousel-arrow:hover {
+  background: rgba(175, 153, 24, 0.9); /* dorado más intenso al pasar el mouse */
+}
+
+.carousel-arrow.left {
+  left: 10px;
+}
+
+.carousel-arrow.right {
+  right: 10px;
+}
+
+.productImageSpecial {
+  width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  object-fit: contain;
 }

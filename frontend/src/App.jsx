@@ -29,6 +29,7 @@ import About from "./views/About";
 import Contact from "./views/Contact";
 import Terms from "./views/Terms";
 import ErrorView from "./components/ErrorView"
+import RateProduct from "./views/RateProduct";
 
 const App = () => {
   return (
@@ -45,6 +46,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/editProfile" element={<EditProfile />} />
           <Route path="/order/:orderId" element={<OrderDetails />} />
+          <Route path="/rate-product/:productId" element={<RateProduct />} />
 
           {/* Layout de perfil con rutas anidadas */}
           <Route path="/profile" element={<UserLayout />}>

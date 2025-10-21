@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "../assets/OrderDetails.css";
 
 const OrderDetails = () => {
-  const { orderId } = useParams(); // <- toma el id de la URL
+  const { orderId } = useParams();
+  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -22,9 +23,7 @@ const OrderDetails = () => {
 
       try {
         const response = await fetch(`http://localhost:8080/orders/${orderId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!response.ok) {
@@ -47,6 +46,11 @@ const OrderDetails = () => {
   if (loading) return <p>Loading order...</p>;
   if (error) return <p className="error">{error}</p>;
   if (!order) return <p>No order found.</p>;
+
+  // 🔹 Navegar a RateProduct usando ruta con parámetro
+  const handleRateProduct = (productId) => {
+    navigate(`/rate-product/${productId}`);
+  };
 
   return (
     <div className="order-details-container">
@@ -78,15 +82,33 @@ const OrderDetails = () => {
               <th>Product Description</th>
               <th>Quantity</th>
               <th>Price</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {order.items.map((item) => (
               <tr key={item.productId}>
-                <td>#{item.productName}</td>
+                <td>#{item.productId}</td>
                 <td>{item.description}</td>
                 <td>{item.quantity}</td>
                 <td>${item.priceAtPurchase}</td>
+                <td>
+                  <button
+                    onClick={() => handleRateProduct(item.productId)}
+                    className="rate-btn"
+                    style={{
+                      backgroundColor: "#facc15",
+                      color: "#1e293b",
+                      fontWeight: "bold",
+                      border: "none",
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ⭐ Calificar Producto
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
