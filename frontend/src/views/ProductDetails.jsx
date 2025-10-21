@@ -165,24 +165,56 @@ const ProductDetails = () => {
   return (
     <div className="product-details-page">
       <div className="product-details">
-        <div className="image-carousel-container">
-          <div
-            className="btn-favorite--dynamic"
-            style={{ position: "absolute", top: "12px", right: "12px", zIndex: 10 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <FavoriteButton productId={id} productName={product.name} token={token} />
-          </div>
-          {imageIds.length > 0 ? (
-            <img
-              src={`${API_BASE}/images/${imageIds[currentImage]}`}
-              alt={product.name}
-              className="productImageSpecial"
-            />
-          ) : (
-            <div className="no-image-placeholder">{product.name}</div>
-          )}
+        <div className="image-carousel-container" style={{ position: "relative" }}>
+        {/* ❤️ Botón favorito */}
+        <div
+          className="btn-favorite--dynamic"
+          style={{ position: "absolute", top: "12px", right: "12px", zIndex: 10 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <FavoriteButton productId={id} productName={product.name} token={token} />
         </div>
+
+        {/* 🔁 Flecha izquierda */}
+        {imageIds.length > 1 && (
+          <button
+            className="carousel-arrow left"
+            onClick={() =>
+              setCurrentImage((prev) =>
+                prev === 0 ? imageIds.length - 1 : prev - 1
+              )
+            }
+          >
+            ‹
+          </button>
+        )}
+
+        {/* 🖼 Imagen actual */}
+        {imageIds.length > 0 ? (
+          <img
+            src={`${API_BASE}/images/${imageIds[currentImage]}`}
+            alt={product.name}
+            className="productImageSpecial"
+          />
+        ) : (
+          <div className="no-image-placeholder">{product.name}</div>
+        )}
+
+        {/* 🔁 Flecha derecha */}
+        {imageIds.length > 1 && (
+          <button
+            className="carousel-arrow right"
+            onClick={() =>
+              setCurrentImage((prev) =>
+                prev === imageIds.length - 1 ? 0 : prev + 1
+              )
+            }
+          >
+            ›
+          </button>
+        )}
+      </div>
+
 
         <div className="product-info">
           <h1 className="product-title">{product.name}</h1>
@@ -201,6 +233,8 @@ const ProductDetails = () => {
               ({averageRating > 0 ? averageRating.toFixed(1) : 5})
             </span>
           </div>
+
+          <h4 className="product-owner">Vendido por: {product.ownerName}</h4>
 
           <div className="product-price-stock">
             <span className="product-price">${product.price}</span>
@@ -267,19 +301,19 @@ const ProductDetails = () => {
         <div className="opinions-column">
           <h2>Opiniones</h2>
           <div className="ratings-list">
-            {productRatings.length > 0 ? (
-              productRatings.map((r, idx) => (
-                <RatingCard
-                  key={idx}
-                  userName={r.username}
-                  value={r.value}
-                  comment={r.comment}
-                />
-              ))
-            ) : (
-              <p>No hay opiniones para este producto aún.</p>
-            )}
-          </div>
+          {productRatings.length > 0 ? (
+            productRatings.slice(0, 3).map((r, idx) => (
+              <RatingCard
+                key={idx}
+                userName={r.username}
+                value={r.value}
+                comment={r.comment}
+              />
+            ))
+          ) : (
+            <p>No hay opiniones para este producto aún.</p>
+          )}
+        </div>
         </div>
       </div>
 
