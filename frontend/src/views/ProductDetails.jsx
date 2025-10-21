@@ -271,7 +271,7 @@ const ProductDetails = () => {
               productRatings.map((r, idx) => (
                 <RatingCard
                   key={idx}
-                  userName={r.userName}
+                  userName={r.username}
                   value={r.value}
                   comment={r.comment}
                 />
