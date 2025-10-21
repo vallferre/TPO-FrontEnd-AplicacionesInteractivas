@@ -157,7 +157,7 @@ const ShoppingCart = () => {
   const validCartItems = cart?.items?.filter((item) => item.quantity > 0) || [];
 
   if (!validCartItems.length)
-    return <ErrorView />; // ✅ Aquí usamos ErrorView si el carrito está vacío
+    return <ErrorView message = "Agrega un par de productos a tu carrito para empezar."/>; // Aquí usamos ErrorView si el carrito está vacío
 
   return (
     <div className="app-container" style={{ padding: "2rem", backgroundColor: "#f9fafb" }}>

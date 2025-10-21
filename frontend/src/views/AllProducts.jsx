@@ -37,9 +37,9 @@ const AllProducts = () => {
               Si todavía NO hubo búsqueda (hasQueried=false) y products está vacío, mostramos nada
               (o un mensaje neutro), para no interrumpir la UX inicial. */}
           {error ? (
-            <ErrorView />
+            <ErrorView message="¡Parece que no hay ningun producto con estas condiciones! Prueba más tarde."/>
           ) : !loading && hasQueried && products.length === 0 ? (
-            <ErrorView />
+            <ErrorView message="¡Parece que no hay ningun producto con estas condiciones! Prueba más tarde."/>
           ) : (
             products.map((producto) => (
               <div key={producto.id}>

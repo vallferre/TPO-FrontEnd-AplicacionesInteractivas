@@ -272,7 +272,7 @@ const CreateProduct = () => {
                 <label htmlFor="desc">Descripción *</label>
                 <textarea
                   id="desc"
-                  rows={5}
+                  rows={20}
                   value={desc}
                   onChange={(e) => setDesc(e.target.value)}
                   onBlur={() => markTouched("desc")}

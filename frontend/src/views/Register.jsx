@@ -63,8 +63,22 @@ export default function CreateAccount() {
 
       if (data.access_token) {
         localStorage.setItem("jwtToken", data.access_token);
-        setIsLoggedIn(true); // Actualiza Navbar inmediatamente
-        navigate("/"); // Redirige a landing
+        setIsLoggedIn(true);
+
+        try {
+          // Enviar notificación de bienvenida al endpoint con el token
+          await fetch("http://localhost:8080/api/notifications/welcome", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${data.access_token}`,
+            },
+          });
+        } catch (notifyErr) {
+          console.error("Error al enviar notificación de bienvenida:", notifyErr);
+        }
+
+        navigate("/"); // Redirige a la landing
       }
     } catch (err) {
       console.error(err);

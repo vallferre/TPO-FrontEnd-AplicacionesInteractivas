@@ -58,7 +58,7 @@ const Favorites = () => {
 
   if (loading) return <p>Loading favorites...</p>;
   if (error) return <p className="error">{error}</p>;
-  if (!favoriteIds.length) return <ErrorView />; // ✅ usamos ErrorView
+  if (!favoriteIds.length) return <ErrorView message="No tienes productos en favoritos aún."/>; // usamos ErrorView
 
   return (
     <div className="favorites-page">
