@@ -3,6 +3,7 @@ import "../assets/UserProducts.css";
 import "../assets/DeleteConfirmationModal.css";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
+import {toast} from 'react-toastify'
 
 const API_BASE = "http://localhost:8080";
 
@@ -129,7 +130,7 @@ const UserProducts = () => {
       setSelectedProduct(null);
     } catch (error) {
       console.error("Error deleting product:", error);
-      alert("Error al eliminar el producto. Revisa consola.");
+      toast.error("Error al eliminar el producto. Revisa consola.");
     }
   };
 
