@@ -48,8 +48,8 @@ const OrderDetails = () => {
   if (!order) return <p>No order found.</p>;
 
   // 🔹 Navegar a RateProduct usando ruta con parámetro
-  const handleRateProduct = (productId) => {
-    navigate(`/rate-product/${productId}`);
+  const handleRateProduct = (productIdSnapshot) => {
+    navigate(`/rate-product/${productIdSnapshot}`);
   };
 
   return (
@@ -87,14 +87,14 @@ const OrderDetails = () => {
           </thead>
           <tbody>
             {order.items.map((item) => (
-              <tr key={item.productId}>
-                <td>#{item.productId}</td>
-                <td>{item.description}</td>
-                <td>{item.quantity}</td>
-                <td>${item.priceAtPurchase}</td>
+              <tr key={item.productIdSnapshot}>
+                <td>#{item.productIdSnapshot}</td>
+                <td>{item.productDescriptionSnapshot}</td>
+                <td>{item.productQuantitySnapshot}</td>
+                <td>${item.productPriceSnapshot}</td>
                 <td>
                   <button
-                    onClick={() => handleRateProduct(item.productId)}
+                    onClick={() => handleRateProduct(item.productIdSnapshot)}
                     className="rate-btn"
                     style={{
                       backgroundColor: "#facc15",
@@ -103,8 +103,9 @@ const OrderDetails = () => {
                       border: "none",
                       padding: "6px 12px",
                       borderRadius: "6px",
-                      cursor: "pointer",
+                      cursor: item.productId ? "pointer" : "not-allowed",
                     }}
+                    disabled={!item.productId}
                   >
                     ⭐ Calificar Producto
                   </button>

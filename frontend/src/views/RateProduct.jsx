@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../components/RateProduct.css";
+import {toast} from "react-toastify";
 
 const API_BASE = "http://localhost:8080";
 
@@ -27,7 +28,6 @@ const RateProduct = () => {
         const data = await res.json();
         setProduct(data);
       } catch (err) {
-        console.error("Error fetching product:", err);
         setError("No se pudo cargar la información del producto.");
       } finally {
         setLoading(false);
@@ -40,7 +40,7 @@ const RateProduct = () => {
   const handleSubmit = async () => {
     const token = localStorage.getItem("jwtToken");
     if (!rating) {
-      alert("Por favor seleccioná una calificación antes de confirmar.");
+      toast.error("Por favor seleccioná una calificación antes de confirmar.");
       return;
     }
 
@@ -59,11 +59,11 @@ const RateProduct = () => {
         throw new Error(text || "Error al enviar la reseña.");
       }
 
-      alert("¡Gracias por tu reseña!");
+      toast.success("¡Gracias por tu reseña!");
       navigate(-1);
     } catch (err) {
       console.error("Error al enviar reseña:", err);
-      alert("Error al enviar la reseña. Intenta nuevamente.");
+      toast.warning("Error al enviar la reseña. Intenta nuevamente.");
     }
   };
 
