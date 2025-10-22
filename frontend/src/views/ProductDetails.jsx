@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import SingleProduct from "./SingleProduct.jsx";
 import FavoriteButton from "../components/FavoriteButton";
 import RatingCard from "../components/RatingCard.jsx";
+import BackButton from "../components/BackButton";
 import { toast } from "react-toastify";
 
 const ProductDetails = () => {
@@ -163,178 +164,185 @@ const ProductDetails = () => {
   };
 
   return (
-    <div className="product-details-page">
-      <div className="product-details">
-        <div className="image-carousel-container" style={{ position: "relative" }}>
-        {/* ❤️ Botón favorito */}
-        <div
-          className="btn-favorite--dynamic"
-          style={{ position: "absolute", top: "12px", right: "12px", zIndex: 10 }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <FavoriteButton productId={id} productName={product.name} token={token} />
-        </div>
-
-        {/* 🔁 Flecha izquierda */}
-        {imageIds.length > 1 && (
-          <button
-            className="carousel-arrow left"
-            onClick={() =>
-              setCurrentImage((prev) =>
-                prev === 0 ? imageIds.length - 1 : prev - 1
-              )
-            }
-          >
-            ‹
-          </button>
-        )}
-
-        {/* 🖼 Imagen actual */}
-        {imageIds.length > 0 ? (
-          <img
-            src={`${API_BASE}/images/${imageIds[currentImage]}`}
-            alt={product.name}
-            className="productImageSpecial"
-          />
-        ) : (
-          <div className="no-image-placeholder">{product.name}</div>
-        )}
-
-        {/* 🔁 Flecha derecha */}
-        {imageIds.length > 1 && (
-          <button
-            className="carousel-arrow right"
-            onClick={() =>
-              setCurrentImage((prev) =>
-                prev === imageIds.length - 1 ? 0 : prev + 1
-              )
-            }
-          >
-            ›
-          </button>
-        )}
+    <div>
+      <div className="back-button-container">
+        <BackButton to="/products" />
       </div>
-
-
-        <div className="product-info">
-          <h1 className="product-title">{product.name}</h1>
-
-          {/* ⭐ Estrellas visuales con promedio */}
-          <div className="star-container">
-            {[...Array(5)].map((_, i) => (
-              <span
-                key={i}
-                className={`star ${i < (averageRating > 0 ? Math.round(averageRating) : 5) ? "filled" : ""}`}
-              >
-                ★
-              </span>
-            ))}
-            <span style={{ marginLeft: "0.5rem" }}>
-              ({averageRating > 0 ? averageRating.toFixed(1) : 5})
-            </span>
+      
+      <div className="product-details-page">
+        <h1>Detalle del producto</h1>
+        <div className="product-details">
+          <div className="image-carousel-container" style={{ position: "relative" }}>
+          {/* ❤️ Botón favorito */}
+          <div
+            className="btn-favorite--dynamic"
+            style={{ position: "absolute", top: "12px", right: "12px", zIndex: 10 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <FavoriteButton productId={id} productName={product.name} token={token} />
           </div>
 
-          <h4 className="product-owner">Vendido por: {product.ownerName}</h4>
-
-          <div className="product-price-stock">
-            <span className="product-price">${product.price}</span>
-            <span
-              className={`product-stock ${product.stock > 0 ? "in-stock" : "out-of-stock"}`}
+          {/* 🔁 Flecha izquierda */}
+          {imageIds.length > 1 && (
+            <button
+              className="carousel-arrow left"
+              onClick={() =>
+                setCurrentImage((prev) =>
+                  prev === 0 ? imageIds.length - 1 : prev - 1
+                )
+              }
             >
-              {product.stock > 0 ? "En stock" : "Sin stock"}
-            </span>
-          </div>
-
-          {product.stock > 0 && (
-            <div className="quantity-selector">
-              <label htmlFor="quantity">Cantidad:</label>
-              <select
-                id="quantity"
-                value={quantity}
-                onChange={(e) => setQuantity(parseInt(e.target.value))}
-              >
-                {Array.from({ length: product.stock }, (_, i) => i + 1).map((num) => (
-                  <option key={num} value={num}>{num}</option>
-                ))}
-              </select>
-            </div>
+              ‹
+            </button>
           )}
 
-          <button
-            disabled={product.stock <= 0}
-            className="add-to-cart-btn"
-            onClick={handleAddToCart}
-          >
-            Agregar al carrito
-          </button>
-        </div>
-      </div>
-
-      <div className="product-description-section">
-        <h2>Descripción</h2>
-        <p>
-          {product.description?.trim().length > 0
-            ? product.description
-            : "El vendedor no incluyó descripción del producto."}
-        </p>
-      </div>
-
-      {/* ⭐ Calificación y opiniones */}
-      <div className="product-description-section rating-opinions-container">
-        {/* Calificación */}
-        <div className="rating-column">
-          <h2>Calificación</h2>
-          <div className="rating-histogram">
-            {[5, 4, 3, 2, 1].map((star) => (
-              <div key={star} className="rating-row">
-                <span className="star-row">{star} </span>
-                {[...Array(star)].map((_, i) => (
-                  <span key={i} className="star filled">★</span>
-                ))}
-                <span className="rating-count"> ({ratingCounts[star] || 0})</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Opiniones */}
-        <div className="opinions-column">
-          <h2>Opiniones</h2>
-          <div className="ratings-list">
-          {productRatings.length > 0 ? (
-            productRatings.slice(0, 3).map((r, idx) => (
-              <RatingCard
-                key={idx}
-                userName={r.username}
-                value={r.value}
-                comment={r.comment}
-              />
-            ))
+          {/* 🖼 Imagen actual */}
+          {imageIds.length > 0 ? (
+            <img
+              src={`${API_BASE}/images/${imageIds[currentImage]}`}
+              alt={product.name}
+              className="productImageSpecial"
+            />
           ) : (
-            <p>No hay opiniones para este producto aún.</p>
+            <div className="no-image-placeholder">{product.name}</div>
+          )}
+
+          {/* 🔁 Flecha derecha */}
+          {imageIds.length > 1 && (
+            <button
+              className="carousel-arrow right"
+              onClick={() =>
+                setCurrentImage((prev) =>
+                  prev === imageIds.length - 1 ? 0 : prev + 1
+                )
+              }
+            >
+              ›
+            </button>
           )}
         </div>
-        </div>
-      </div>
 
-      {relatedProducts.length > 0 && (
-        <div className="related-products">
-          <h2>A otras personas también les gustó:</h2>
-          <div className="related-products-grid">
-            {relatedProducts.map((p) => (
-              <SingleProduct
-                key={p.id}
-                id={p.id}
-                name={p.name}
-                image={p.imageIds?.[0] || null}
-                price={p.price}
-                details={p.details}
-              />
-            ))}
+
+          <div className="product-info">
+            <h1 className="product-title">{product.name}</h1>
+
+            {/* ⭐ Estrellas visuales con promedio */}
+            <div className="star-container">
+              {[...Array(5)].map((_, i) => (
+                <span
+                  key={i}
+                  className={`star ${i < (averageRating > 0 ? Math.round(averageRating) : 5) ? "filled" : ""}`}
+                >
+                  ★
+                </span>
+              ))}
+              <span style={{ marginLeft: "0.5rem" }}>
+                ({averageRating > 0 ? averageRating.toFixed(1) : 5})
+              </span>
+            </div>
+
+            <h4 className="product-owner">Vendedor/a: {product.ownerName}</h4>
+
+            <div className="product-price-stock">
+              <span className="product-price">${product.price}</span>
+              <span
+                className={`product-stock ${product.stock > 0 ? "in-stock" : "out-of-stock"}`}
+              >
+                {product.stock > 0 ? "En stock" : "Sin stock"}
+              </span>
+            </div>
+
+            {product.stock > 0 && (
+              <div className="quantity-selector">
+                <label htmlFor="quantity">Cantidad:</label>
+                <select
+                  id="quantity"
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value))}
+                >
+                  {Array.from({ length: product.stock }, (_, i) => i + 1).map((num) => (
+                    <option key={num} value={num}>{num}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <button
+              disabled={product.stock <= 0}
+              className="add-to-cart-btn"
+              onClick={handleAddToCart}
+            >
+              Agregar al carrito
+            </button>
           </div>
         </div>
-      )}
-    </div>
+
+        <div className="product-description-section">
+          <h2>Descripción</h2>
+          <p>
+            {product.description?.trim().length > 0
+              ? product.description
+              : "El vendedor no incluyó descripción del producto."}
+          </p>
+        </div>
+
+        {/* ⭐ Calificación y opiniones */}
+        <div className="product-description-section rating-opinions-container">
+          {/* Calificación */}
+          <div className="rating-column">
+            <h2>Calificación</h2>
+            <div className="rating-histogram">
+              {[5, 4, 3, 2, 1].map((star) => (
+                <div key={star} className="rating-row">
+                  <span className="star-row">{star} </span>
+                  {[...Array(star)].map((_, i) => (
+                    <span key={i} className="star filled">★</span>
+                  ))}
+                  <span className="rating-count"> ({ratingCounts[star] || 0})</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Opiniones */}
+          <div className="opinions-column">
+            <h2>Opiniones</h2>
+            <div className="ratings-list">
+            {productRatings.length > 0 ? (
+              productRatings.slice(0, 3).map((r, idx) => (
+                <RatingCard
+                  key={idx}
+                  userName={r.username}
+                  value={r.value}
+                  comment={r.comment}
+                />
+              ))
+            ) : (
+              <p>No hay opiniones para este producto aún.</p>
+            )}
+          </div>
+          </div>
+        </div>
+
+        {relatedProducts.length > 0 && (
+          <div className="related-products">
+            <h2>A otras personas también les gustó:</h2>
+            <div className="related-products-grid">
+              {relatedProducts.map((p) => (
+                <SingleProduct
+                  key={p.id}
+                  id={p.id}
+                  name={p.name}
+                  image={p.imageIds?.[0] || null}
+                  price={p.price}
+                  details={p.details}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+     </div>
   );
 };
 

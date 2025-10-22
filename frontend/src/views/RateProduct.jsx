@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "../components/RateProduct.css";
+import "../assets/RateProduct.css";
 import {toast} from "react-toastify";
 
 const API_BASE = "http://localhost:8080";

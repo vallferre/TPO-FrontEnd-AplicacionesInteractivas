@@ -102,6 +102,23 @@
   transform: translateY(0);
 }
 
+.toggle-categories-btn {
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.toggle-categories-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.categories-list {
+  margin-top: 10px;
+}
+
 /* Clear Filters Button */
 .clear-filters-btn {
   width: 100%;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "../assets/ProductsNavbar.css";
 
-const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) => { // ✅ agregado
+const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -17,6 +17,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
   const [discount, setDiscount] = useState(searchParams.get("discount") || "");
   const [rating, setRating] = useState(searchParams.get("rating") || "");
   const [sortOrder, setSortOrder] = useState(searchParams.get("sort") || "");
+  const [showCategories, setShowCategories] = useState(false);
 
   const hasActiveFilters =
     searchTerm || selectedCategories.length > 0 || minPrice || maxPrice || discount || rating || sortOrder;
@@ -41,7 +42,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
     try {
       setLoading(true);
       setError(null);
-      setHasQueried(true); // ✅ marcamos que ya hubo intento de búsqueda
+      setHasQueried(true);
 
       const res = await fetch("http://localhost:8080/products", {
         headers: { "Content-Type": "application/json" },
@@ -102,7 +103,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
 
   // Aplicar filtros
   const applyFilters = () => {
-    setHasQueried(true); // ✅ también marcamos cuando aplica filtros
+    setHasQueried(true);
     const params = {};
     if (searchTerm.trim()) params.keyword = searchTerm.trim();
     if (selectedCategories.length > 0) params.category = selectedCategories;
@@ -128,7 +129,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
 
   // Limpiar filtros
   const clearFilters = () => {
-    setHasQueried(true); // ✅ marcamos que también se hizo acción de limpieza
+    setHasQueried(true);
     setSearchTerm("");
     setSelectedCategories([]);
     setMinPrice("");
@@ -156,17 +157,34 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
         <h2>Filtros</h2>
 
         <div className="filter-group">
-          <h3>Categorías</h3>
-          {categories.map((cat) => (
-            <label key={cat.id}>
-              <input
-                type="checkbox"
-                checked={selectedCategories.includes(cat.description)}
-                onChange={() => toggleCategory(cat.description)}
-              />
-              {cat.description}
-            </label>
-          ))}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h3>Categorías</h3>
+            <button 
+              className="toggle-categories-btn"
+              onClick={() => setShowCategories(!showCategories)}
+              style={{ 
+                padding: '4px 8px', 
+                fontSize: '12px',
+                minWidth: 'auto'
+              }}
+            >
+              {showCategories ? "▲" : "▼"}
+            </button>
+          </div>
+          {showCategories && (
+            <div className="categories-list">
+              {categories.map((cat) => (
+                <label key={cat.id}>
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(cat.description)}
+                    onChange={() => toggleCategory(cat.description)}
+                  />
+                  {cat.description}
+                </label>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="filter-group">
