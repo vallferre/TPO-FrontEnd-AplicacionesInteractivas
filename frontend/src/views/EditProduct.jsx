@@ -22,7 +22,9 @@ const EditProduct = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [discount, setDiscount] = useState(0);
-  const [stock, setStock] = useState(0);
+
+  // ⚠️ mantener stock como string para permitir vacío
+  const [stock, setStock] = useState("0");
 
   // Guardar valores originales para detectar cambios
   const [originalStock, setOriginalStock] = useState(0);
@@ -86,10 +88,12 @@ const EditProduct = () => {
         setDescription(product.description ?? "");
         setPrice(String(product.price ?? ""));
         setDiscount(Number(product.discount ?? 0));
-        setStock(Number(product.quantity ?? product.stock ?? 0));
 
-        // Guardamos valores originales para comparación
-        setOriginalStock(Number(product.quantity ?? product.stock ?? 0));
+        const currentQty = Number(product.quantity ?? product.stock ?? 0);
+        setStock(String(Number.isFinite(currentQty) ? currentQty : 0));
+
+        // Guardamos valores originales
+        setOriginalStock(currentQty);
         setOriginalDiscount(Number(product.discount ?? 0));
 
         const prodCats = Array.isArray(product.categories) ? product.categories : [];
@@ -177,16 +181,26 @@ const EditProduct = () => {
       (c) => !originalCategories.some((o) => o.id === c.id)
     );
 
+    // 🧠 Construimos el payload con cantidad opcional:
     const payload = {
       name: name.trim(),
       description: description.trim(),
       price: Number(price),
       discount: Number(discount) || 0,
-      stock: Number.isFinite(Number(stock)) ? parseInt(stock, 10) : 0,
-      ...(newOnly.length > 0 && {
-        categories: newOnly.map((c) => c.description),
-      }),
+      ...(newOnly.length > 0 && { categories: newOnly.map((c) => c.description) }),
     };
+
+    // Si el input de stock NO está vacío, enviamos "quantity"
+    const stockTrim = String(stock ?? "").trim();
+    if (stockTrim !== "") {
+      const parsed = parseInt(stockTrim, 10);
+      if (!Number.isFinite(parsed) || parsed < 0) {
+        toast.error("Cantidad inválida.");
+        return;
+      }
+      payload.quantity = parsed; // ✅ el backend suele esperar 'quantity'
+    }
+    // Si está vacío, NO tocamos la cantidad → no se duplica ni se pisa
 
     try {
       setSaving(true);
@@ -215,10 +229,13 @@ const EditProduct = () => {
         await uploadNewImagesSequential(id, newImages);
       }
 
-      // Si cambió stock o descuento, avisar a los usuarios
-      if (Number(stock) !== originalStock || Number(discount) !== originalDiscount) {
+      // Notificar si cambió stock o descuento (solo si se envió quantity)
+      const sentQuantity = Object.prototype.hasOwnProperty.call(payload, "quantity")
+        ? payload.quantity
+        : originalStock;
+
+      if (Number(sentQuantity) !== originalStock || Number(discount) !== originalDiscount) {
         try {
-          console.log("Llamando a endpoint de notificación para producto", id);
           await fetch(`${API_BASE}/api/notifications/product/${id}`, {
             method: "POST",
             headers: { "Content-Type": "application/json", ...authHeaders() },
@@ -322,9 +339,10 @@ const EditProduct = () => {
                 id="quantity"
                 name="quantity"
                 type="number"
-                value={0}
+                value={stock}
                 onChange={(e) => setStock(e.target.value)}
                 min={0}
+                placeholder="Dejar vacío para no modificar"
               />
             </div>
 
