@@ -322,7 +322,7 @@ const EditProduct = () => {
                 id="quantity"
                 name="quantity"
                 type="number"
-                value={stock}
+                value={0}
                 onChange={(e) => setStock(e.target.value)}
                 min={0}
               />
