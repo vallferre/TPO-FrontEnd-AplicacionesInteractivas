@@ -3,33 +3,42 @@ import { Routes, Route } from "react-router-dom";
 
 import "./App.css";
 
-import Navigation from "./components/Navigation";
-import Toaster from "./components/Toaster";
-
-import LandingPage from "./views/LandingPage";
-import AllProducts from "./views/AllProducts";
-import Register from "./views/Register";
-import Login from "./views/Login";
-import UserProfile from "./views/UserProfile";
-import Favorites from "./views/Favorites";
-import Cart from "./views/ShoppingCart";
-import CreateProduct from "./views/CreateProduct";
-import EditProduct from "./views/EditProduct";
-import Orders from "./views/Orders";
-import AdminCreateCategory from "./views/AdminCreateCategory";
-import UserLayout from "./components/UserLayout";
-import UserProducts from "./views/UserProducts";
-import EditProfile from "./views/EditProfile";
-import ProductDetails from "./views/ProductDetails";
-import Footer from "./components/Footer";
-import OrderDetails from "./views/OrderDetails";
-import AdminCategoriesProfile from "./views/AdminCategoriesProfile";
-import EditCategory from "./components/EditCategory";
-import About from "./views/About";
-import Contact from "./views/Contact";
-import Terms from "./views/Terms";
-import ErrorView from "./components/ErrorView"
-import RateProduct from "./views/RateProduct";
+//import Navigation from "./components/Navigation";
+import Toaster from "./components/ui/Toaster";
+import Navigation from "./components/layout/Navigation";
+//import LandingPage from "./views/LandingPage";
+import LandingPage from "./features/home/LandingPage";
+//import AllProducts from "./views/AllProducts";
+import AllProducts from "./features/products/views/AllProducts";
+import Register from "./features/auth/views/Register";
+import Login from "./features/auth/views/Login";
+import UserProfile from "./features/auth/views/UserProfile";
+//import Favorites from "./views/Favorites";
+import Favorites from "./features/favorites/Favorites";
+import Cart from "./features/cart/views/ShoppingCart";
+//import CreateProduct from "./views/CreateProduct";
+import CreateProduct from "./features/products/views/CreateProduct";
+//import EditProduct from "./views/EditProduct";
+import EditProduct from "./features/products/views/EditProduct";
+import Orders from "./features/orders/views/Orders";
+//import AdminCreateCategory from "./views/AdminCreateCategory";
+import AdminCreateCategory from "./features/admin/AdminCreateCategory";
+import UserLayout from "./components/layout/UserLayout";
+import UserProducts from "./features/auth/views/UserProducts";
+//import EditProfile from "./views/EditProfile";
+import EditProfile from "./features/auth/views/EditProfile";
+//import ProductDetails from "./views/ProductDetails";
+import ProductDetails from "./features/products/views/ProductDetails";
+import Footer from "./components/layout/Footer";
+import OrderDetails from "./features/orders/views/OrderDetails";
+import AdminCategoriesProfile from "./features/admin/AdminCategoriesProfile";
+//import EditCategory from "./components/EditCategory";
+import EditCategory from "./features/admin/EditCategory";
+import About from "./features/static/About";
+import Contact from "./features/static/Contact";
+import Terms from "./features/static/Terms";
+import ErrorView from "./components/ui/ErrorView"
+import RateProduct from "./features/ratings/views/RateProduct";
 
 const App = () => {
   return (
