@@ -1,13 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchProductById, fetchRelatedProducts, fetchRatings } from "./productThunks";
+import { fetchProductById, fetchRelatedProducts, fetchRatings } from "../thunks/ProductThunk";
 
 const initialState = {
   product: null,
   related: [],
-  ratings: { average: 0, counts: {}, list: [] },
+  ratings: { average: 0, counts: {}, list: [] }, // ✅ counts empieza como objeto
   loading: false,
   error: null,
 };
+
 
 const productSlice = createSlice({
   name: "product",

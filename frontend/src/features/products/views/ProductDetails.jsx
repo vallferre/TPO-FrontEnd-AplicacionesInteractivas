@@ -12,7 +12,7 @@ import {
   fetchProductById,
   fetchRelatedProducts,
   fetchRatings,
-} from "../../../redux/thunks/ProductThunk"; // thunks de Redux
+} from "../../../redux/thunks/ProductThunk";
 import {
   selectProduct,
   selectRelatedProducts,
@@ -27,18 +27,18 @@ const ProductDetails = () => {
   const dispatch = useDispatch();
   const token = localStorage.getItem("jwtToken");
 
-  // 🔹 Estados de UI locales
   const [currentImage, setCurrentImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
 
-  // 🔹 Datos de Redux
+  // Datos de Redux
   const product = useSelector(selectProduct);
-  const relatedProducts = useSelector(selectRelatedProducts);
-  const { average, counts, list: productRatings } = useSelector(selectRatings);
+  const relatedProducts = useSelector(selectRelatedProducts) || [];
+  const { average = 0, counts = {}, list: productRatings = [] } =
+    useSelector(selectRatings) || {};
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
 
-  // 🔄 Cargar producto, ratings y relacionados
+  // Cargar producto, ratings y relacionados
   useEffect(() => {
     if (id) {
       dispatch(fetchProductById(id));
@@ -47,7 +47,6 @@ const ProductDetails = () => {
     }
   }, [id, dispatch]);
 
-  // 🔹 Actualizar quantity si hay stock
   useEffect(() => {
     if (product?.stock > 0) setQuantity(1);
   }, [product]);
@@ -73,7 +72,7 @@ const ProductDetails = () => {
       </div>
     );
 
-  const imageIds = product.imageIds || [];
+  const imageIds = product?.imageIds || [];
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();
@@ -110,17 +109,17 @@ const ProductDetails = () => {
         <h1>Detalle del producto</h1>
         <div className="product-details">
           <div className="image-carousel-container" style={{ position: "relative" }}>
-            {/* ❤️ Botón favorito */}
+            {/* Botón favorito */}
             <div
               className="btn-favorite--dynamic"
               style={{ position: "absolute", top: "12px", right: "12px", zIndex: 10 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <FavoriteButton productId={id} productName={product.name} token={token} />
+              <FavoriteButton productId={id} productName={product?.name} token={token} />
             </div>
 
-            {/* 🔁 Flecha izquierda */}
-            {imageIds.length > 1 && (
+            {/* Flecha izquierda */}
+            {imageIds?.length > 1 && (
               <button
                 className="carousel-arrow left"
                 onClick={() =>
@@ -133,19 +132,19 @@ const ProductDetails = () => {
               </button>
             )}
 
-            {/* 🖼 Imagen actual */}
-            {imageIds.length > 0 ? (
+            {/* Imagen actual */}
+            {imageIds?.length > 0 ? (
               <img
                 src={`http://localhost:8080/images/${imageIds[currentImage]}`}
-                alt={product.name}
+                alt={product?.name}
                 className="productImageSpecial"
               />
             ) : (
-              <div className="no-image-placeholder">{product.name}</div>
+              <div className="no-image-placeholder">{product?.name}</div>
             )}
 
-            {/* 🔁 Flecha derecha */}
-            {imageIds.length > 1 && (
+            {/* Flecha derecha */}
+            {imageIds?.length > 1 && (
               <button
                 className="carousel-arrow right"
                 onClick={() =>
@@ -160,9 +159,9 @@ const ProductDetails = () => {
           </div>
 
           <div className="product-info">
-            <h1 className="product-title">{product.name}</h1>
+            <h1 className="product-title">{product?.name}</h1>
 
-            {/* ⭐ Estrellas visuales con promedio */}
+            {/* Estrellas visuales con promedio */}
             <div className="star-container">
               {[...Array(5)].map((_, i) => (
                 <span
@@ -179,18 +178,18 @@ const ProductDetails = () => {
               </span>
             </div>
 
-            <h4 className="product-owner">Vendedor/a: {product.ownerName}</h4>
+            <h4 className="product-owner">Vendedor/a: {product?.ownerName}</h4>
 
             <div className="product-price-stock">
-              <span className="product-price">${product.price}</span>
+              <span className="product-price">${product?.price}</span>
               <span
-                className={`product-stock ${product.stock > 0 ? "in-stock" : "out-of-stock"}`}
+                className={`product-stock ${product?.stock > 0 ? "in-stock" : "out-of-stock"}`}
               >
-                {product.stock > 0 ? "En stock" : "Sin stock"}
+                {product?.stock > 0 ? "En stock" : "Sin stock"}
               </span>
             </div>
 
-            {product.stock > 0 && (
+            {product?.stock > 0 && (
               <div className="quantity-selector">
                 <label htmlFor="quantity">Cantidad:</label>
                 <select
@@ -198,7 +197,7 @@ const ProductDetails = () => {
                   value={quantity}
                   onChange={(e) => setQuantity(parseInt(e.target.value))}
                 >
-                  {Array.from({ length: product.stock }, (_, i) => i + 1).map((num) => (
+                  {Array.from({ length: product?.stock || 0 }, (_, i) => i + 1).map((num) => (
                     <option key={num} value={num}>
                       {num}
                     </option>
@@ -208,7 +207,7 @@ const ProductDetails = () => {
             )}
 
             <button
-              disabled={product.stock <= 0}
+              disabled={product?.stock <= 0}
               className="add-to-cart-btn"
               onClick={handleAddToCart}
             >
@@ -220,13 +219,13 @@ const ProductDetails = () => {
         <div className="product-description-section">
           <h2>Descripción</h2>
           <p>
-            {product.description?.trim().length > 0
+            {product?.description?.trim()?.length > 0
               ? product.description
               : "El vendedor no incluyó descripción del producto."}
           </p>
         </div>
 
-        {/* ⭐ Calificación y opiniones */}
+        {/* Calificación y opiniones */}
         <div className="product-description-section rating-opinions-container">
           {/* Calificación */}
           <div className="rating-column">
@@ -240,7 +239,7 @@ const ProductDetails = () => {
                       ★
                     </span>
                   ))}
-                  <span className="rating-count"> ({counts[star] || 0})</span>
+                  <span className="rating-count"> ({counts?.[star] || 0})</span>
                 </div>
               ))}
             </div>
@@ -250,9 +249,14 @@ const ProductDetails = () => {
           <div className="opinions-column">
             <h2>Opiniones</h2>
             <div className="ratings-list">
-              {productRatings.length > 0 ? (
+              {productRatings?.length > 0 ? (
                 productRatings.slice(0, 3).map((r, idx) => (
-                  <RatingCard key={idx} userName={r.username} value={r.value} comment={r.comment} />
+                  <RatingCard
+                    key={idx}
+                    userName={r?.username}
+                    value={r?.value}
+                    comment={r?.comment}
+                  />
                 ))
               ) : (
                 <p>No hay opiniones para este producto aún.</p>
@@ -261,18 +265,18 @@ const ProductDetails = () => {
           </div>
         </div>
 
-        {relatedProducts.length > 0 && (
+        {relatedProducts?.length > 0 && (
           <div className="related-products">
             <h2>A otras personas también les gustó:</h2>
             <div className="related-products-grid">
               {relatedProducts.map((p) => (
                 <SingleProduct
-                  key={p.id}
-                  id={p.id}
-                  name={p.name}
-                  image={p.imageIds?.[0] || null}
-                  price={p.price}
-                  details={p.details}
+                  key={p?.id}
+                  id={p?.id}
+                  name={p?.name}
+                  image={p?.imageIds?.[0] || null}
+                  price={p?.price}
+                  details={p?.details}
                 />
               ))}
             </div>
