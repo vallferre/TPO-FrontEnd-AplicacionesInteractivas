@@ -20,15 +20,15 @@ const EditProduct = () => {
   // Campos base
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [discount, setDiscount] = useState(0);
+  const [price, setPrice] = useState("");             // string
+  const [discountStr, setDiscountStr] = useState(""); // string (permite vacío)
 
-  // ⚠️ mantener stock como string para permitir vacío
-  const [stock, setStock] = useState("0");
+  // ⚠️ stock como string y vacío por defecto (placeholder muestra el actual)
+  const [stockStr, setStockStr] = useState("");
 
-  // Guardar valores originales para detectar cambios
+  // Originales
   const [originalStock, setOriginalStock] = useState(0);
-  const [originalDiscount, setOriginalDiscount] = useState(0);
+  const [originalDiscount, setOriginalDiscount] = useState(null); // null = no tocar
 
   // Categorías
   const [originalCategories, setOriginalCategories] = useState([]);
@@ -87,14 +87,18 @@ const EditProduct = () => {
         setName(product.name ?? "");
         setDescription(product.description ?? "");
         setPrice(String(product.price ?? ""));
-        setDiscount(Number(product.discount ?? 0));
+
+        const disc = product.discount;
+        setDiscountStr(disc === null || disc === undefined ? "" : String(disc));
+        setOriginalDiscount(
+          disc === null || disc === undefined ? null : Number(disc)
+        );
 
         const currentQty = Number(product.quantity ?? product.stock ?? 0);
-        setStock(String(Number.isFinite(currentQty) ? currentQty : 0));
+        setOriginalStock(Number.isFinite(currentQty) ? currentQty : 0);
 
-        // Guardamos valores originales
-        setOriginalStock(currentQty);
-        setOriginalDiscount(Number(product.discount ?? 0));
+        // MUY IMPORTANTE: no precargar el input → queda vacío y usamos placeholder
+        setStockStr("");
 
         const prodCats = Array.isArray(product.categories) ? product.categories : [];
         const mappedOriginals = prodCats
@@ -114,7 +118,7 @@ const EditProduct = () => {
     load();
   }, [id]);
 
-  // Categories
+  // Categorías
   const handleCategoriesChange = (picked) => {
     const merged = [
       ...originalCategories,
@@ -123,13 +127,9 @@ const EditProduct = () => {
     setSelectedCategories(merged);
   };
 
-  // Images
+  // Imágenes
   const handleMarkImageForDeletion = (imageId) => {
     setImagesToDelete((prev) => [...prev, imageId]);
-  };
-
-  const handleRemoveNewImage = (idx) => {
-    setNewImages((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const uploadNewImagesSequential = async (productId, files) => {
@@ -181,31 +181,47 @@ const EditProduct = () => {
       (c) => !originalCategories.some((o) => o.id === c.id)
     );
 
-    // 🧠 Construimos el payload con cantidad opcional:
+    // Payload base
     const payload = {
       name: name.trim(),
       description: description.trim(),
-      price: Number(price),
-      discount: Number(discount) || 0,
+      price: price === "" ? undefined : Number(price),
       ...(newOnly.length > 0 && { categories: newOnly.map((c) => c.description) }),
     };
 
-    // Si el input de stock NO está vacío, enviamos "quantity"
-    const stockTrim = String(stock ?? "").trim();
+    // Descuento: si está vacío, NO lo enviamos
+    const discTrim = String(discountStr ?? "").trim();
+    if (discTrim !== "") {
+      const parsedDisc = Number(discTrim);
+      if (!Number.isFinite(parsedDisc) || parsedDisc < 0 || parsedDisc > 99) {
+        toast.error("Descuento inválido (0-99).");
+        return;
+      }
+      payload.discount = parsedDisc;
+    }
+
+    // Stock: si está vacío, NO lo enviamos (evita duplicados en backend que suma)
+    const stockTrim = String(stockStr ?? "").trim();
     if (stockTrim !== "") {
-      const parsed = parseInt(stockTrim, 10);
-      if (!Number.isFinite(parsed) || parsed < 0) {
+      const parsedQty = parseInt(stockTrim, 10);
+      if (!Number.isFinite(parsedQty) || parsedQty < 0) {
         toast.error("Cantidad inválida.");
         return;
       }
-      payload.quantity = parsed; // ✅ el backend suele esperar 'quantity'
+      // Si es igual al original, tampoco lo enviamos (evita side-effects de suma)
+      if (parsedQty !== originalStock) {
+        payload.quantity = parsedQty; // algunos backends
+        payload.stock = parsedQty;    // otros backends
+      }
     }
-    // Si está vacío, NO tocamos la cantidad → no se duplica ni se pisa
+
+    // Limpiar undefined
+    Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
 
     try {
       setSaving(true);
 
-      // Primero eliminar imágenes marcadas
+      // Borrar imágenes marcadas
       for (const imgId of imagesToDelete) {
         await fetch(`${API_BASE}/images/${imgId}`, {
           method: "DELETE",
@@ -229,12 +245,15 @@ const EditProduct = () => {
         await uploadNewImagesSequential(id, newImages);
       }
 
-      // Notificar si cambió stock o descuento (solo si se envió quantity)
+      // Notificar si realmente cambiaron stock o descuento (solo si los enviamos)
       const sentQuantity = Object.prototype.hasOwnProperty.call(payload, "quantity")
         ? payload.quantity
         : originalStock;
+      const sentDiscount = Object.prototype.hasOwnProperty.call(payload, "discount")
+        ? payload.discount
+        : originalDiscount;
 
-      if (Number(sentQuantity) !== originalStock || Number(discount) !== originalDiscount) {
+      if (Number(sentQuantity) !== originalStock || sentDiscount !== originalDiscount) {
         try {
           await fetch(`${API_BASE}/api/notifications/product/${id}`, {
             method: "POST",
@@ -324,10 +343,11 @@ const EditProduct = () => {
                   id="discount"
                   name="discount"
                   type="number"
-                  value={discount}
-                  onChange={(e) => setDiscount(e.target.value)}
+                  value={discountStr}
+                  onChange={(e) => setDiscountStr(e.target.value)}
                   min={0}
                   max={99}
+                  placeholder="Dejar vacío para no modificar"
                 />
               </div>
             </div>
@@ -339,10 +359,10 @@ const EditProduct = () => {
                 id="quantity"
                 name="quantity"
                 type="number"
-                value={stock}
-                onChange={(e) => setStock(e.target.value)}
+                value={stockStr}
+                onChange={(e) => setStockStr(e.target.value)}
                 min={0}
-                placeholder="Dejar vacío para no modificar"
+                placeholder={String(originalStock)} // ← solo muestra, no envía
               />
             </div>
 

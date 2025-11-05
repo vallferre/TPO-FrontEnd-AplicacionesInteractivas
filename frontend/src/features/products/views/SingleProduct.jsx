@@ -21,7 +21,6 @@ const SingleProduct = ({ id, onRemoveFavorite }) => {
 
   useEffect(() => {
     dispatch(fetchProductById(id));
-    dispatch(fetchRelatedProducts(id));
     dispatch(fetchRatings(id));
   }, [dispatch, id]);
 

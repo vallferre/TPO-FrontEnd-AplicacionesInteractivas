@@ -19,6 +19,7 @@ import {
   selectRatings,
   selectLoading,
   selectError,
+  selectRelatedLoading,
 } from "../../../redux/slices/ProductSelectors";
 
 const ProductDetails = () => {
@@ -37,15 +38,23 @@ const ProductDetails = () => {
     useSelector(selectRatings) || {};
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
+  const relatedLoading = useSelector(selectRelatedLoading);
 
-  // Cargar producto, ratings y relacionados
+  // Carga producto y ratings (solo depende del id)
   useEffect(() => {
     if (id) {
       dispatch(fetchProductById(id));
-      dispatch(fetchRelatedProducts(id));
       dispatch(fetchRatings(id));
     }
   }, [id, dispatch]);
+
+  // Cuando el producto cambió, traemos los relacionados
+  useEffect(() => {
+    if (product?.id && product?.categories?.length > 0 && !relatedLoading && relatedProducts.length === 0) {
+      dispatch(fetchRelatedProducts(product.categories));
+    }
+  }, [dispatch, product?.id]);
+
 
   useEffect(() => {
     if (product?.stock > 0) setQuantity(1);

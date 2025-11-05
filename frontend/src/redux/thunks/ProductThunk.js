@@ -13,10 +13,10 @@ export const fetchProductById = createAsyncThunk(
 );
 
 export const fetchRelatedProducts = createAsyncThunk(
-  "product/fetchRelated",
-  async (id, { rejectWithValue }) => {
+  "products/fetchRelated",
+  async (categories, { rejectWithValue }) => {
     try {
-      return await getRelatedProducts(id);
+      return await getRelatedProducts(categories);
     } catch (err) {
       return rejectWithValue(err.message);
     }

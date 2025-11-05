@@ -1,65 +1,34 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectFavorites,
+  selectFavoritesLoading,
+  selectFavoritesError,
+} from "../../redux/slices/FavoritesSelectors";
+import { fetchFavorites } from "../../redux/thunks/FavoritesThunk";
+import { removeFavorite } from "../../redux/slices/FavoritesSlice";
 import SingleProduct from "../products/views/SingleProduct";
-import ErrorView from "../../components/ui/ErrorView.jsx"; // ✅ importamos ErrorView
-//import "../assets/Favorites.css";
+import ErrorView from "../../components/ui/ErrorView";
 import "./Favorites.css";
 
-const API_BASE = "http://localhost:8080";
-
 const Favorites = () => {
-  const [favoriteIds, setFavoriteIds] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const dispatch = useDispatch();
+  const favoriteIds = useSelector(selectFavorites);
+  const loading = useSelector(selectFavoritesLoading);
+  const error = useSelector(selectFavoritesError);
 
   useEffect(() => {
-    const fetchFavorites = async () => {
-      setLoading(true);
-      setError("");
-
-      const token = localStorage.getItem("jwtToken");
-      if (!token) {
-        setError("No se encontró token de autenticación");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(`${API_BASE}/users/favorites`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!response.ok)
-          throw new Error(`Error ${response.status}: no se pudieron cargar los favoritos`);
-
-        const data = await response.json();
-
-        if (Array.isArray(data.favoriteProductIds)) {
-          setFavoriteIds(data.favoriteProductIds);
-        } else if (Array.isArray(data)) {
-          setFavoriteIds(
-            data.flatMap((fav) => fav.favoriteProductIds || [])
-          );
-        } else {
-          throw new Error("Formato de respuesta inesperado del servidor");
-        }
-      } catch (err) {
-        console.error(err);
-        setError("Error al cargar los favoritos. Intenta nuevamente.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFavorites();
-  }, []);
+    dispatch(fetchFavorites());
+  }, [dispatch]);
 
   const handleRemoveFavorite = (productId) => {
-    setFavoriteIds((prev) => prev.filter((id) => id !== productId));
+    dispatch(removeFavorite(productId));
   };
 
   if (loading) return <p>Loading favorites...</p>;
   if (error) return <p className="error">{error}</p>;
-  if (!favoriteIds.length) return <ErrorView message="No tienes productos en favoritos aún."/>; // usamos ErrorView
+  if (!favoriteIds.length)
+    return <ErrorView message="No tienes productos en favoritos aún." />;
 
   return (
     <div className="favorites-page">
