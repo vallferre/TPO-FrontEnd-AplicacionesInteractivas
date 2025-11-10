@@ -11,6 +11,7 @@ export const store = configureStore({
     products: productReducer,
     cart: cartReducer,
     favorites: favoritesReducer,
+    rating: ratingReducer,
   },
 });
 
