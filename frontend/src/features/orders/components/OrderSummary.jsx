@@ -1,52 +1,48 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import "./OrderSummary.css"
+import "./OrderSummary.css";
+import { checkoutOrder } from "../../../redux/thunks/OrderThunk";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectOrderLoading,
+  selectOrderError,
+  selectCurrentOrder,
+} from "../../../redux/selectors/orderSelectors";
 
-export default function OrderSummary({ subtotal, shipping, tax, total, cartItems = [] }) {
+export default function OrderSummary({
+  subtotal,
+  shipping,
+  tax,
+  total,
+  cartItems = [],
+}) {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const loading = useSelector(selectOrderLoading);
+  const error = useSelector(selectOrderError);
+  const currentOrder = useSelector(selectCurrentOrder);
 
   const totalDiscount = cartItems.reduce((sum, item) => {
     if (item.discountedPrice && item.discountedPrice > 0) {
-      const discountAmount = ((item.priceAtAddTime * item.discountedPrice) / 100) * item.quantity;
+      const discountAmount =
+        ((item.priceAtAddTime * item.discountedPrice) / 100) * item.quantity;
       return sum + discountAmount;
     }
     return sum;
   }, 0);
 
   const handleCheckout = async () => {
-    const token = localStorage.getItem("jwtToken");
+    const result = await dispatch(checkoutOrder());
 
-    if (!token) {
-      toast.warning("Please log in to continue with the checkout.");
-      navigate("/login");
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:8080/cart/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+    if (checkoutOrder.fulfilled.match(result)) {
+      toast.success("Order placed successfully!");
+      navigate(`/order/${result.payload.orderId}`, {
+        state: { order: result.payload },
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        navigate(`/order/${data.orderId}`, { state: { order: data } });
-      } else if (response.status === 400) {
-        const errorMessage = await response.text();
-        toast.error(`Error: ${errorMessage}`);
-      } else if (response.status === 401) {
-        toast.warning("Unauthorized. Please log in again.");
-        navigate("/login");
-      } else {
-        throw new Error(`Checkout failed with status ${response.status}`);
-      }
-    } catch (error) {
-      toast.error("An error occurred during checkout. Please try again.");
-      console.error(error);
+    } else {
+      toast.error(result.payload || "Checkout failed.");
     }
   };
 
@@ -76,9 +72,13 @@ export default function OrderSummary({ subtotal, shipping, tax, total, cartItems
             </div>
 
             {cartItems
-              .filter((item) => item.discountedPrice && item.discountedPrice > 0)
+              .filter(
+                (item) => item.discountedPrice && item.discountedPrice > 0
+              )
               .map((item) => {
-                const discountAmount = ((item.priceAtAddTime * item.discountedPrice) / 100) * item.quantity;
+                const discountAmount =
+                  ((item.priceAtAddTime * item.discountedPrice) / 100) *
+                  item.quantity;
                 return (
                   <div key={item.productId}>
                     <div>
@@ -107,8 +107,7 @@ export default function OrderSummary({ subtotal, shipping, tax, total, cartItems
       <button onClick={handleCheckout}>Proceed to Checkout</button>
 
       <p>
-        or{" "}
-        <Link to="/">Continue Shopping →</Link>
+        or <Link to="/">Continue Shopping →</Link>
       </p>
     </div>
   );
