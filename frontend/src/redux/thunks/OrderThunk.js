@@ -1,4 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+
+const URL = "http://localhost:8080";
 
 export const checkoutOrder = createAsyncThunk(
   "order/checkoutOrder",
@@ -6,23 +9,17 @@ export const checkoutOrder = createAsyncThunk(
     const token = localStorage.getItem("jwtToken");
     if (!token) return rejectWithValue("No token found");
 
-    try {
-      const response = await fetch("http://localhost:8080/cart/checkout", {
-        method: "POST",
+    const { data } = await axios.post(
+      `${URL}/cart/checkout`,
+      {},
+      {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-      });
-      if (!response.ok) {
-        const message = await response.text();
-        return rejectWithValue(message || "Checkout failed");
       }
+    );
 
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
+    return data;
   }
 );
