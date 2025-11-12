@@ -17,16 +17,22 @@ export const fetchRatingsByProduct = createAsyncThunk(
 // Agregar o actualizar un rating
 export const addOrUpdateRating = createAsyncThunk(
   "ratings/addOrUpdate",
-  async ({ productId, userId, value, comment }) => {
-    const response = await axios.post(`${BASE_URL}/add`, {
-      productId,
-      userId,
-      value,
-      comment,
-    });
-    return response.data; // Rating actualizado o nuevo
+  async ({ productId, userId, value, comment }, { getState }) => {
+    const token = getState().auth.token; // 👈 lo saca del estado global
+    const response = await axios.post(
+      `${BASE_URL}/add`,
+      { productId, userId, value, comment },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
   }
 );
+
 
 // Obtener promedio de un producto
 export const fetchAverageRating = createAsyncThunk(
