@@ -1,87 +1,70 @@
 // src/features/auth/authThunks.js
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import {
-  apiLogin,
-  apiRegister,
-  apiFetchCurrentUser,
-  apiSendWelcomeNotification,
-} from "../../services/AuthService";
-import { clearAuthState } from "../slices/AuthSlice";
+import axios from "axios";
 
 const API_BASE = "http://localhost:8080";
 
 // 🔹 LOGIN
 export const loginUser = createAsyncThunk(
   "auth/login",
-  async (credentials, { rejectWithValue, dispatch }) => {
-    try {
-      const data = await apiLogin(credentials);
-      if (data.access_token) {
-        localStorage.setItem("jwtToken", data.access_token);
-        // Cargar usuario inmediatamente después del login
-        await dispatch(fetchCurrentUser(data.access_token));
-      }
-      return data;
-    } catch (err) {
-      return rejectWithValue(err.message);
+  async (credentials, { dispatch }) => {
+    const { data } = await axios.post(`${API_BASE}/auth/login`, credentials);
+    if (data?.access_token) {
+      await dispatch(fetchCurrentUser(data.access_token));
     }
+    return data; // { access_token }
   }
 );
 
 // 🔹 REGISTER
 export const registerUser = createAsyncThunk(
   "auth/register",
-  async (payload, { rejectWithValue, dispatch }) => {
-    try {
-      const data = await apiRegister(payload);
-      if (data.access_token) {
-        localStorage.setItem("jwtToken", data.access_token);
-        await apiSendWelcomeNotification(data.access_token);
-        await dispatch(fetchCurrentUser(data.access_token));
-      }
-      return data;
-    } catch (err) {
-      return rejectWithValue(err.message);
+  async (payload, { dispatch }) => {
+    const { data } = await axios.post(`${API_BASE}/auth/register`, payload);
+
+    if (data?.access_token) {
+      // Notificación de bienvenida (si falla no bloquea)
+      axios.post(
+        `${API_BASE}/api/notifications/welcome`,
+        {},
+        { headers: { Authorization: `Bearer ${data.access_token}` } }
+      ).catch(() => {});
+
+      await dispatch(fetchCurrentUser(data.access_token));
     }
+    return data; // { access_token }
   }
 );
 
-// 🔹 FETCH CURRENT USER
+// 🔹 TRAER USUARIO
 export const fetchCurrentUser = createAsyncThunk(
   "auth/fetchUser",
-  async (tokenArg, { getState, rejectWithValue }) => {
-    try {
-      const token = tokenArg || getState().auth.token;
-      if (!token) throw new Error("No hay token disponible");
+  async (forcedToken, { getState }) => {
+    const token = forcedToken || getState().auth.token;
+    if (!token) throw new Error("No hay token disponible");
 
-      const user = await apiFetchCurrentUser(token);
+    const { data: user } = await axios.get(`${API_BASE}/users/`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      // Intentar obtener imagen del usuario
-      const imageRes = await fetch(`${API_BASE}/users/${user.id}/image`, {
+    // Imagen opcional (si falla, asigna un placeholder)
+    await axios
+      .get(`${API_BASE}/users/${user.id}/image`, {
         headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
+      })
+      .then((res) => {
+        user.image = URL.createObjectURL(res.data);
+      })
+      .catch(() => {
+        user.image = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
       });
 
-      if (imageRes.ok) {
-        const blob = await imageRes.blob();
-        user.image = URL.createObjectURL(blob);
-      } else {
-        user.image =
-          "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-      }
-
-      return user;
-    } catch (err) {
-      return rejectWithValue(err.message);
-    }
+    return user; // { id, username, ... , image }
   }
 );
 
-// 🔹 LOGOUT
-export const logoutUser = createAsyncThunk(
-  "auth/logout",
-  async (_, { dispatch }) => {
-    // si el backend requiere invalidar el token, hacelo acá
-    dispatch(clearAuthState());
-    return true;
-  }
-);
+// 🔹 LOGOUT (el slice limpia el estado en fulfilled)
+export const logoutUser = createAsyncThunk("auth/logout", async () => {
+  return true;
+});
