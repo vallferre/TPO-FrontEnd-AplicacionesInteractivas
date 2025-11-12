@@ -1,6 +1,6 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import { addOrUpdateRating } from "../redux/ratingSlice"; // 🔹 importá tu thunk
+import { addOrUpdateRating } from "../../redux/slices/RatingSlice"; // 🔹 importá tu thunk
 import "./RatingCard.css";
 
 const RatingCard = ({ productId, userId, userName, value, comment }) => {

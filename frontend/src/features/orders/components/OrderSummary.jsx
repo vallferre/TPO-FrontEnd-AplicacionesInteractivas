@@ -8,7 +8,7 @@ import {
   selectOrderLoading,
   selectOrderError,
   selectCurrentOrder,
-} from "../../../redux/selectors/orderSelectors";
+} from "../../../redux/slices/orderSelectors";
 
 export default function OrderSummary({
   subtotal,
