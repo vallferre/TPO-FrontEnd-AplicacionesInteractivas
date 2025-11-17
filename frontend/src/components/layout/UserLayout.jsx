@@ -1,9 +1,15 @@
+// src/layouts/UserLayout.jsx
 import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";            // ⬅️ agregado
 import "./UserLayout.css";
 
 const UserLayout = () => {
   const navigate = useNavigate();
+
+  // ⬅️ token desde Redux
+  const token = useSelector((state) => state.auth.token);
+
   const [user, setUser] = useState({
     id: null,
     fullName: "",
@@ -22,7 +28,7 @@ const UserLayout = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("jwtToken");
+    // ⬅️ ahora dependemos del token de Redux
     if (!token) {
       setError("No hay token, inicia sesión");
       setLoading(false);
@@ -41,9 +47,10 @@ const UserLayout = () => {
         // Intentar obtener la imagen del usuario
         let avatarUrl = "";
         try {
-          const imageResponse = await fetch(`http://localhost:8080/users/${userData.id}/image`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const imageResponse = await fetch(
+            `http://localhost:8080/users/${userData.id}/image`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
           if (imageResponse.ok) {
             const blob = await imageResponse.blob();
             avatarUrl = URL.createObjectURL(blob);
@@ -64,13 +71,19 @@ const UserLayout = () => {
         const roleResponse = await fetch("http://localhost:8080/users/role", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!roleResponse.ok) throw new Error(`Error fetching role: ${roleResponse.status}`);
+        if (!roleResponse.ok)
+          throw new Error(`Error fetching role: ${roleResponse.status}`);
         const roleData = await roleResponse.json();
         setRole(roleData.role);
 
         // Redirigir automáticamente según el rol
         if (window.location.pathname === "/profile") {
-          navigate(roleData.role === "ADMIN" ? "/profile/categories" : "/profile/products", { replace: true });
+          navigate(
+            roleData.role === "ADMIN"
+              ? "/profile/categories"
+              : "/profile/products",
+            { replace: true }
+          );
         }
       } catch (err) {
         console.error(err);
@@ -82,7 +95,7 @@ const UserLayout = () => {
     };
 
     fetchUserAndRole();
-  }, [navigate]);
+  }, [token, navigate]); // ⬅️ token en dependencias
 
   if (loading) return <p>Cargando perfil...</p>;
   if (error) return <p className="error">{error}</p>;
