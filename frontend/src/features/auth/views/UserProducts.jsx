@@ -4,6 +4,7 @@ import "../../../components/ui/DeleteConfirmationModal.css";
 import { useNavigate } from "react-router-dom";
 import "../../../index.css";
 import {toast} from 'react-toastify'
+import { useSelector } from "react-redux";
 
 const API_BASE = "http://localhost:8080";
 
@@ -43,8 +44,8 @@ const UserProducts = () => {
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const token = useSelector((state) => state.auth.token);
 
-  const token = localStorage.getItem("jwtToken");
 
   useEffect(() => {
     if (!token) {

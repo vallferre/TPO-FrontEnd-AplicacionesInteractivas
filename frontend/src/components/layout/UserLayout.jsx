@@ -4,6 +4,7 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";            // ⬅️ agregado
 import "./UserLayout.css";
 
+
 const UserLayout = () => {
   const navigate = useNavigate();
 

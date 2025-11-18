@@ -1,6 +1,12 @@
-// src/features/slices/ProductSlice.js
+// src/redux/slices/ProductSlice.js
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchProductById, fetchRelatedProducts, fetchRatings, createProductWithImages } from "../thunks/ProductThunk";
+import {
+  fetchProductById,
+  fetchRelatedProducts,
+  fetchRatings,
+  createProductWithImages,
+  updateProductWithImages,
+} from "../thunks/ProductThunk";
 
 const initialState = {
   product: null,
@@ -9,21 +15,21 @@ const initialState = {
   loading: false,
   relatedLoading: false,
   error: null,
-  creating: false,          // 🔹 flag para crear
-  createError: null,        // 🔹 error de creación
 };
 
 const productSlice = createSlice({
   name: "product",
   initialState,
   reducers: {
-    clearProduct: (state) => { state.product = null; },
+    clearProduct: (state) => {
+      state.product = null;
+    },
   },
   extraReducers: (builder) => {
     builder
-      // -------- Producto por id --------
-      .addCase(fetchProductById.pending, (state) => { 
-        state.loading = true; 
+      /* ========= OBTENER PRODUCTO POR ID ========= */
+      .addCase(fetchProductById.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
       .addCase(fetchProductById.fulfilled, (state, action) => {
@@ -32,10 +38,10 @@ const productSlice = createSlice({
       })
       .addCase(fetchProductById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload || action.error?.message || "Error al cargar producto";
       })
 
-      // -------- Relacionados --------
+      /* ========= PRODUCTOS RELACIONADOS ========= */
       .addCase(fetchRelatedProducts.pending, (state) => {
         state.relatedLoading = true;
         state.error = null;
@@ -46,29 +52,48 @@ const productSlice = createSlice({
       })
       .addCase(fetchRelatedProducts.rejected, (state, action) => {
         state.relatedLoading = false;
-        state.error = action.payload;
+        state.error =
+          action.payload || action.error?.message || "Error al cargar relacionados";
       })
 
-      // -------- Ratings --------
+      /* ========= RATINGS ========= */
       .addCase(fetchRatings.fulfilled, (state, action) => {
         state.ratings = action.payload;
       })
 
-      // -------- Crear + imágenes --------
+      /* ========= CREAR PRODUCTO CON IMÁGENES ========= */
       .addCase(createProductWithImages.pending, (state) => {
-        state.creating = true;
-        state.createError = null;
+        state.loading = true;
+        state.error = null;
       })
       .addCase(createProductWithImages.fulfilled, (state, action) => {
-        state.creating = false;
-        // Opcional: setear el último producto creado
-        state.product = action.payload || null;
+        state.loading = false;
+        state.product = action.payload || null; // último creado
       })
       .addCase(createProductWithImages.rejected, (state, action) => {
-        state.creating = false;
-        state.createError = action.error?.message || "Error al crear producto";
+        state.loading = false;
+        state.error =
+          action.payload || action.error?.message || "Error al crear el producto";
+      })
+
+      /* ========= EDITAR PRODUCTO CON IMÁGENES ========= */
+      .addCase(updateProductWithImages.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProductWithImages.fulfilled, (state, action) => {
+        state.loading = false;
+        // si la API devuelve el producto actualizado, lo guardamos
+        if (action.payload) {
+          state.product = action.payload;
+        }
+      })
+      .addCase(updateProductWithImages.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.payload || action.error?.message || "Error al actualizar el producto";
       });
-  }
+  },
 });
 
 export const { clearProduct } = productSlice.actions;

@@ -5,30 +5,34 @@ import "./EditProduct.css";
 import CategoryMultiSelect from "../components/CategoryMultiSelect";
 import ImageUploader from "../../../components/common/ImageUploader";
 import { toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchProductById,
+  updateProductWithImages,
+} from "../../../redux/thunks/ProductThunk";
 
 const API_BASE = "http://localhost:8080";
-
-function authHeaders() {
-  const t = localStorage.getItem("jwtToken");
-  return t ? { Authorization: `Bearer ${t}` } : {};
-}
 
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  // 🔹 token desde Redux
+  const token = useSelector((state) => state.auth.token);
 
   // Campos base
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");             // string
+  const [price, setPrice] = useState(""); // string
   const [discountStr, setDiscountStr] = useState(""); // string (permite vacío)
 
-  // ⚠️ stock como string y vacío por defecto (placeholder muestra el actual)
+  // stock como string y vacío (placeholder muestra el actual)
   const [stockStr, setStockStr] = useState("");
 
   // Originales
   const [originalStock, setOriginalStock] = useState(0);
-  const [originalDiscount, setOriginalDiscount] = useState(null); // null = no tocar
+  const [originalDiscount, setOriginalDiscount] = useState(null);
 
   // Categorías
   const [originalCategories, setOriginalCategories] = useState([]);
@@ -46,14 +50,7 @@ const EditProduct = () => {
 
   const MAX_IMAGE_SIZE = 1 * 1024 * 1024;
 
-  // Fetchers
-  const fetchProduct = async () => {
-    const res = await fetch(`${API_BASE}/products/id/${id}`, {
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!res.ok) throw new Error(`Error producto: ${res.status}`);
-    return res.json();
-  };
+  /* ---------- helpers para categorías e imágenes (solo GET) ---------- */
 
   const fetchAllCategories = async () => {
     const res = await fetch(`${API_BASE}/categories`, {
@@ -72,6 +69,8 @@ const EditProduct = () => {
     return res.json();
   };
 
+  /* ---------- carga inicial usando Redux para el producto ---------- */
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -79,7 +78,8 @@ const EditProduct = () => {
         setError("");
 
         const [product, catsList, imgs] = await Promise.all([
-          fetchProduct(),
+          // 🔹 PRODUCTO DESDE REDUX (axios por debajo, sin ProductService)
+          dispatch(fetchProductById(id)).unwrap(),
           fetchAllCategories(),
           fetchExistingImages(),
         ]);
@@ -89,7 +89,9 @@ const EditProduct = () => {
         setPrice(String(product.price ?? ""));
 
         const disc = product.discount;
-        setDiscountStr(disc === null || disc === undefined ? "" : String(disc));
+        setDiscountStr(
+          disc === null || disc === undefined ? "" : String(disc)
+        );
         setOriginalDiscount(
           disc === null || disc === undefined ? null : Number(disc)
         );
@@ -97,10 +99,12 @@ const EditProduct = () => {
         const currentQty = Number(product.quantity ?? product.stock ?? 0);
         setOriginalStock(Number.isFinite(currentQty) ? currentQty : 0);
 
-        // MUY IMPORTANTE: no precargar el input → queda vacío y usamos placeholder
+        // input stock vacío (placeholder con originalStock)
         setStockStr("");
 
-        const prodCats = Array.isArray(product.categories) ? product.categories : [];
+        const prodCats = Array.isArray(product.categories)
+          ? product.categories
+          : [];
         const mappedOriginals = prodCats
           .map((desc) => catsList.find((c) => c.description === desc))
           .filter(Boolean);
@@ -116,7 +120,7 @@ const EditProduct = () => {
       }
     };
     load();
-  }, [id]);
+  }, [id, dispatch]);
 
   // Categorías
   const handleCategoriesChange = (picked) => {
@@ -132,26 +136,11 @@ const EditProduct = () => {
     setImagesToDelete((prev) => [...prev, imageId]);
   };
 
-  const uploadNewImagesSequential = async (productId, files) => {
-    for (const file of files) {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch(`${API_BASE}/products/${productId}/images`, {
-        method: "POST",
-        headers: { ...authHeaders() },
-        body: fd,
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Error subiendo "${file.name}" (HTTP ${res.status}) ${text || ""}`);
-      }
-    }
-  };
+  /* ---------- submit ---------- */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("jwtToken");
     if (!token) {
       toast.error("⚠️ Iniciá sesión nuevamente.");
       return;
@@ -160,14 +149,18 @@ const EditProduct = () => {
     const totalImagesAfterDelete =
       existingImages.length - imagesToDelete.length + newImages.length;
     if (totalImagesAfterDelete === 0) {
-      toast.error("⚠️ Debe haber al menos una imagen antes de guardar el producto.");
+      toast.error(
+        "⚠️ Debe haber al menos una imagen antes de guardar el producto."
+      );
       return;
     }
 
     for (const file of newImages) {
       if (file.size > MAX_IMAGE_SIZE) {
         toast.error(
-          `La imagen "${file.name}" es demasiado grande. Máximo permitido: ${MAX_IMAGE_SIZE / 1024 / 1024}MB.`
+          `La imagen "${file.name}" es demasiado grande. Máximo permitido: ${
+            MAX_IMAGE_SIZE / 1024 / 1024
+          }MB.`
         );
         return;
       }
@@ -186,10 +179,12 @@ const EditProduct = () => {
       name: name.trim(),
       description: description.trim(),
       price: price === "" ? undefined : Number(price),
-      ...(newOnly.length > 0 && { categories: newOnly.map((c) => c.description) }),
+      ...(newOnly.length > 0 && {
+        categories: newOnly.map((c) => c.description),
+      }),
     };
 
-    // Descuento: si está vacío, NO lo enviamos
+    // Descuento
     const discTrim = String(discountStr ?? "").trim();
     if (discTrim !== "") {
       const parsedDisc = Number(discTrim);
@@ -200,7 +195,7 @@ const EditProduct = () => {
       payload.discount = parsedDisc;
     }
 
-    // Stock: si está vacío, NO lo enviamos (evita duplicados en backend que suma)
+    // Stock
     const stockTrim = String(stockStr ?? "").trim();
     if (stockTrim !== "") {
       const parsedQty = parseInt(stockTrim, 10);
@@ -208,67 +203,38 @@ const EditProduct = () => {
         toast.error("Cantidad inválida.");
         return;
       }
-      // Si es igual al original, tampoco lo enviamos (evita side-effects de suma)
       if (parsedQty !== originalStock) {
-        payload.quantity = parsedQty; // algunos backends
-        payload.stock = parsedQty;    // otros backends
+        payload.quantity = parsedQty;
+        payload.stock = parsedQty;
       }
     }
 
     // Limpiar undefined
-    Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
+    Object.keys(payload).forEach(
+      (k) => payload[k] === undefined && delete payload[k]
+    );
 
     try {
       setSaving(true);
 
-      // Borrar imágenes marcadas
-      for (const imgId of imagesToDelete) {
-        await fetch(`${API_BASE}/images/${imgId}`, {
-          method: "DELETE",
-          headers: authHeaders(),
-        });
-      }
-
-      // Actualizar producto
-      const res = await fetch(`${API_BASE}/products/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...authHeaders() },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(`Error al actualizar: ${msg || res.status}`);
-      }
-
-      // Subir nuevas imágenes
-      if (newImages.length > 0) {
-        await uploadNewImagesSequential(id, newImages);
-      }
-
-      // Notificar si realmente cambiaron stock o descuento (solo si los enviamos)
-      const sentQuantity = Object.prototype.hasOwnProperty.call(payload, "quantity")
-        ? payload.quantity
-        : originalStock;
-      const sentDiscount = Object.prototype.hasOwnProperty.call(payload, "discount")
-        ? payload.discount
-        : originalDiscount;
-
-      if (Number(sentQuantity) !== originalStock || sentDiscount !== originalDiscount) {
-        try {
-          await fetch(`${API_BASE}/api/notifications/product/${id}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", ...authHeaders() },
-          });
-        } catch (err) {
-          console.error("Error notificando usuarios:", err);
-        }
-      }
+      // 🔹 Toda la lógica de update/imagenes/notificación va en el thunk
+      await dispatch(
+        updateProductWithImages({
+          token,
+          id,
+          payload,
+          newImages,
+          imagesToDelete,
+          originalStock,
+          originalDiscount,
+        })
+      ).unwrap();
 
       toast.success("Producto actualizado correctamente");
       navigate(-1);
     } catch (err) {
       console.error(err);
-      toast.error(err.message || "Hubo un error al actualizar el producto");
+      toast.error(err || "Hubo un error al actualizar el producto");
     } finally {
       setSaving(false);
     }
@@ -362,7 +328,7 @@ const EditProduct = () => {
                 value={stockStr}
                 onChange={(e) => setStockStr(e.target.value)}
                 min={0}
-                placeholder={String(originalStock)} // ← solo muestra, no envía
+                placeholder={String(originalStock)}
               />
             </div>
 
@@ -377,7 +343,8 @@ const EditProduct = () => {
                 />
               </div>
               <p className="muted" style={{ marginTop: ".4rem" }}>
-                Las categorías ya asignadas están bloqueadas y no se vuelven a enviar al guardar.
+                Las categorías ya asignadas están bloqueadas y no se vuelven a
+                enviar al guardar.
               </p>
             </div>
 
@@ -385,7 +352,8 @@ const EditProduct = () => {
             <div className="form-group">
               <label>Fotos existentes</label>
               <p className="muted" style={{ marginTop: ".025rem" }}>
-                Las imágenes ya cargadas, al ser eliminadas, no podrán ser recuperadas hasta guardar.
+                Las imágenes ya cargadas, al ser eliminadas, no podrán ser
+                recuperadas hasta guardar.
               </p>
 
               {existingImages.length === 0 ? (
@@ -445,7 +413,11 @@ const EditProduct = () => {
               >
                 Cancel
               </button>
-              <button type="submit" className="btn save" disabled={saving || noImages}>
+              <button
+                type="submit"
+                className="btn save"
+                disabled={saving || noImages}
+              >
                 {saving ? "Saving..." : "Save Changes"}
               </button>
             </div>
