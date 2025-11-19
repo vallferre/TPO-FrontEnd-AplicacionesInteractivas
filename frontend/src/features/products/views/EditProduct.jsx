@@ -1,4 +1,4 @@
-// src/views/EditProduct.jsx
+// src/views/EditProduct.jsx 
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./EditProduct.css";
@@ -6,10 +6,11 @@ import CategoryMultiSelect from "../components/CategoryMultiSelect";
 import ImageUploader from "../../../components/common/ImageUploader";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchProductById,
-  updateProductWithImages,
-} from "../../../redux/thunks/ProductThunk";
+
+import { fetchProductById } from "../../../redux/slices/ProductSlice";
+import { updateProductWithImages } from "../../../redux/slices/ProductSlice";
+import { fetchProductImages,deleteProductImages,uploadProductImages, } from "../../../redux/slices/ProductImageSlice";
+
 
 const API_BASE = "http://localhost:8080";
 
@@ -20,6 +21,11 @@ const EditProduct = () => {
 
   // 🔹 token desde Redux
   const token = useSelector((state) => state.auth.token);
+
+  // 🔹 imágenes desde Redux
+  const productImages = useSelector(
+    (state) => state.productImages.items || []
+  );
 
   // Campos base
   const [name, setName] = useState("");
@@ -38,8 +44,7 @@ const EditProduct = () => {
   const [originalCategories, setOriginalCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
 
-  // Imágenes
-  const [existingImages, setExistingImages] = useState([]);
+  // Imágenes (solo frontend)
   const [newImages, setNewImages] = useState([]);
   const [imagesToDelete, setImagesToDelete] = useState([]);
 
@@ -50,7 +55,7 @@ const EditProduct = () => {
 
   const MAX_IMAGE_SIZE = 1 * 1024 * 1024;
 
-  /* ---------- helpers para categorías e imágenes (solo GET) ---------- */
+  /* ---------- helpers para categorías (solo GET local) ---------- */
 
   const fetchAllCategories = async () => {
     const res = await fetch(`${API_BASE}/categories`, {
@@ -61,15 +66,7 @@ const EditProduct = () => {
     return data.content || [];
   };
 
-  const fetchExistingImages = async () => {
-    const res = await fetch(`${API_BASE}/products/${id}/images`, {
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!res.ok) return [];
-    return res.json();
-  };
-
-  /* ---------- carga inicial usando Redux para el producto ---------- */
+  /* ---------- carga inicial usando Redux para el producto + imágenes ---------- */
 
   useEffect(() => {
     const load = async () => {
@@ -77,12 +74,14 @@ const EditProduct = () => {
         setLoading(true);
         setError("");
 
-        const [product, catsList, imgs] = await Promise.all([
-          // 🔹 PRODUCTO DESDE REDUX (axios por debajo, sin ProductService)
+        const [product, catsList] = await Promise.all([
+          // 🔹 PRODUCTO DESDE REDUX
           dispatch(fetchProductById(id)).unwrap(),
           fetchAllCategories(),
-          fetchExistingImages(),
         ]);
+
+        // 🔹 IMÁGENES DESDE REDUX
+        await dispatch(fetchProductImages(id)).unwrap();
 
         setName(product.name ?? "");
         setDescription(product.description ?? "");
@@ -111,7 +110,8 @@ const EditProduct = () => {
 
         setOriginalCategories(mappedOriginals);
         setSelectedCategories(mappedOriginals);
-        setExistingImages(Array.isArray(imgs) ? imgs : []);
+
+        // imágenes vienen vía Redux → productImages
       } catch (e) {
         console.error(e);
         setError("No se pudo cargar el producto.");
@@ -147,7 +147,7 @@ const EditProduct = () => {
     }
 
     const totalImagesAfterDelete =
-      existingImages.length - imagesToDelete.length + newImages.length;
+      productImages.length - imagesToDelete.length + newImages.length;
     if (totalImagesAfterDelete === 0) {
       toast.error(
         "⚠️ Debe haber al menos una imagen antes de guardar el producto."
@@ -217,18 +217,37 @@ const EditProduct = () => {
     try {
       setSaving(true);
 
-      // 🔹 Toda la lógica de update/imagenes/notificación va en el thunk
+      // 1) Eliminar imágenes marcadas
+      if (imagesToDelete.length > 0) {
+        await dispatch(
+          deleteProductImages({
+            token,
+            imageIds: imagesToDelete,
+          })
+        ).unwrap();
+      }
+
+      // 2) Actualizar producto (PUT + notificación)
       await dispatch(
         updateProductWithImages({
           token,
           id,
           payload,
-          newImages,
-          imagesToDelete,
           originalStock,
           originalDiscount,
         })
       ).unwrap();
+
+      // 3) Subir nuevas imágenes
+      if (newImages.length > 0) {
+        await dispatch(
+          uploadProductImages({
+            token,
+            productId: id,
+            files: newImages,
+          })
+        ).unwrap();
+      }
 
       toast.success("Producto actualizado correctamente");
       navigate(-1);
@@ -244,7 +263,7 @@ const EditProduct = () => {
   if (error) return <p className="error">{error}</p>;
 
   const totalImagesAfterDelete =
-    existingImages.length - imagesToDelete.length + newImages.length;
+    productImages.length - imagesToDelete.length + newImages.length;
   const noImages = totalImagesAfterDelete === 0;
 
   return (
@@ -356,11 +375,11 @@ const EditProduct = () => {
                 recuperadas hasta guardar.
               </p>
 
-              {existingImages.length === 0 ? (
+              {productImages.length === 0 ? (
                 <p className="muted">Aún no hay imágenes cargadas</p>
               ) : (
                 <div className="thumbs-grid">
-                  {existingImages
+                  {productImages
                     .filter((img) => !imagesToDelete.includes(img.id))
                     .map((img) => (
                       <div key={img.id} className="thumb-card">

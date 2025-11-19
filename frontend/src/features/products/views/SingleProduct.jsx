@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 import FavoriteButton from "../../../components/ui/FavoriteButton";
-import { fetchProductById, fetchRelatedProducts, fetchRatings } from "../../../redux/thunks/ProductThunk.js";
+import { fetchProductById, fetchRelatedProducts, fetchRatings } from "../../../redux/slices/ProductSlice.js";
 import { selectProduct, selectLoading, selectError } from "../../../redux/slices/ProductSelectors.js";
 import { addToCartThunk } from "../../../redux/thunks/CartThunk.js";
 
