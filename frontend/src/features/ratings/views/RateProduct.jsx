@@ -45,7 +45,7 @@ const RateProduct = () => {
 
         // SI EL PRODUCTO COINCIDE CON LA ORDEN → CARGAR RATINGS
         if (isSameProduct) {
-          dispatch(fetchRatingsByProduct(productId));
+          dispatch(fetchRatingsByProduct({productId, comment, value, userId}));//{productid, comentario, rtaing}
         }
       
     };

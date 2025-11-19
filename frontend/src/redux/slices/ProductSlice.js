@@ -1,12 +1,123 @@
 // src/redux/slices/ProductSlice.js
 import { createSlice } from "@reduxjs/toolkit";
-import {
-  fetchProductById,
-  fetchRelatedProducts,
-  fetchRatings,
-  createProduct,
-  updateProductWithImages,
-} from "../thunks/ProductThunk";
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+import { getRelatedProducts,getProductRatings } from "../../services/ProductService";
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
+/* ========== PRODUCTO POR ID (YA NO USA ProductService) ========== */
+
+export const fetchProductById = createAsyncThunk(
+  "product/fetchById",
+  async (id, { rejectWithValue }) => {
+    const { data } = await axios.get(`${API_BASE}/products/id/${id}`);
+    return data; // objeto producto
+  }
+);
+
+/* ========== RELACIONADOS Y RATINGS (pueden seguir usando ProductService) ========== */
+
+export const fetchRelatedProducts = createAsyncThunk(
+  "products/fetchRelated",
+  async (categories, { rejectWithValue }) => {
+    return await getRelatedProducts(categories);
+    }
+);
+
+export const fetchRatings = createAsyncThunk(
+  "product/fetchRatings",
+  async (id, { rejectWithValue }) => {
+    return await getProductRatings(id);
+  } 
+);
+
+/* ========== CREATE CON IMÁGENES (para CreateProduct) ========== */
+
+export const createProduct = createAsyncThunk(
+  "product/create",
+  async ({ token, form }, { rejectWithValue }) => {
+    const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
+
+    const { data } = await axios.post(`${API_BASE}/products/create`, form, {
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader,
+      },
+    });
+
+    return data; // producto creado { id, name, ... }
+    }
+);
+
+/* ========== UPDATE SOLO PRODUCTO (+ NOTIFICACIÓN) ========== */
+
+export const updateProductWithImages = createAsyncThunk(
+  "product/updateWithImages",
+  async (
+    {
+      token,
+      id,
+      payload, // { name, description, price, discount?, quantity?, stock?, categories? }
+      originalStock,
+      originalDiscount,
+    },
+    { rejectWithValue }
+  ) => {
+    const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
+
+    // 1) Actualizar producto
+    const { data: updated } = await axios.put(
+      `${API_BASE}/products/${id}`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader,
+        },
+      }
+    );
+
+    // 2) Notificar si cambió stock o descuento
+    const sentQuantity = Object.prototype.hasOwnProperty.call(
+      payload,
+      "quantity"
+    )
+      ? payload.quantity
+      : originalStock;
+
+    const sentDiscount = Object.prototype.hasOwnProperty.call(
+      payload,
+      "discount"
+    )
+      ? payload.discount
+      : originalDiscount;
+
+    if (
+      Number(sentQuantity) !== originalStock ||
+      sentDiscount !== originalDiscount
+    ) {
+      try {
+        await axios.post(
+          `${API_BASE}/api/notifications/product/${id}`,
+          {},
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader,
+            },
+          }
+        );
+      } catch (notifyErr) {
+        console.error("Error notificando usuarios:", notifyErr);
+      }
+    }
+
+    return updated;
+  }
+);
+
+
 
 const initialState = {
   product: null,

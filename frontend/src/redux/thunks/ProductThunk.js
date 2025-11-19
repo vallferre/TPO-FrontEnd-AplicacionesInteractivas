@@ -1,3 +1,5 @@
+/*
+
 // src/redux/thunks/ProductThunk.js
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
@@ -8,7 +10,7 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
-/* ========== PRODUCTO POR ID (YA NO USA ProductService) ========== */
+// ========== PRODUCTO POR ID (YA NO USA ProductService) ========== 
 
 export const fetchProductById = createAsyncThunk(
   "product/fetchById",
@@ -22,7 +24,7 @@ export const fetchProductById = createAsyncThunk(
   }
 );
 
-/* ========== RELACIONADOS Y RATINGS (pueden seguir usando ProductService) ========== */
+// ========== RELACIONADOS Y RATINGS (pueden seguir usando ProductService) ========== 
 
 export const fetchRelatedProducts = createAsyncThunk(
   "products/fetchRelated",
@@ -46,7 +48,7 @@ export const fetchRatings = createAsyncThunk(
   }
 );
 
-/* ========== CREATE CON IMÁGENES (para CreateProduct) ========== */
+// ========== CREATE CON IMÁGENES (para CreateProduct) ========== 
 
 export const createProduct = createAsyncThunk(
   "product/create",
@@ -54,16 +56,12 @@ export const createProduct = createAsyncThunk(
     try {
       const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
 
-      const { data } = await axios.post(
-        `${API_BASE}/products/create`,
-        form,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader,
-          },
-        }
-      );
+      const { data } = await axios.post(`${API_BASE}/products/create`, form, {
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader,
+        },
+      });
 
       return data; // producto creado { id, name, ... }
     } catch (err) {
@@ -76,7 +74,7 @@ export const createProduct = createAsyncThunk(
   }
 );
 
-/* ========== UPDATE CON IMÁGENES (para EditProduct) ========== */
+// ========== UPDATE SOLO PRODUCTO (+ NOTIFICACIÓN) ========== 
 
 export const updateProductWithImages = createAsyncThunk(
   "product/updateWithImages",
@@ -85,23 +83,15 @@ export const updateProductWithImages = createAsyncThunk(
       token,
       id,
       payload, // { name, description, price, discount?, quantity?, stock?, categories? }
-      newImages, // File[]
-      imagesToDelete, // number[]
       originalStock,
       originalDiscount,
     },
     { rejectWithValue }
   ) => {
+    try {
       const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
 
-      // 1) Borrar imágenes marcadas
-      for (const imgId of imagesToDelete) {
-        await axios.delete(`${API_BASE}/images/${imgId}`, {
-          headers: authHeader,
-        });
-      }
-
-      // 2) Actualizar producto
+      // 1) Actualizar producto
       const { data: updated } = await axios.put(
         `${API_BASE}/products/${id}`,
         payload,
@@ -113,20 +103,7 @@ export const updateProductWithImages = createAsyncThunk(
         }
       );
 
-      // 3) Subir nuevas imágenes
-      for (const file of newImages) {
-        const fd = new FormData();
-        fd.append("file", file);
-
-        await axios.post(`${API_BASE}/products/${id}/images`, fd, {
-          headers: {
-            ...authHeader,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-      }
-
-      // 4) Notificar si cambió stock o descuento
+      // 2) Notificar si cambió stock o descuento
       const sentQuantity = Object.prototype.hasOwnProperty.call(
         payload,
         "quantity"
@@ -141,7 +118,10 @@ export const updateProductWithImages = createAsyncThunk(
         ? payload.discount
         : originalDiscount;
 
-      if (Number(sentQuantity) !== originalStock || sentDiscount !== originalDiscount) {
+      if (
+        Number(sentQuantity) !== originalStock ||
+        sentDiscount !== originalDiscount
+      ) {
         try {
           await axios.post(
             `${API_BASE}/api/notifications/product/${id}`,
@@ -159,5 +139,13 @@ export const updateProductWithImages = createAsyncThunk(
       }
 
       return updated;
+    } catch (err) {
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        "Error al actualizar el producto";
+      return rejectWithValue(msg);
     }
+  }
 );
+*/

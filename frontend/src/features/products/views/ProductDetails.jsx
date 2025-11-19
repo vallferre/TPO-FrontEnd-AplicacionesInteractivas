@@ -8,11 +8,9 @@ import FavoriteButton from "../../../components/ui/FavoriteButton";
 import RatingCard from "../../../components/cards/RatingCard.jsx";
 import BackButton from "../../../components/ui/BackButton";
 import { toast } from "react-toastify";
-import {
-  fetchProductById,
-  fetchRelatedProducts,
-  fetchRatings,
-} from "../../../redux/thunks/ProductThunk";
+
+import { fetchProductById,fetchRelatedProducts,fetchRatings, } from "../../../redux/slices/ProductSlice.js";
+
 import {
   selectProduct,
   selectRelatedProducts,

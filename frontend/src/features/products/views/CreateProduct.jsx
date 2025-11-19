@@ -8,8 +8,8 @@ import "./CreateProduct.css";
 import CategoryMultiSelect from "../components/CategoryMultiSelect";
 import ImageUploader from "../../../components/common/ImageUploader";
 
-import { createProduct } from "../../../redux/thunks/ProductThunk";
-import { uploadProductImages } from "../../../redux/thunks/ProductImageThunk";
+import { createProduct } from "../../../redux/slices/ProductSlice.js";
+import { uploadProductImages } from "../../../redux/slices/ProductImageSlice.js";
 import { selectProductCreating } from "../../../redux/slices/ProductSelectors";
 import { selectImageUploading } from "../../../redux/slices/ProductImageSelectors";
 
