@@ -6,7 +6,7 @@ import "./RatingCard.css";
 const RatingCard = ({ productId, userId, userName, value, comment }) => {
   const dispatch = useDispatch();
   const { status, error } = useSelector((state) => state.ratings);
-  const { token } = useSelector((state) => state.auth);
+  const { token } = useSelector((state) => state.auth.token);
 
   const handleClick = (newValue) => {
     // 🔹 Llamamos al backend cuando se hace clic en una estrella

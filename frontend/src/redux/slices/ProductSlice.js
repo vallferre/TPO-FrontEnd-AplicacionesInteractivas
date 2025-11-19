@@ -4,7 +4,7 @@ import {
   fetchProductById,
   fetchRelatedProducts,
   fetchRatings,
-  createProductWithImages,
+  createProduct,
   updateProductWithImages,
 } from "../thunks/ProductThunk";
 
@@ -62,18 +62,20 @@ const productSlice = createSlice({
       })
 
       /* ========= CREAR PRODUCTO CON IMÁGENES ========= */
-      .addCase(createProductWithImages.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      .addCase(createProduct.pending, (state) => {
+        state.creating = true;
+        state.createError = null;
       })
-      .addCase(createProductWithImages.fulfilled, (state, action) => {
-        state.loading = false;
-        state.product = action.payload || null; // último creado
+      .addCase(createProduct.fulfilled, (state, action) => {
+        state.creating = false;
+        state.product = action.payload || null;
       })
-      .addCase(createProductWithImages.rejected, (state, action) => {
-        state.loading = false;
-        state.error =
-          action.payload || action.error?.message || "Error al crear el producto";
+      .addCase(createProduct.rejected, (state, action) => {
+        state.creating = false;
+        state.createError =
+          action.payload ||
+          action.error?.message ||
+          "Error al crear el producto";
       })
 
       /* ========= EDITAR PRODUCTO CON IMÁGENES ========= */
@@ -83,7 +85,7 @@ const productSlice = createSlice({
       })
       .addCase(updateProductWithImages.fulfilled, (state, action) => {
         state.loading = false;
-        // si la API devuelve el producto actualizado, lo guardamos
+        // si devuelve el producto actualizado se guarda
         if (action.payload) {
           state.product = action.payload;
         }

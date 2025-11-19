@@ -48,14 +48,13 @@ export const fetchRatings = createAsyncThunk(
 
 /* ========== CREATE CON IMÁGENES (para CreateProduct) ========== */
 
-export const createProductWithImages = createAsyncThunk(
-  "product/createWithImages",
-  async ({ token, form, files }, { rejectWithValue }) => {
+export const createProduct = createAsyncThunk(
+  "product/create",
+  async ({ token, form }, { rejectWithValue }) => {
     try {
       const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
 
-      // Crear producto
-      const { data: created } = await axios.post(
+      const { data } = await axios.post(
         `${API_BASE}/products/create`,
         form,
         {
@@ -66,27 +65,13 @@ export const createProductWithImages = createAsyncThunk(
         }
       );
 
-      const productId = created?.id;
-      if (!productId) {
-        return rejectWithValue("No se pudo obtener el ID del producto creado");
-      }
-
-      // Subir imágenes secuencialmente
-      for (const file of files) {
-        const fd = new FormData();
-        fd.append("file", file);
-
-        await axios.post(`${API_BASE}/products/${productId}/images`, fd, {
-          headers: {
-            ...authHeader,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-      }
-
-      return created;
+      return data; // producto creado { id, name, ... }
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || err.message);
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        "Error al crear el producto";
+      return rejectWithValue(msg);
     }
   }
 );
@@ -107,7 +92,6 @@ export const updateProductWithImages = createAsyncThunk(
     },
     { rejectWithValue }
   ) => {
-    try {
       const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
 
       // 1) Borrar imágenes marcadas
@@ -175,8 +159,5 @@ export const updateProductWithImages = createAsyncThunk(
       }
 
       return updated;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || err.message);
     }
-  }
 );

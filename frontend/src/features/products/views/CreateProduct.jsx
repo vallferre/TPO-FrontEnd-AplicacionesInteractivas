@@ -7,17 +7,24 @@ import { toast } from "react-toastify";
 import "./CreateProduct.css";
 import CategoryMultiSelect from "../components/CategoryMultiSelect";
 import ImageUploader from "../../../components/common/ImageUploader";
-import { createProductWithImages } from "../../../redux/thunks/ProductThunk";
 
-const API_BASE = "http://localhost:8080"; // sólo para CategoryMultiSelect
+import { createProduct } from "../../../redux/thunks/ProductThunk";
+import { uploadProductImages } from "../../../redux/thunks/ProductImageThunk";
+import { selectProductCreating } from "../../../redux/slices/ProductSelectors";
+import { selectImageUploading } from "../../../redux/slices/ProductImageSelectors";
+
+const API_BASE = "http://localhost:8080"; // para CategoryMultiSelect
 
 const CreateProduct = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // 🔹 auth desde Redux
+  // 🔹 Token desde Redux
   const token = useSelector((s) => s.auth.token);
-  const authLoading = useSelector((s) => s.auth.loading);
+
+  // estados de loading opcionales
+  const creating = useSelector(selectProductCreating);
+  const uploadingImages = useSelector(selectImageUploading);
 
   // ---- estado del formulario
   const [name, setName] = useState("");
@@ -72,9 +79,6 @@ const CreateProduct = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
 
-    // ⚠️ No toastear si auth todavía está resolviendo
-    if (authLoading) return;
-
     if (!token) {
       toast.error("Necesitás iniciar sesión para crear productos.");
       return;
@@ -91,7 +95,7 @@ const CreateProduct = () => {
 
     if (!isValid) return;
 
-    // Validar imágenes antes de enviar
+    // Validar imágenes antes de enviar (lógica en JSX, no en thunks)
     if (imageFiles.length === 0) {
       toast.error("Debés subir al menos una imagen del producto.");
       return;
@@ -103,8 +107,13 @@ const CreateProduct = () => {
         );
         return;
       }
+      if (file.size === 0) {
+        toast.error(`La imagen "${file.name}" no es válida.`);
+        return;
+      }
     }
 
+    // Armar form para backend (sin lógica en el thunk)
     const form = {
       name: name.trim(),
       description: desc.trim(),
@@ -115,9 +124,39 @@ const CreateProduct = () => {
     };
 
     try {
-      await dispatch(
-        createProductWithImages({ token, form, files: imageFiles })
-      ).unwrap();
+      // 1) Crear producto (PRIMER DISPATCH)
+      const createAction = await dispatch(createProduct({ token, form })
+      );
+
+      if (createAction.meta.requestStatus === "rejected") {
+        const msg =
+          createAction.payload ||
+          createAction.error?.message ||
+          "Error al crear el producto.";
+        toast.error(msg);
+        return;
+      }
+
+      const created = createAction.payload;
+      const productId = created?.id;
+
+      if (!productId) {
+        toast.error("No se pudo obtener el ID del producto creado.");
+        return;
+      }
+
+      // 2) Subir imágenes (SEGUNDO DISPATCH)
+      const uploadAction = await dispatch(uploadProductImages({ token, productId, files: imageFiles })
+      );
+
+      if (uploadAction.meta.requestStatus === "rejected") {
+        const msg =
+          uploadAction.payload ||
+          uploadAction.error?.message ||
+          "Error al subir las imágenes.";
+        toast.error(msg);
+        return;
+      }
 
       toast.success("✅ Producto creado y fotos subidas.");
 
@@ -137,6 +176,8 @@ const CreateProduct = () => {
       toast.error(err?.message || "Error al crear el producto.");
     }
   };
+
+  const isSubmitting = creating || uploadingImages;
 
   return (
     <div className="app">
@@ -217,7 +258,7 @@ const CreateProduct = () => {
                 )}
               </div>
 
-              {/* Descuento */}
+              {/* Descuento (opcional) */}
               <div className="form-group">
                 <label htmlFor="discount">% Descuento (opcional)</label>
                 <input
@@ -263,18 +304,18 @@ const CreateProduct = () => {
                 <button
                   type="submit"
                   className="submit-btn dotted-btn"
-                  disabled={!isValid || authLoading}
+                  disabled={!isValid || isSubmitting}
                   title={
                     !isValid
                       ? "Completá los campos obligatorios"
                       : "Crear producto"
                   }
                 >
-                  {authLoading ? "Verificando sesión..." : "Publicar producto"}
+                  {isSubmitting ? "Publicando..." : "Publicar producto"}
                 </button>
               </div>
 
-              {!authLoading && !token && (
+              {!token && (
                 <p className="error" style={{ marginTop: ".5rem" }}>
                   Debés iniciar sesión para publicar.
                 </p>

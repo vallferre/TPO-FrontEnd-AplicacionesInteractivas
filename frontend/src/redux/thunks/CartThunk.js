@@ -33,7 +33,7 @@ export const fetchCartThunk = createAsyncThunk(
 
 // ➕ Agregar producto (ya lo tenés, solo lo dejamos para que quede todo junto)
 export const addToCartThunk = createAsyncThunk(
-  "cart/addToCart",
+  "cart/add",
   async ({ productId, quantity = 1 }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("jwtToken");

@@ -4,7 +4,7 @@ import axios from "axios";
 const URL = "http://localhost:8080";
 
 export const checkoutOrder = createAsyncThunk(
-  "order/checkoutOrder",
+  "cart/checkout",
   async (_, { rejectWithValue }) => {
     const token = localStorage.getItem("jwtToken");
     if (!token) return rejectWithValue("No token found");
