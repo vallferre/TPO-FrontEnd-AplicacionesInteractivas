@@ -1,0 +1,148 @@
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+
+const BASE_URL = "http://localhost:8080/categories";
+
+/*                ASYNC THUNKS                     */
+
+// Traer categorías paginadas
+export const fetchCategories = createAsyncThunk(
+  "categories/fetchAll",
+  async ({ page = 0, size = 10 }) => {
+    const res = await axios.get(`${BASE_URL}?page=${page}&size=${size}`);
+    return res.data;
+  }
+);
+
+// Traer una categoría por ID
+export const fetchCategoryById = createAsyncThunk(
+  "categories/fetchById",
+  async (id) => {
+    const res = await axios.get(`${BASE_URL}/${id}`);
+    return res.data;
+  }
+);
+
+// Crear categoría con imagen
+export const createCategory = createAsyncThunk(
+  "categories/create",
+  async ({ description, fileImage }) => {
+    const formData = new FormData();
+    formData.append("description", description);
+    if (fileImage) formData.append("fileImage", fileImage);
+
+    const res = await axios.post(BASE_URL, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return res.data;
+  }
+);
+
+// fetch imagen
+export const fetchCategoryImage = createAsyncThunk(
+  "categories/fetchImage",
+  async (id) => {
+    const res = await fetch(`http://localhost:8080/categories/${id}/image`);
+    if (!res.ok) throw new Error("Error loading image");
+    const blob = await res.blob();
+    return { id, url: URL.createObjectURL(blob) };
+  }
+);
+
+
+// Actualizar categoría + imagen opcional
+export const updateCategory = createAsyncThunk(
+  "categories/update",
+  async ({ id, description, fileImage }) => {
+    const formData = new FormData();
+    formData.append("description", description);
+    if (fileImage) formData.append("fileImage", fileImage);
+
+    const res = await axios.put(`${BASE_URL}/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return res.data;
+  }
+);
+
+// Eliminar categoría
+export const deleteCategory = createAsyncThunk(
+  "categories/delete",
+  async (id) => {
+    await axios.delete(`${BASE_URL}/${id}`);
+    return id;
+  }
+);
+
+/* ──────────────────────────────────────────────── */
+/*                SLICE                             */
+/* ──────────────────────────────────────────────── */
+
+const categorySlice = createSlice({
+  name: "categories",
+  initialState: {
+    items: [],
+    images: {}, 
+    pageInfo: null,
+    selected: null,
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      /* Fetch All */
+      .addCase(fetchCategories.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchCategoryImage.fulfilled, (state, action) => {
+        state.images[action.payload.id] = action.payload.url;
+        })
+      .addCase(fetchCategories.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload.content;
+        state.pageInfo = action.payload;
+      })
+      .addCase(fetchCategories.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+
+      /* Fetch By ID */
+      .addCase(fetchCategoryById.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchCategoryById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selected = action.payload;
+      })
+      .addCase(fetchCategoryById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+
+      /* Create */
+      .addCase(createCategory.fulfilled, (state, action) => {
+        state.items.push(action.payload);
+      })
+
+      /* Update */
+      .addCase(updateCategory.fulfilled, (state, action) => {
+        const idx = state.items.findIndex((c) => c.id === action.payload.id);
+        if (idx >= 0) state.items[idx] = action.payload;
+      })
+
+      /* Delete */
+      .addCase(deleteCategory.fulfilled, (state, action) => {
+        state.items = state.items.filter((c) => c.id !== action.payload);
+      });
+  },
+});
+
+export default categorySlice.reducer;
