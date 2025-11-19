@@ -1,8 +1,13 @@
 // src/pages/CreateAccount.jsx
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { registerUser } from '../../../redux/thunks/AuthThunk';
-import { selectAuthLoading, selectAuthError, selectIsLoggedIn } from '../../../redux/slices/AuthSelectors';
+import { registerUser } from "../../../redux/slices/AuthSlice";
+import { toast } from "react-toastify";
+import {
+  selectAuthLoading,
+  selectAuthError,
+  selectIsLoggedIn,
+} from "../../../redux/slices/AuthSelectors";
 import { useNavigate, Link } from 'react-router-dom';
 import './Register.css';
 
@@ -10,18 +15,23 @@ export default function CreateAccount() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const isLoggedIn = useSelector(selectIsLoggedIn);
   const loading = useSelector(selectAuthLoading);
   const error = useSelector(selectAuthError);
+  const isLoggedIn = useSelector(selectIsLoggedIn);
 
   useEffect(() => {
-    if (isLoggedIn) navigate('/');
+    if (isLoggedIn) {
+      toast.success("Login exitoso");
+      navigate("/");
+    }
   }, [isLoggedIn, navigate]);
 
   const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '', name: '', surname: '' });
+
   const [localError, setLocalError] = useState('');
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,13 +40,7 @@ export default function CreateAccount() {
       setLocalError('Las contraseñas no coinciden');
       return;
     }
-    const payload = { username: form.username, email: form.email, password: form.password, name: form.name, surname: form.surname };
-    try {
-      await dispatch(registerUser(payload)).unwrap();
-      // redirect por efecto
-    } catch (err) {
-      setLocalError(err || 'Error al registrar');
-    }
+    dispatch(registerUser(form));
   };
 
   return (
