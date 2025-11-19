@@ -41,7 +41,7 @@ const RateProduct = () => {
       return;
     }
 
-    const fetchProduct = async () => {
+    const fetchProduct = {
 
         // SI EL PRODUCTO COINCIDE CON LA ORDEN → CARGAR RATINGS
         if (isSameProduct) {
