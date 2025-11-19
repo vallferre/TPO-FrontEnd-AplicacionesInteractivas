@@ -5,7 +5,10 @@ import { toast } from "react-toastify";
 
 // Redux
 import { useDispatch, useSelector } from "react-redux";
-import { addOrUpdateRating, fetchRatingsByProduct } from "../../../redux/slices/RatingSlice";
+import {
+  addOrUpdateRating,
+  fetchRatingsByProduct,
+} from "../../../redux/slices/RatingSlice";
 
 const API_BASE = "http://localhost:8080";
 
@@ -14,9 +17,14 @@ const RateProduct = () => {
   const dispatch = useDispatch();
   const { productId } = useParams();
 
-  // Estado global (auth)
-  const user = useSelector((state) => state.auth.user);
-  const token = useSelector((state) => state.auth.token);
+  // Estado global autenticación
+  const { token, user } = useSelector((state) => state.auth);
+
+  // 🟣 OBTENER ORDEN ACTUAL DESDE REDUX
+  const currentOrder = useSelector((state) => state.orders.currentOrder);
+
+  const isSameProduct =
+    String(currentOrder.snapshotProductId) === String(productId);
 
   // Estado local
   const [product, setProduct] = useState(null);
@@ -25,7 +33,7 @@ const RateProduct = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Cargar producto
+  // Cargar producto + ratings
   useEffect(() => {
     if (!productId) {
       setError("No se especificó ningún producto para calificar.");
@@ -34,24 +42,16 @@ const RateProduct = () => {
     }
 
     const fetchProduct = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/products/id/${productId}`);
-        if (!res.ok) throw new Error("Error al obtener producto");
-        const data = await res.json();
-        setProduct(data);
 
-        // cargar ratings existentes
-        dispatch(fetchRatingsByProduct(productId));
-
-      } catch (err) {
-        setError("No se pudo cargar la información del producto.");
-      } finally {
-        setLoading(false);
-      }
+        // SI EL PRODUCTO COINCIDE CON LA ORDEN → CARGAR RATINGS
+        if (isSameProduct) {
+          dispatch(fetchRatingsByProduct(productId));
+        }
+      
     };
 
     fetchProduct();
-  }, [productId, dispatch]);
+  }, [isSameProduct, productId, dispatch]);
 
   // ⭐ Enviar rating usando Redux Thunk
   const handleSubmit = async () => {
@@ -71,7 +71,7 @@ const RateProduct = () => {
           productId,
           userId: user.id,
           value: rating,
-          comment
+          comment,
         })
       );
 
@@ -81,7 +81,6 @@ const RateProduct = () => {
       } else {
         throw new Error(resultAction.error?.message || "Error al enviar reseña");
       }
-
     } catch (err) {
       console.error("Error al enviar reseña:", err);
       toast.error("Error al enviar la reseña. Intenta nuevamente.");
