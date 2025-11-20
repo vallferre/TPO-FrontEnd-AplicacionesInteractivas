@@ -27,28 +27,28 @@ const SingleProduct = ({ product: productProp, onRemoveFavorite }) => {
 // Cargar producto al montar
 // ================================
 useEffect(() => {
-if (id) {
-dispatch(fetchProductById(id));
-}
+  if (id) {
+    dispatch(fetchProductById(id));
+  }
 }, [dispatch, id]);
 
 // ================================
 // Handlers
 // ================================
 const handleCardClick = (e) => {
-if (
-e.target.closest(".btn-add--dynamic") ||
-e.target.closest(".btn-favorite--dynamic")
-) return;
-navigate(`/product/${id}`);
+  if (
+    e.target.closest(".btn-add--dynamic") ||
+    e.target.closest(".btn-favorite--dynamic")
+  ) return;
+  navigate(`/product/${id}`);
 };
 
 const handleAddToCart = async (e) => {
-e.stopPropagation();
-if (!token) {
-toast.info("Please log in to add products to the cart.");
-navigate("/login");
-return;
+  e.stopPropagation();
+  if (!token) {
+  toast.info("Please log in to add products to the cart.");
+  navigate("/login");
+  return;
 }
 
 
@@ -86,9 +86,8 @@ className="btn-favorite--dynamic"
 style={{ position: "absolute", top: "12px", right: "12px", zIndex: 10 }}
 onClick={(e) => e.stopPropagation()}
 > <FavoriteButton
-       productId={id}
+       productId={product.id}
        productName={product.name}
-       token={token}
        onRemoveFavorite={onRemoveFavorite}
      /> </div>
 

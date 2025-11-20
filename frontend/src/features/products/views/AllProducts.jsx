@@ -1,45 +1,60 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./AllProducts.css";
 import SingleProduct from "./SingleProduct.jsx";
 import ProductsNavbar from "../../../components/layout/ProductsNavbar.jsx";
 import ErrorView from "../../../components/ui/ErrorView.jsx";
 
+import { useDispatch, useSelector } from "react-redux";
+import { fetchFavorites } from "../../../redux/slices/FavoritesSlice";
+
 const AllProducts = () => {
+  const dispatch = useDispatch();
+  const token = useSelector((state) => state.auth.token);
+  const favoritesLoaded = useSelector((state) => state.favorites.loaded);
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Flag para saber si ya se intentó una búsqueda/filtrado.
-  // Evita mostrar ErrorView antes de la primera interacción del usuario.
+  // Flag para saber si ya se hizo una búsqueda/filtrado
   const [hasQueried, setHasQueried] = useState(false);
+
+  // ---------------------------------------------------------
+  // CARGAR FAVORITOS AL ENTRAR A /PRODUCTOS
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (token && !favoritesLoaded) {
+      dispatch(fetchFavorites(token));
+    }
+  }, [token, favoritesLoaded, dispatch]);
+  // ---------------------------------------------------------
 
   return (
     <div className="explore-page">
       <title>Explore Products</title>
 
-      {/* IMPORTANTE: el Navbar se renderiza siempre para que pueda disparar búsquedas */}
       <ProductsNavbar
         setProducts={setProducts}
         setLoading={setLoading}
         setError={setError}
-        setHasQueried={setHasQueried} // <-- pasar el setter para que el navbar indique "ya busqué"
+        setHasQueried={setHasQueried}
       />
 
       <main className="container">
         <h1 className="title">Explore Products</h1>
 
         {loading && <p>Cargando productos...</p>}
-        {error && <div className="error-message"><p className="error">{error}</p></div>}
+        {error && (
+          <div className="error-message">
+            <p className="error">{error}</p>
+          </div>
+        )}
 
         <div className="grid">
-          {/* Si hay error lo mostramos con ErrorView.
-              Si ya se hizo una búsqueda y no hay productos, también mostramos ErrorView.
-              Si todavía NO hubo búsqueda (hasQueried=false) y products está vacío, mostramos nada
-              (o un mensaje neutro), para no interrumpir la UX inicial. */}
           {error ? (
-            <ErrorView message="¡Parece que no hay ningun producto con estas condiciones! Prueba más tarde."/>
+            <ErrorView message="¡Parece que no hay ningún producto con estas condiciones! Prueba más tarde." />
           ) : !loading && hasQueried && products.length === 0 ? (
-            <ErrorView message="¡Parece que no hay ningun producto con estas condiciones! Prueba más tarde."/>
+            <ErrorView message="¡Parece que no hay ningún producto con estas condiciones! Prueba más tarde." />
           ) : (
             products.map((producto) => (
               <div key={producto.id}>

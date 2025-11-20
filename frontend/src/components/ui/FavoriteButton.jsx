@@ -1,113 +1,51 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import "./FavoriteButton.css";
 
-const API_URL = "http://localhost:8080/users/favorites";
+import {
+  selectFavorites,
+  selectFavoritesLoading,
+} from "../../redux/slices/FavoritesSelectors";
 
-const FavoriteButton = ({ productId, productName, token, onRemoveFavorite }) => {
+import { addFavorite, deleteFavorite } from "../../redux/slices/FavoritesSlice";
+
+const FavoriteButton = ({ productId, productName }) => {
+  const dispatch = useDispatch();
+  const token = useSelector((state) => state.auth.token);
+
+  const favorites = useSelector(selectFavorites);
+  const loading = useSelector(selectFavoritesLoading);
+
   const [isFavorite, setIsFavorite] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  // Verificar si el producto ya es favorito al montar
   useEffect(() => {
-    const checkFavorite = async () => {
-      if (!token) return setLoading(false);
+    const id = Number(productId);
+    setIsFavorite(favorites.includes(id));
+  }, [favorites, productId]);
 
-      try {
-        const res = await fetch(API_URL, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) throw new Error(`Error checking favorites: ${res.status}`);
-        const data = await res.json();
-
-        const favIds = Array.isArray(data.favoriteProductIds)
-          ? data.favoriteProductIds.map(id => Number(id))
-          : Array.isArray(data)
-            ? data.flatMap(f => f.favoriteProductIds.map(id => Number(id)))
-            : [];
-
-        setIsFavorite(favIds.includes(Number(productId)));
-      } catch (err) {
-        console.error(err);
-        toast.error("Error al obtener favoritos");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkFavorite();
-  }, [productId, token]);
-
-
-  // Alternar favorito
- const handleFavoriteToggle = async () => {
+  const handleToggle = () => {
     if (!token) {
       toast.info("Debes iniciar sesión para usar favoritos");
       return;
     }
 
-    try {
-      let res, data;
-      if (isFavorite) {
-        // DELETE para remover
-        res = await fetch(API_URL, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ productId }),
-        });
+    const id = Number(productId);
 
-        if (!res.ok) {
-          data = await res.json().catch(() => ({}));
-          const msg = data.message || `Error removing favorite: ${res.status}`;
-          throw new Error(msg);
-        }
-
-        setIsFavorite(false);
-        toast.success(`"${productName}" eliminado de favoritos`);
-
-        // ✅ Llamar a la función de callback para actualizar la lista en Favorites.jsx
-        if (onRemoveFavorite) onRemoveFavorite(productId);
-
-      } else {
-        // POST para agregar
-        res = await fetch(API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ productId }),
-        });
-
-        if (!res.ok) {
-          data = await res.json().catch(() => ({}));
-          const msg = data.message || `Error adding favorite: ${res.status}`;
-          throw new Error(msg);
-        }
-
-        data = await res.json();
-        const favIds = Array.isArray(data.favoriteProductIds) ? data.favoriteProductIds.map(id => Number(id)) : [];
-        setIsFavorite(favIds.includes(Number(productId)));
-        toast.success(`"${productName}" agregado a favoritos`);
-      }
-    } catch (err) {
-      console.error(err.message);
-      toast.error(err.message || "Error al actualizar favoritos");
+    if (isFavorite) {
+      dispatch(deleteFavorite({ token, productId: id }));
+      toast.success(`"${productName}" eliminado de favoritos`);
+    } else {
+      dispatch(addFavorite({ token, productId: id }));
+      toast.success(`"${productName}" agregado a favoritos`);
     }
   };
-
 
   if (loading) return <span>Cargando...</span>;
 
   return (
     <button
-      onClick={handleFavoriteToggle}
+      onClick={handleToggle}
       className="flex items-center gap-2 text-red-500 hover:text-red-600 transition-all"
       title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
     >

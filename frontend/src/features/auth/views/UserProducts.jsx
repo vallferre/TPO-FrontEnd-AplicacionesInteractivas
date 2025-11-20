@@ -93,7 +93,7 @@ const UserProducts = () => {
 
   const handleDeleteClick = (e, product) => {
     e.stopPropagation();
-    setSelectedProduct(product);um
+    setSelectedProduct(product);
     setModalOpen(true);
   };
 

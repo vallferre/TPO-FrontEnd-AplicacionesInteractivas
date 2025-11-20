@@ -1,33 +1,41 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import {
   selectFavorites,
   selectFavoritesLoading,
   selectFavoritesError,
 } from "../../redux/slices/FavoritesSelectors";
-import { fetchFavorites } from "../../redux/thunks/FavoritesThunk";
-import { removeFavorite } from "../../redux/slices/FavoritesSlice";
+
+import { fetchFavorites, deleteFavorite } from "../../redux/slices/FavoritesSlice";
+
 import SingleProduct from "../products/views/SingleProduct";
 import ErrorView from "../../components/ui/ErrorView";
-import "./Favorites.css";
 
 const Favorites = () => {
   const dispatch = useDispatch();
+
+  const token = useSelector((state) => state.auth.token);
+
   const favoriteIds = useSelector(selectFavorites);
   const loading = useSelector(selectFavoritesLoading);
+  const loaded = useSelector((state) => state.favorites.loaded)
   const error = useSelector(selectFavoritesError);
 
   useEffect(() => {
-    dispatch(fetchFavorites());
-  }, [dispatch]);
+    if (!token);
+    if (loaded) return;
+    dispatch(fetchFavorites(token));
+  }, [dispatch, token]);
 
   const handleRemoveFavorite = (productId) => {
-    dispatch(removeFavorite(productId));
+    if (!token) return;
+    dispatch(deleteFavorite({ token, productId }));
   };
 
   if (loading) return <p>Loading favorites...</p>;
   if (error) return <p className="error">{error}</p>;
-  if (!favoriteIds.length)
+  if (!favoriteIds || favoriteIds.length === 0)
     return <ErrorView message="No tienes productos en favoritos aún." />;
 
   return (
@@ -41,7 +49,7 @@ const Favorites = () => {
             <SingleProduct
               key={productId}
               id={productId}
-              onRemoveFavorite={handleRemoveFavorite}
+              onRemoveFavorite={() => handleRemoveFavorite(productId)}
             />
           ))}
         </div>
