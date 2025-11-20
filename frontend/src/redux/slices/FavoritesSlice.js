@@ -5,11 +5,12 @@ import axios from "axios";
 const API_BASE = "http://localhost:8080/users/favorites";
 
 const initialState = {
-  items: [],        // IDs numéricos de favoritos
+  items: [],           // IDs numéricos de favoritos
   loaded: false,
   loading: false,
   error: null,
 };
+
 
 const slice = createSlice({
   name: "favorites",
@@ -54,7 +55,7 @@ export const {
 } = slice.actions;
 
 // ----------------------------------------------------------
-// 🔵 ACCIONES ASYNC CON AXIOS
+// ACCIONES ASYNC CON AXIOS
 // ----------------------------------------------------------
 
 export const fetchFavorites = (token) => async (dispatch) => {

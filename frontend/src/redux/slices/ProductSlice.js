@@ -175,6 +175,28 @@ export const deleteUserProduct = createAsyncThunk(
 );
 
 /* =====================================================
+   GET MULTIPLE PRODUCTS BY IDS (para Favoritos)
+===================================================== */
+export const fetchProductsByIds = createAsyncThunk(
+  "product/fetchByIds",
+  async ({ token, ids }) => {
+    const { data } = await axios.post(
+      `${API_BASE}/products/by-ids`,
+      ids,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return data; // lista de ProductResponse
+  }
+);
+
+
+/* =====================================================
    SLICE
 ===================================================== */
 
@@ -182,6 +204,11 @@ const initialState = {
   product: [],
   related: [],
   ratings: { average: 0, counts: {}, list: [] },
+
+  // === FAVORITES PRODUCTS ===
+  favoriteProducts: [],
+  favoriteProductsLoading: false,
+  favoriteProductsError: null,
 
   // para vista de "Mis Productos"
   userProducts: [],          // 🔹 crudos desde la API
@@ -278,6 +305,20 @@ const productSlice = createSlice({
       .addCase(fetchUserProducts.rejected, (state, action) => {
         state.userProductsLoading = false;
         state.userProductsError = action.error.message;
+      })
+
+      // === FAVORITE PRODUCTS (GET BY IDS) ===
+      .addCase(fetchProductsByIds.pending, (state) => {
+        state.favoriteProductsLoading = true;
+        state.favoriteProductsError = null;
+      })
+      .addCase(fetchProductsByIds.fulfilled, (state, action) => {
+        state.favoriteProductsLoading = false;
+        state.favoriteProducts = action.payload; // lista completa de productos
+      })
+      .addCase(fetchProductsByIds.rejected, (state, action) => {
+        state.favoriteProductsLoading = false;
+        state.favoriteProductsError = action.error.message;
       })
 
       // === DELETE USER PRODUCT ===

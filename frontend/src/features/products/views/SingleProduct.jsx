@@ -44,14 +44,12 @@ const handleCardClick = (e) => {
 };
 
 const handleAddToCart = async (e) => {
-  e.stopPropagation();
-  if (!token) {
-  toast.info("Please log in to add products to the cart.");
-  navigate("/login");
-  return;
-}
-
-
+    e.stopPropagation();
+    if (!token) {
+      toast.info("Please log in to add products to the cart.");
+      navigate("/login");
+    return;
+  }
 };
 
 // ================================
