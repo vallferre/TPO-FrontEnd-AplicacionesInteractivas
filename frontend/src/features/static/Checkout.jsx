@@ -22,52 +22,111 @@ const Checkout = () => {
     country: "",
   });
 
+  /* ========================= HELPERS ========================= */
+
+  const formatCardNumber = (digits) =>
+    digits.replace(/\s+/g, "").replace(/(\d{4})/g, "$1 ").trim();
+
   const handleCardChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "number") {
+      const digitsOnly = value.replace(/\D/g, "").slice(0, 16);
+      setCard((prev) => ({ ...prev, number: digitsOnly }));
+      return;
+    }
+
+    if (name === "cvc") {
+      const digitsOnly = value.replace(/\D/g, "").slice(0, 4);
+      setCard((prev) => ({ ...prev, cvc: digitsOnly }));
+      return;
+    }
+
+    if (name === "expiry") {
+      let digits = value.replace(/\D/g, "").slice(0, 4);
+      let formatted =
+        digits.length > 2 ? digits.slice(0, 2) + "/" + digits.slice(2) : digits;
+      setCard((prev) => ({ ...prev, expiry: formatted }));
+      return;
+    }
+
+    if (name === "name") {
+      const lettersOnly = value.replace(/[^A-Za-zÀ-ÿ\s]/g, "");
+      setCard((prev) => ({ ...prev, name: lettersOnly }));
+      return;
+    }
+
     setCard((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleCardFocus = (e) => {
+  const handleCardFocus = (e) =>
     setCard((prev) => ({ ...prev, focus: e.target.name }));
-  };
 
   const handleShippingChange = (e) => {
     const { name, value } = e.target;
+
+    if (["fullName", "city", "province", "country"].includes(name)) {
+      const lettersOnly = value.replace(/[^A-Za-zÀ-ÿ\s]/g, "");
+      setShipping((prev) => ({ ...prev, [name]: lettersOnly }));
+      return;
+    }
+
+    if (name === "postalCode") {
+      const digitsOnly = value.replace(/\D/g, "");
+      setShipping((prev) => ({ ...prev, postalCode: digitsOnly }));
+      return;
+    }
+
     setShipping((prev) => ({ ...prev, [name]: value }));
   };
 
+  const isNonEmpty = (str) => String(str || "").trim().length > 0;
+
   const isFormComplete =
-    card.number &&
-    card.expiry &&
-    card.cvc &&
-    card.name &&
-    shipping.fullName &&
-    shipping.address &&
-    shipping.city &&
-    shipping.province &&
-    shipping.postalCode &&
-    shipping.country;
+    card.number.length === 16 &&
+    card.expiry.length === 5 &&
+    (card.cvc.length === 3 || card.cvc.length === 4) &&
+    isNonEmpty(card.name) &&
+    isNonEmpty(shipping.fullName) &&
+    isNonEmpty(shipping.address) &&
+    isNonEmpty(shipping.city) &&
+    isNonEmpty(shipping.province) &&
+    isNonEmpty(shipping.postalCode) &&
+    isNonEmpty(shipping.country);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!isFormComplete) return;
-    alert("✔ Datos de pago y envío completos (demo)");
+    alert("✔ Datos validados (demo)");
   };
+
+  /* ========================= UI ========================= */
 
   return (
     <div className="edit-page">
       <main className="edit-main">
         <div className="edit-container">
+
           <div className="edit-header">
             <h2>Pago y Envío</h2>
-            <p>Ingresá los datos necesarios para continuar la compra.</p>
+            <p>Ingresá los datos necesarios para completar la compra.</p>
           </div>
 
-          <div className="edit-form payment-layout">
+          {/* 🔹 FORMULARIO VERTICAL */}
+          <form className="edit-form" onSubmit={handleSubmit}>
 
-            {/* =================== SECCIÓN TARJETA =================== */}
-            <div className="payment-card-column section-box">
+            {/* ================= Sección Tarjeta ================= */}
+            <div
+              style={{
+                padding: "1.5rem",
+                background: "#fafafa",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                marginBottom: "2rem",
+              }}
+            >
               <h3>Datos de Pago</h3>
+
               <Cards
                 number={card.number}
                 expiry={card.expiry}
@@ -77,9 +136,8 @@ const Checkout = () => {
               />
 
               <div className="form-group" style={{ marginTop: "1rem" }}>
-                <label htmlFor="cardName">Nombre del titular *</label>
+                <label>Nombre del titular *</label>
                 <input
-                  id="cardName"
                   type="text"
                   name="name"
                   placeholder="Como figura en la tarjeta"
@@ -87,28 +145,30 @@ const Checkout = () => {
                   onChange={handleCardChange}
                   onFocus={handleCardFocus}
                   required
+                  pattern="[A-Za-zÀ-ÿ\s]+"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="cardNumber">Número de tarjeta *</label>
+                <label>Número de tarjeta *</label>
                 <input
-                  id="cardNumber"
                   type="text"
                   name="number"
                   placeholder="XXXX XXXX XXXX XXXX"
-                  value={card.number}
+                  value={formatCardNumber(card.number)}
                   onChange={handleCardChange}
                   onFocus={handleCardFocus}
                   required
+                  maxLength={19}
+                  inputMode="numeric"
+                  pattern="^(\d{4}\s){3}\d{4}$"
                 />
               </div>
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="expiry">Vencimiento (MM/YY) *</label>
+                  <label>Vencimiento (MM/YY) *</label>
                   <input
-                    id="expiry"
                     type="text"
                     name="expiry"
                     placeholder="MM/YY"
@@ -116,45 +176,55 @@ const Checkout = () => {
                     onChange={handleCardChange}
                     onFocus={handleCardFocus}
                     required
+                    maxLength={5}
+                    pattern="(0[1-9]|1[0-2])\/\d{2}"
                   />
                 </div>
+
                 <div className="form-group">
-                  <label htmlFor="cvc">CVC *</label>
+                  <label>CVC *</label>
                   <input
-                    id="cvc"
                     type="text"
                     name="cvc"
-                    placeholder="CVC"
+                    placeholder="XXX"
                     value={card.cvc}
                     onChange={handleCardChange}
                     onFocus={handleCardFocus}
                     required
+                    maxLength={4}
+                    inputMode="numeric"
+                    pattern="\d{3,4}"
                   />
                 </div>
               </div>
             </div>
 
-            {/* =================== SECCIÓN DIRECCIÓN =================== */}
-            <form className="payment-shipping-column section-box" onSubmit={handleSubmit}>
+            {/* ================= Sección Dirección ================= */}
+            <div
+              style={{
+                padding: "1.5rem",
+                background: "#fafafa",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                marginBottom: "2rem",
+              }}
+            >
               <h3>Dirección de Envío</h3>
 
               <div className="form-group">
-                <label htmlFor="fullName">Nombre completo *</label>
+                <label>Nombre completo *</label>
                 <input
-                  id="fullName"
-                  type="text"
                   name="fullName"
                   value={shipping.fullName}
                   onChange={handleShippingChange}
                   required
+                  pattern="[A-Za-zÀ-ÿ\s]+"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="address">Dirección *</label>
+                <label>Dirección *</label>
                 <input
-                  id="address"
-                  type="text"
                   name="address"
                   placeholder="Calle y número"
                   value={shipping.address}
@@ -164,79 +234,71 @@ const Checkout = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="address2">Depto / Piso (opcional)</label>
+                <label>Depto / Piso (opcional)</label>
                 <input
-                  id="address2"
-                  type="text"
                   name="address2"
                   value={shipping.address2}
                   onChange={handleShippingChange}
                 />
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="city">Ciudad *</label>
-                  <input
-                    id="city"
-                    type="text"
-                    name="city"
-                    value={shipping.city}
-                    onChange={handleShippingChange}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="province">Provincia *</label>
-                  <input
-                    id="province"
-                    type="text"
-                    name="province"
-                    value={shipping.province}
-                    onChange={handleShippingChange}
-                    required
-                  />
-                </div>
+              <div className="form-group">
+                <label>Ciudad *</label>
+                <input
+                  name="city"
+                  value={shipping.city}
+                  onChange={handleShippingChange}
+                  required
+                  pattern="[A-Za-zÀ-ÿ\s]+"
+                />
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="postalCode">Código Postal *</label>
-                  <input
-                    id="postalCode"
-                    type="text"
-                    name="postalCode"
-                    value={shipping.postalCode}
-                    onChange={handleShippingChange}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="country">País *</label>
-                  <input
-                    id="country"
-                    type="text"
-                    name="country"
-                    value={shipping.country}
-                    onChange={handleShippingChange}
-                    required
-                  />
-                </div>
+              <div className="form-group">
+                <label>Provincia *</label>
+                <input
+                  name="province"
+                  value={shipping.province}
+                  onChange={handleShippingChange}
+                  required
+                  pattern="[A-Za-zÀ-ÿ\s]+"
+                />
               </div>
 
-              <div className="form-actions" style={{ marginTop: "1rem" }}>
-                <button
-                  type="submit"
-                  className="btn save"
-                  disabled={!isFormComplete}
-                >
-                  Continuar
-                </button>
+              <div className="form-group">
+                <label>Código Postal *</label>
+                <input
+                  name="postalCode"
+                  value={shipping.postalCode}
+                  onChange={handleShippingChange}
+                  required
+                  inputMode="numeric"
+                  pattern="\d+"
+                />
               </div>
-            </form>
-          </div>
+
+              <div className="form-group">
+                <label>País *</label>
+                <input
+                  name="country"
+                  value={shipping.country}
+                  onChange={handleShippingChange}
+                  required
+                  pattern="[A-Za-zÀ-ÿ\s]+"
+                />
+              </div>
+            </div>
+
+            {/* ================= SUBMIT ================= */}
+            <div style={{ marginTop: "1rem" }}>
+              <button
+                type="submit"
+                className="btn save"
+                disabled={!isFormComplete}
+              >
+                Continuar
+              </button>
+            </div>
+          </form>
         </div>
       </main>
     </div>
@@ -244,3 +306,4 @@ const Checkout = () => {
 };
 
 export default Checkout;
+
