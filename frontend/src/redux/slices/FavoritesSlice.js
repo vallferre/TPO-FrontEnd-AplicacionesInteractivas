@@ -1,11 +1,11 @@
 // redux/slices/FavoritesSlice.js
-// redux/slices/FavoritesSlice.js
 import { createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 
 const API_BASE = "http://localhost:8080/users/favorites";
 
 const initialState = {
-  items: [],   // IDs de productos favoritos
+  items: [],        // IDs numéricos de favoritos
   loaded: false,
   loading: false,
   error: null,
@@ -21,7 +21,6 @@ const slice = createSlice({
     },
     finishLoading(state) {
       state.loading = false;
-      state.error = null;
     },
     setFavorites(state, action) {
       state.items = action.payload;
@@ -54,76 +53,74 @@ export const {
   setError,
 } = slice.actions;
 
-// ------------------- ACCIONES ASYNC exportadas -------------------
+// ----------------------------------------------------------
+// 🔵 ACCIONES ASYNC CON AXIOS
+// ----------------------------------------------------------
 
 export const fetchFavorites = (token) => async (dispatch) => {
   dispatch(startLoading());
 
-  const res = await fetch(API_BASE, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  try {
+    const res = await axios.get(API_BASE, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-  if (!res.ok) {
+    // res.data = array de FavoriteResponse
+    const normalized = res.data.flatMap((fr) =>
+      fr.favoriteProductIds.map((id) => Number(id))
+    );
+
+    dispatch(setFavorites(normalized));
+  } catch (err) {
     dispatch(setError("No se pudieron cargar los favoritos"));
-    return;
   }
-
-  const data = await res.json(); // array de FavoriteResponse
-
-  const normalized = data.flatMap((fr) =>
-    fr.favoriteProductIds.map((id) => Number(id))
-  );
-
-  dispatch(setFavorites(normalized));
 };
 
 export const addFavorite = ({ token, productId }) => async (dispatch) => {
   dispatch(startLoading());
-  const res = await fetch(API_BASE, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({productId: productId}),
-  });
 
-  if (!res.ok) {
+  try {
+    const res = await axios.post(
+      API_BASE,
+      { productId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // res.data.favoriteProductIds → array con IDs del usuario
+    const addedId = Number(res.data.favoriteProductIds[0]);
+
+    dispatch(addFavoriteLocal(addedId));
+    dispatch(finishLoading());
+  } catch (err) {
     dispatch(setError("No se pudo agregar a favoritos"));
-    return;
   }
-
-  const data = await res.json(); // FavoriteResponse
-  
-  // data.favoriteProductIds es un array
-  dispatch(addFavoriteLocal(data.favoriteProductIds[0]));
-  dispatch(finishLoading());
 };
 
 export const deleteFavorite = ({ token, productId }) => async (dispatch) => {
   dispatch(startLoading());
 
-  const res = await fetch(API_BASE, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ productId }),
-  });
+  try {
+    await axios.delete(API_BASE, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      data: { productId },
+    });
 
-  if (!res.ok) {
+    // Primero modificar el estado
+    dispatch(removeFavoriteLocal(productId));
+
+    // Después cortar loading
+    dispatch(finishLoading());
+  } catch (err) {
     dispatch(setError("No se pudo eliminar de favoritos"));
-    return;
   }
-
-  dispatch(finishLoading());
-
-  dispatch(removeFavoriteLocal(productId));
-  
 };
 
 export default slice.reducer;
