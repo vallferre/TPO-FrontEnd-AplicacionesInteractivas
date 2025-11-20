@@ -39,6 +39,7 @@ import Contact from "./features/static/Contact";
 import Terms from "./features/static/Terms";
 import ErrorView from "./components/ui/ErrorView"
 import RateProduct from "./features/ratings/views/RateProduct";
+import Checkout from "./features/static/Checkout";
 
 const App = () => {
   return (
@@ -56,6 +57,7 @@ const App = () => {
           <Route path="/editProfile" element={<EditProfile />} />
           <Route path="/order/:orderId" element={<OrderDetails />} />
           <Route path="/rate-product/:productId" element={<RateProduct />} />
+          <Route path="/checkout" element={<Checkout />} />
 
           {/* Layout de perfil con rutas anidadas */}
           <Route path="/profile" element={<UserLayout />}>
