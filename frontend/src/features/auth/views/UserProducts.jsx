@@ -93,7 +93,7 @@ const UserProducts = () => {
 
   const handleDeleteClick = (e, product) => {
     e.stopPropagation();
-    setSelectedProduct(product);
+    setSelectedProduct(product);um
     setModalOpen(true);
   };
 
@@ -103,7 +103,7 @@ const UserProducts = () => {
     try {
       await dispatch(
         deleteUserProduct({ token, id: selectedProduct.id })
-      ).unwrap();
+      );
 
       setModalOpen(false);
       setSelectedProduct(null);

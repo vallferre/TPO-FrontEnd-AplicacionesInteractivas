@@ -7,10 +7,16 @@ import ImageUploader from "../../../components/common/ImageUploader";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 
-import { fetchProductById } from "../../../redux/slices/ProductSlice";
-import { updateProductWithImages } from "../../../redux/slices/ProductSlice";
-import { fetchProductImages,deleteProductImages,uploadProductImages, } from "../../../redux/slices/ProductImageSlice";
+import {
+  fetchProductById,
+  updateProductWithImages,
+} from "../../../redux/slices/ProductSlice";
 
+import {
+  fetchProductImages,
+  deleteProductImages,
+  uploadProductImages,
+} from "../../../redux/slices/ProductImageSlice";
 
 const API_BASE = "http://localhost:8080";
 
@@ -70,18 +76,30 @@ const EditProduct = () => {
 
   useEffect(() => {
     const load = async () => {
-      try {
-        setLoading(true);
-        setError("");
+      setLoading(true);
+      setError("");
 
-        const [product, catsList] = await Promise.all([
-          // 🔹 PRODUCTO DESDE REDUX
-          dispatch(fetchProductById(id)).unwrap(),
+      try {
+        const [productAction, catsList] = await Promise.all([
+          dispatch(fetchProductById(id)),
           fetchAllCategories(),
         ]);
 
+        // Si falló el fetch del producto
+        if (!fetchProductById.fulfilled.match(productAction)) {
+          console.error("Error al cargar producto:", productAction.error);
+          setError("No se pudo cargar el producto.");
+          return;
+        }
+
+        const product = productAction.payload;
+
         // 🔹 IMÁGENES DESDE REDUX
-        await dispatch(fetchProductImages(id)).unwrap();
+        const imagesAction = await dispatch(fetchProductImages(id));
+        if (!fetchProductImages.fulfilled.match(imagesAction)) {
+          console.error("Error al cargar imágenes:", imagesAction.error);
+          // no cortamos el flujo, solo logueamos
+        }
 
         setName(product.name ?? "");
         setDescription(product.description ?? "");
@@ -110,8 +128,6 @@ const EditProduct = () => {
 
         setOriginalCategories(mappedOriginals);
         setSelectedCategories(mappedOriginals);
-
-        // imágenes vienen vía Redux → productImages
       } catch (e) {
         console.error(e);
         setError("No se pudo cargar el producto.");
@@ -119,6 +135,7 @@ const EditProduct = () => {
         setLoading(false);
       }
     };
+
     load();
   }, [id, dispatch]);
 
@@ -214,49 +231,64 @@ const EditProduct = () => {
       (k) => payload[k] === undefined && delete payload[k]
     );
 
-    try {
-      setSaving(true);
+    setSaving(true);
 
-      // 1) Eliminar imágenes marcadas
-      if (imagesToDelete.length > 0) {
-        await dispatch(
-          deleteProductImages({
-            token,
-            imageIds: imagesToDelete,
-          })
-        ).unwrap();
-      }
-
-      // 2) Actualizar producto (PUT + notificación)
-      await dispatch(
-        updateProductWithImages({
+    // 1) Eliminar imágenes marcadas
+    if (imagesToDelete.length > 0) {
+      const deleteAction = await dispatch(
+        deleteProductImages({
           token,
-          id,
-          payload,
-          originalStock,
-          originalDiscount,
+          imageIds: imagesToDelete,
         })
-      ).unwrap();
+      );
 
-      // 3) Subir nuevas imágenes
-      if (newImages.length > 0) {
-        await dispatch(
-          uploadProductImages({
-            token,
-            productId: id,
-            files: newImages,
-          })
-        ).unwrap();
+      if (deleteProductImages.rejected.match(deleteAction)) {
+        console.error("Error al eliminar imágenes:", deleteAction.error);
+        toast.error("Hubo un error al eliminar las imágenes");
+        setSaving(false);
+        return;
       }
-
-      toast.success("Producto actualizado correctamente");
-      navigate(-1);
-    } catch (err) {
-      console.error(err);
-      toast.error(err || "Hubo un error al actualizar el producto");
-    } finally {
-      setSaving(false);
     }
+
+    // 2) Actualizar producto (PUT + notificación)
+    const updateAction = await dispatch(
+      updateProductWithImages({
+        token,
+        id,
+        payload,
+        originalStock,
+        originalDiscount,
+      })
+    );
+
+    if (updateProductWithImages.rejected.match(updateAction)) {
+      console.error("Error al actualizar producto:", updateAction.error);
+      toast.error("Hubo un error al actualizar el producto");
+      setSaving(false);
+      return;
+    }
+
+    // 3) Subir nuevas imágenes
+    if (newImages.length > 0) {
+      const uploadAction = await dispatch(
+        uploadProductImages({
+          token,
+          productId: id,
+          files: newImages,
+        })
+      );
+
+      if (uploadProductImages.rejected.match(uploadAction)) {
+        console.error("Error al subir imágenes:", uploadAction.error);
+        toast.error("Hubo un error al subir las nuevas imágenes");
+        setSaving(false);
+        return;
+      }
+    }
+
+    toast.success("Producto actualizado correctamente");
+    setSaving(false);
+    navigate(-1);
   };
 
   if (loading) return <p>Cargando producto...</p>;
