@@ -39,7 +39,6 @@ export const fetchRelatedProducts = createAsyncThunk(
   }
 );
 
-
 /* =====================================================
    RATINGS DEL PRODUCTO (ANTES ESTABA EN ProductService)
 ===================================================== */
@@ -59,8 +58,11 @@ export const fetchRatings = createAsyncThunk(
 export const createProduct = createAsyncThunk(
   "product/create",
   async ({ token, form }) => {
-    const { data } = await axios.post(`${API_BASE}/products/create`,form,
-      {headers: {
+    const { data } = await axios.post(
+      `${API_BASE}/products/create`,
+      form,
+      {
+        headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -71,14 +73,18 @@ export const createProduct = createAsyncThunk(
   }
 );
 
-
 /* =====================================================
    UPDATE PRODUCT + NOTIFICATION
 ===================================================== */
 export const updateProductWithImages = createAsyncThunk(
   "product/updateWithImages",
   async ({
-    token,id,payload,originalStock,originalDiscount,}) => {
+    token,
+    id,
+    payload,
+    originalStock,
+    originalDiscount,
+  }) => {
     // 1) Actualizar producto
     const { data: updated } = await axios.put(
       `${API_BASE}/products/${id}`,
@@ -123,6 +129,50 @@ export const updateProductWithImages = createAsyncThunk(
   }
 );
 
+/* =====================================================
+   USER PRODUCTS (MIS PRODUCTOS)
+===================================================== */
+
+/**
+ * Lista de productos del usuario logueado
+ * (GET /products/filter-by-username)
+ * 🔹 Devuelve el data crudo, SIN formateo.
+ */
+export const fetchUserProducts = createAsyncThunk(
+  "product/fetchUserProducts",
+  async (token) => {
+    const { data } = await axios.get(
+      `${API_BASE}/products/filter-by-username`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return data; // sin map, sin status, sin img
+  }
+);
+
+/**
+ * Eliminar un producto del usuario
+ * (DELETE /products/{id})
+ */
+export const deleteUserProduct = createAsyncThunk(
+  "product/deleteUserProduct",
+  async ({ token, id }) => {
+    await axios.delete(`${API_BASE}/products/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return id; // devolvemos el id borrado
+  }
+);
 
 /* =====================================================
    SLICE
@@ -132,6 +182,12 @@ const initialState = {
   product: [],
   related: [],
   ratings: { average: 0, counts: {}, list: [] },
+
+  // para vista de "Mis Productos"
+  userProducts: [],          // 🔹 crudos desde la API
+  userProductsLoading: false,
+  userProductsError: null,
+
   loading: false,
   relatedLoading: false,
   error: null,
@@ -147,7 +203,6 @@ const productSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-
       // === PRODUCT BY ID ===
       .addCase(fetchProductById.pending, (state) => {
         state.loading = true;
@@ -209,6 +264,28 @@ const productSlice = createSlice({
       .addCase(updateProductWithImages.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+      })
+
+      // === USER PRODUCTS (LIST) ===
+      .addCase(fetchUserProducts.pending, (state) => {
+        state.userProductsLoading = true;
+        state.userProductsError = null;
+      })
+      .addCase(fetchUserProducts.fulfilled, (state, action) => {
+        state.userProductsLoading = false;
+        state.userProducts = action.payload; // crudos
+      })
+      .addCase(fetchUserProducts.rejected, (state, action) => {
+        state.userProductsLoading = false;
+        state.userProductsError = action.error.message;
+      })
+
+      // === DELETE USER PRODUCT ===
+      .addCase(deleteUserProduct.fulfilled, (state, action) => {
+        const id = action.payload;
+        state.userProducts = state.userProducts.filter(
+          (p) => p.id !== id
+        );
       });
   },
 });

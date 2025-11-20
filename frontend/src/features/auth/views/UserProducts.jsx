@@ -1,10 +1,15 @@
+// src/views/UserProducts.jsx
 import React, { useState, useEffect } from "react";
 import "./UserProducts.css";
 import "../../../components/ui/DeleteConfirmationModal.css";
 import { useNavigate } from "react-router-dom";
 import "../../../index.css";
-import {toast} from 'react-toastify'
-import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  fetchUserProducts,
+  deleteUserProduct,
+} from "../../../redux/slices/ProductSlice";
 
 const API_BASE = "http://localhost:8080";
 
@@ -39,60 +44,43 @@ const DeleteConfirmationModal = ({
 
 const UserProducts = () => {
   const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const dispatch = useDispatch();
+
   const token = useSelector((state) => state.auth.token);
 
+  // 🔹 OJO: usamos "products" (plural), como en tu store
+  const rawProductsFromStore = useSelector(
+    (state) => state.products?.userProducts
+  );
+  const loadingFromStore = useSelector(
+    (state) => state.products?.userProductsLoading
+  );
+  const reduxErrorFromStore = useSelector(
+    (state) => state.products?.userProductsError
+  );
+
+  // Normalizamos fuera del selector (así no creamos [] nuevos dentro)
+  const rawProducts = rawProductsFromStore || [];
+  const loading = loadingFromStore ?? false;
+  const reduxError = reduxErrorFromStore ?? null;
+
+  // error local para el caso "no hay token"
+  const [localError, setLocalError] = useState(null);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const error = localError || reduxError;
 
   useEffect(() => {
     if (!token) {
-      setError("No hay token, inicia sesión");
-      setLoading(false);
+      setLocalError("No hay token, inicia sesión");
       return;
     }
 
-    const URL = "http://localhost:8080/products/filter-by-username";
-
-    const options = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    };
-
-    fetch(URL, options)
-      .then((res) => {
-        if (!res.ok) throw new Error(`Error: ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        const formatted = data.map((p) => {
-          const stock = Number(p.stock ?? p.quantity ?? 0);
-
-          let statusText = stock > 0 ? stock : "Sold-Out";
-          let statusClass = stock > 0 ? "status-active" : "status-soldout";
-
-          return {
-            id: p.id,
-            name: p.name,
-            img: p.imageIds?.[0] ? `${API_BASE}/images/${p.imageIds[0]}` : null,
-            status: statusText,
-            statusClass,
-          };
-        });
-        setProducts(formatted);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError(err.message);
-      })
-      .finally(() => setLoading(false));
-  }, [token]);
+    setLocalError(null);
+    dispatch(fetchUserProducts(token));
+  }, [token, dispatch]);
 
   const handleCreate = () => navigate("/create");
   const handleEdit = (productId) => navigate(`/edit/${productId}`);
@@ -113,20 +101,10 @@ const UserProducts = () => {
     if (!selectedProduct) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:8080/products/${selectedProduct.id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await dispatch(
+        deleteUserProduct({ token, id: selectedProduct.id })
+      ).unwrap();
 
-      if (!response.ok) throw new Error("Error al eliminar el producto");
-
-      setProducts((prev) => prev.filter((p) => p.id !== selectedProduct.id));
       setModalOpen(false);
       setSelectedProduct(null);
     } catch (error) {
@@ -134,6 +112,24 @@ const UserProducts = () => {
       toast.error("Error al eliminar el producto. Revisa consola.");
     }
   };
+
+  // 🔹 Formateo de productos (igual que tenías antes)
+  const products = rawProducts.map((p) => {
+    const stock = Number(p.stock ?? p.quantity ?? 0);
+
+    const statusText = stock > 0 ? stock : "Sold-Out";
+    const statusClass = stock > 0 ? "status-active" : "status-soldout";
+
+    return {
+      id: p.id,
+      name: p.name,
+      img: p.imageIds?.[0]
+        ? `${API_BASE}/images/${p.imageIds[0]}`
+        : null,
+      status: statusText,
+      statusClass,
+    };
+  });
 
   return (
     <div className="user-products-container">
@@ -178,10 +174,14 @@ const UserProducts = () => {
                         {product.img ? (
                           <img src={product.img} alt={product.name} />
                         ) : (
-                          <div className="up-thumb-placeholder">No image</div>
+                          <div className="up-thumb-placeholder">
+                            No image
+                          </div>
                         )}
                       </div>
-                      <span className="up-product-name">{product.name}</span>
+                      <span className="up-product-name">
+                        {product.name}
+                      </span>
                     </div>
                   </td>
 
@@ -206,7 +206,9 @@ const UserProducts = () => {
                       className="delete-btn"
                       onClick={(e) => handleDeleteClick(e, product)}
                     >
-                      <span className="material-symbols-outlined">delete</span>
+                      <span className="material-symbols-outlined">
+                        delete
+                      </span>
                     </button>
                   </td>
                 </tr>
