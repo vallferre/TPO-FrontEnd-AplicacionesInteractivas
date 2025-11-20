@@ -170,7 +170,7 @@ const CreateProduct = () => {
       setImageFiles([]);
       setTouched({});
 
-      navigate("/products");
+      navigate("/profile/products");
     } catch (err) {
       console.error(err);
       toast.error(err?.message || "Error al crear el producto.");

@@ -17,43 +17,40 @@ export const fetchProductImages = createAsyncThunk(
 
 export const uploadProductImages = createAsyncThunk(
   "productImages/upload",
-  async ({ token, productId, files }, { rejectWithValue }) => {
-
-    const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
-
+  async ({ token, productId, files }) => {
     for (const file of files) {
-        const fd = new FormData();
-        fd.append("file", file);
+      const fd = new FormData();
+      fd.append("file", file);
 
-    await axios.post(`${API_BASE}/products/${productId}/images`, fd, {
+      await axios.post(`${API_BASE}/products/${productId}/images`, fd, {
         headers: {
-        ...authHeader,
-        "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
-    });
+      });
     }
-
     return { productId, count: files.length };
-    }
+  }
 );
+
+
 
 export const deleteProductImages = createAsyncThunk(
   "productImages/deleteMany",
-  async ({ token, imageIds }, { rejectWithValue }) => {
-
-    const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
+  async ({ token, imageIds }) => {
 
     for (const imgId of imageIds) {
-    await axios.delete(`${API_BASE}/images/${imgId}`, {
+      await axios.delete(`${API_BASE}/images/${imgId}`, {
         headers: {
-        ...authHeader,
+          Authorization: `Bearer ${token}`,
         },
-    });
+      });
     }
 
     return { deletedIds: imageIds };
-    }
+  }
 );
+
 
 const initialState = {
   items: [],          // 🔹 lista de imágenes del producto actual

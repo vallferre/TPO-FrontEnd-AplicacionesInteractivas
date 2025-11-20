@@ -59,15 +59,10 @@ export const fetchRatings = createAsyncThunk(
 export const createProduct = createAsyncThunk(
   "product/create",
   async ({ token, form }) => {
-    const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
-
-    const { data } = await axios.post(
-      `${API_BASE}/products/create`,
-      form,
-      {
-        headers: {
+    const { data } = await axios.post(`${API_BASE}/products/create`,form,
+      {headers: {
           "Content-Type": "application/json",
-          ...authHeader,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -76,35 +71,29 @@ export const createProduct = createAsyncThunk(
   }
 );
 
+
 /* =====================================================
    UPDATE PRODUCT + NOTIFICATION
 ===================================================== */
 export const updateProductWithImages = createAsyncThunk(
   "product/updateWithImages",
   async ({
-    token,
-    id,
-    payload,
-    originalStock,
-    originalDiscount,
-  }) => {
-    const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
-
-    // Actualizar producto
+    token,id,payload,originalStock,originalDiscount,}) => {
+    // 1) Actualizar producto
     const { data: updated } = await axios.put(
       `${API_BASE}/products/${id}`,
       payload,
       {
         headers: {
           "Content-Type": "application/json",
-          ...authHeader,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
 
     console.log("📌 Producto actualizado en el servidor:", updated);
-    
-    // Detectar cambios
+
+    // 2) Detectar cambios
     const sentQuantity = payload.hasOwnProperty("quantity")
       ? payload.quantity
       : originalStock;
@@ -113,7 +102,7 @@ export const updateProductWithImages = createAsyncThunk(
       ? payload.discount
       : originalDiscount;
 
-    // Si cambió stock o descuento → notificar
+    // 3) Si cambió stock o descuento → notificar
     if (
       Number(sentQuantity) !== originalStock ||
       sentDiscount !== originalDiscount
@@ -124,7 +113,7 @@ export const updateProductWithImages = createAsyncThunk(
         {
           headers: {
             "Content-Type": "application/json",
-            ...authHeader,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -134,12 +123,13 @@ export const updateProductWithImages = createAsyncThunk(
   }
 );
 
+
 /* =====================================================
    SLICE
 ===================================================== */
 
 const initialState = {
-  product: null,
+  product: [],
   related: [],
   ratings: { average: 0, counts: {}, list: [] },
   loading: false,
@@ -152,7 +142,7 @@ const productSlice = createSlice({
   initialState,
   reducers: {
     clearProduct: (state) => {
-      state.product = null;
+      state.product = [];
     },
   },
   extraReducers: (builder) => {

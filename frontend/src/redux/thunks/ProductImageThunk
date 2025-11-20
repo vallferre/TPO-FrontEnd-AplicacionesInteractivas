@@ -1,13 +1,13 @@
-// src/redux/thunks/ProductImageThunk.js
+/*// src/redux/thunks/ProductImageThunk.js
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
-/**
- * Sube las imágenes de un producto ya creado.
- * No hace validaciones de tamaño/etc. Eso queda en el JSX.
- */
+
+//  Sube las imágenes de un producto ya creado.
+// No hace validaciones de tamaño/etc. Eso queda en el JSX.
+
 export const uploadProductImages = createAsyncThunk(
   "productImages/upload",
   async ({ token, productId, files }, { rejectWithValue }) => {
@@ -36,3 +36,4 @@ export const uploadProductImages = createAsyncThunk(
     }
   }
 );
+*/
