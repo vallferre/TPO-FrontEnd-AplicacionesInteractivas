@@ -3,11 +3,11 @@ import axios from "axios";
 
 const API_BASE = "http://localhost:8080";
 
-// ------------------------------------------------------
-// THUNKS DEFINIDOS EN EL MISMO ARCHIVO
-// ------------------------------------------------------
 
-// LOGIN
+// THUNK 
+
+
+// Login
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (credentials) => {
@@ -16,7 +16,7 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// REGISTER
+// Register
 export const registerUser = createAsyncThunk(
   "auth/register",
   async (payload) => {
@@ -25,7 +25,7 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// FETCH USER (requiere token ya guardado)
+// Fetch User (requiere token ya guardado)
 export const fetchCurrentUser = createAsyncThunk(
   "auth/fetchUser",
   async (_, { getState }) => {
@@ -39,15 +39,15 @@ export const fetchCurrentUser = createAsyncThunk(
   }
 );
 
-// LOGOUT (solo limpia estado)
+// Logout (solo limpia estado)
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
   return true;
 });
 
 
-// ------------------------------------------------------
+
 // SLICE
-// ------------------------------------------------------
+
 const initialState = {
   token: null,
   user: null,
@@ -63,9 +63,8 @@ const authSlice = createSlice({
   reducers: {},
 
   extraReducers: (builder) => {
-    // --------------------------------------------------
-    // LOGIN
-    // --------------------------------------------------
+
+    // Login
     builder
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
@@ -81,9 +80,9 @@ const authSlice = createSlice({
         state.error = action.error.message;
       });
 
-    // --------------------------------------------------
-    // REGISTER
-    // --------------------------------------------------
+
+    // Register
+
     builder
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
@@ -99,9 +98,9 @@ const authSlice = createSlice({
         state.error = action.error.message;
       });
 
-    // --------------------------------------------------
-    // FETCH USER
-    // --------------------------------------------------
+
+    // Fetch User
+
     builder
       .addCase(fetchCurrentUser.pending, (state) => {
         state.loading = true;
@@ -117,9 +116,9 @@ const authSlice = createSlice({
         state.error = action.error.message;
       });
 
-    // --------------------------------------------------
-    // LOGOUT
-    // --------------------------------------------------
+
+    // Logout
+
     builder.addCase(logoutUser.fulfilled, (state) => {
       state.token = null;
       state.user = null;

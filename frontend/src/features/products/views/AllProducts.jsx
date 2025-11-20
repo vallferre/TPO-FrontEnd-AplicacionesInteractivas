@@ -43,7 +43,7 @@ const AllProducts = () => {
           ) : (
             products.map((producto) => (
               <div key={producto.id}>
-                <SingleProduct id={producto.id} />
+                <SingleProduct product={producto} />
               </div>
             ))
           )}
