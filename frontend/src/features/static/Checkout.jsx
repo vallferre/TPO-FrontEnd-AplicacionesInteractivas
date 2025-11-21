@@ -25,7 +25,10 @@ const Checkout = () => {
   /* ========================= HELPERS ========================= */
 
   const formatCardNumber = (digits) =>
-    digits.replace(/\s+/g, "").replace(/(\d{4})/g, "$1 ").trim();
+    digits
+      .replace(/\s+/g, "")
+      .replace(/(\d{4})/g, "$1 ")
+      .trim();
 
   const handleCardChange = (e) => {
     const { name, value } = e.target;
@@ -106,7 +109,6 @@ const Checkout = () => {
     <div className="edit-page">
       <main className="edit-main">
         <div className="edit-container">
-
           <div className="edit-header">
             <h2>Pago y Envío</h2>
             <p>Ingresá los datos necesarios para completar la compra.</p>
@@ -114,7 +116,6 @@ const Checkout = () => {
 
           {/* 🔹 FORMULARIO VERTICAL */}
           <form className="edit-form" onSubmit={handleSubmit}>
-
             {/* ================= Sección Tarjeta ================= */}
             <div
               style={{
@@ -306,4 +307,3 @@ const Checkout = () => {
 };
 
 export default Checkout;
-
