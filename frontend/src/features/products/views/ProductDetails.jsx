@@ -9,48 +9,71 @@ import RatingCard from "../../../components/cards/RatingCard.jsx";
 import BackButton from "../../../components/ui/BackButton";
 import { toast } from "react-toastify";
 
-import { fetchProductById, fetchRelatedProducts, fetchRatings } from "../../../redux/slices/ProductSlice.js";
-import { selectProduct, selectRelatedProducts, selectRatings, selectLoading, selectError, selectRelatedLoading } from "../../../redux/slices/ProductSelectors";
+import {
+  fetchProductById,
+  fetchRelatedProducts,
+  fetchRatings,
+} from "../../../redux/slices/ProductSlice.js";
+
+import {
+  selectProduct,
+  selectRelatedProducts,
+  selectRatings,
+  selectLoading,
+  selectError,
+  selectRelatedLoading,
+} from "../../../redux/slices/ProductSelectors";
 
 import { addToCart, fetchCart } from "../../../redux/slices/CartSlice";
+import { fetchProductImages } from "../../../redux/slices/ProductImageSlice.js";
+import { selectProductImagesById } from "../../../redux/slices/ProductImageSelectors.js";
+import { selectToken } from "../../../redux/slices/AuthSelectors.js";
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  const token = useSelector((state) => state.auth.token);
+  const token = useSelector(selectToken);
 
   const [currentImage, setCurrentImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
 
-  // Datos de Redux
+  // === PRODUCTO ===
   const product = useSelector(selectProduct);
   const relatedProducts = useSelector(selectRelatedProducts) || [];
-  const { average = 0, counts = {}, list: productRatings = [] } = useSelector(selectRatings) || {};
+  const { average = 0, counts = {}, list: productRatings = [] } =
+    useSelector(selectRatings) || {};
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
   const relatedLoading = useSelector(selectRelatedLoading);
 
-  // Carga producto y ratings (solo depende del id)
+  // === IMÁGENES ===
+  const images = useSelector((state) => selectProductImagesById(state, id));
+  const imageLoading = useSelector((state) => state.productImages.loading);
+  const imageError = useSelector((state) => state.productImages.error);
+
+  // ==== CARGA DEL PRODUCTO, RATINGS E IMÁGENES ====
   useEffect(() => {
     if (id) {
       dispatch(fetchProductById(id));
       dispatch(fetchRatings(id));
+      dispatch(fetchProductImages(id));
     }
   }, [id, dispatch]);
 
-  // Cuando el producto cambió, traemos los relacionados
+  // ==== PRODUCTOS RELACIONADOS ====
   useEffect(() => {
-    if (product?.id && product?.categories?.length > 0 && !relatedLoading && relatedProducts.length === 0) {
+    if (product?.categories?.length > 0 && !relatedLoading) {
       dispatch(fetchRelatedProducts(product.categories));
     }
-  }, [dispatch, product?.id, product?.categories, relatedLoading, relatedProducts.length]);
+  }, [dispatch, product?.categories, relatedLoading]);
 
+  // ==== RESET QUANTITY ====
   useEffect(() => {
     if (product?.stock > 0) setQuantity(1);
   }, [product]);
 
+  // ==== AGREGAR AL CARRITO ====
   const handleAddToCart = () => {
     if (!token) {
       toast.info("Debes iniciar sesión para agregar productos al carrito.");
@@ -62,7 +85,6 @@ const ProductDetails = () => {
       .unwrap()
       .then(() => {
         toast.success(`${product?.name || "Producto"} agregado al carrito!`);
-        // opcional: refrescar el carrito
         dispatch(fetchCart({ token }));
       })
       .catch((err) => {
@@ -71,28 +93,12 @@ const ProductDetails = () => {
       });
   };
 
-  if (loading)
-    return (
-      <div className="product-loading">
-        <p>Cargando producto...</p>
-      </div>
-    );
+  // ==== LOADING Y ERROR ====
+  if (loading) return <p>Cargando producto...</p>;
+  if (error) return <p>{error}</p>;
+  if (!product) return <p>Producto no encontrado.</p>;
 
-  if (error)
-    return (
-      <div className="product-error">
-        <p>{error}</p>
-      </div>
-    );
-
-  if (!product)
-    return (
-      <div className="product-error">
-        <p>Producto no encontrado.</p>
-      </div>
-    );
-
-  const imageIds = product?.imageIds || [];
+  const imageIds = images.map((img) => img.id);
 
   return (
     <div>
@@ -103,6 +109,7 @@ const ProductDetails = () => {
       <div className="product-details-page">
         <h1>Detalle del producto</h1>
         <div className="product-details">
+          {/* ===== IMÁGENES ===== */}
           <div className="image-carousel-container" style={{ position: "relative" }}>
             {/* Botón favorito */}
             <div
@@ -113,8 +120,8 @@ const ProductDetails = () => {
               <FavoriteButton productId={id} productName={product?.name} token={token} />
             </div>
 
-            {/* Flecha izquierda */}
-            {imageIds?.length > 1 && (
+            {/* Flechas */}
+            {imageIds.length > 1 && (
               <button
                 className="carousel-arrow left"
                 onClick={() =>
@@ -125,10 +132,13 @@ const ProductDetails = () => {
               </button>
             )}
 
-            {/* Imagen actual */}
-            {imageIds?.length > 0 ? (
+            {imageLoading ? (
+              <p>Cargando imágenes...</p>
+            ) : imageError ? (
+              <p>Error cargando imágenes</p>
+            ) : imageIds.length > 0 ? (
               <img
-                src={`http://localhost:8080/images/${imageIds[currentImage]}`}
+                src={images[currentImage].url}
                 alt={product?.name}
                 className="productImageSpecial"
               />
@@ -136,8 +146,7 @@ const ProductDetails = () => {
               <div className="no-image-placeholder">{product?.name}</div>
             )}
 
-            {/* Flecha derecha */}
-            {imageIds?.length > 1 && (
+            {imageIds.length > 1 && (
               <button
                 className="carousel-arrow right"
                 onClick={() =>
@@ -149,10 +158,11 @@ const ProductDetails = () => {
             )}
           </div>
 
+          {/* ===== INFO PRODUCTO ===== */}
           <div className="product-info">
             <h1 className="product-title">{product?.name}</h1>
 
-            {/* Estrellas visuales con promedio */}
+            {/* Rating */}
             <div className="star-container">
               {[...Array(5)].map((_, i) => (
                 <span
@@ -184,7 +194,7 @@ const ProductDetails = () => {
                   value={quantity}
                   onChange={(e) => setQuantity(parseInt(e.target.value))}
                 >
-                  {Array.from({ length: product?.stock || 0 }, (_, i) => i + 1).map((num) => (
+                  {Array.from({ length: product?.stock }, (_, i) => i + 1).map((num) => (
                     <option key={num} value={num}>
                       {num}
                     </option>
@@ -203,6 +213,7 @@ const ProductDetails = () => {
           </div>
         </div>
 
+        {/* ===== DESCRIPCIÓN ===== */}
         <div className="product-description-section">
           <h2>Descripción</h2>
           <p>
@@ -212,46 +223,36 @@ const ProductDetails = () => {
           </p>
         </div>
 
-        {/* Calificación y opiniones */}
+        {/* ===== CALIFICACIONES Y OPINIONES ===== */}
         <div className="product-description-section rating-opinions-container">
-          {/* Calificación */}
           <div className="rating-column">
             <h2>Calificación</h2>
-            <div className="rating-histogram">
-              {[5, 4, 3, 2, 1].map((star) => (
-                <div key={star} className="rating-row">
-                  <span className="star-row">{star} </span>
-                  {[...Array(star)].map((_, i) => (
-                    <span key={i} className="star filled">
-                      ★
-                    </span>
-                  ))}
-                  <span className="rating-count"> ({counts?.[star] || 0})</span>
-                </div>
-              ))}
-            </div>
+            {[5, 4, 3, 2, 1].map((star) => (
+              <div key={star} className="rating-row">
+                <span className="star-row">{star} </span>
+                {[...Array(star)].map((_, i) => (
+                  <span key={i} className="star filled">
+                    ★
+                  </span>
+                ))}
+                <span className="rating-count"> ({counts?.[star] || 0})</span>
+              </div>
+            ))}
           </div>
 
-          {/* Opiniones */}
           <div className="opinions-column">
             <h2>Opiniones</h2>
-            <div className="ratings-list">
-              {productRatings?.length > 0 ? (
-                productRatings.slice(0, 3).map((r, idx) => (
-                  <RatingCard
-                    key={idx}
-                    userName={r?.username}
-                    value={r?.value}
-                    comment={r?.comment}
-                  />
-                ))
-              ) : (
-                <p>No hay opiniones para este producto aún.</p>
-              )}
-            </div>
+            {productRatings?.length > 0 ? (
+              productRatings.slice(0, 3).map((r, idx) => (
+                <RatingCard key={idx} userName={r?.username} value={r?.value} comment={r?.comment} />
+              ))
+            ) : (
+              <p>No hay opiniones aún.</p>
+            )}
           </div>
         </div>
 
+        {/* ===== PRODUCTOS RELACIONADOS ===== */}
         {relatedProducts?.length > 0 && (
           <div className="related-products">
             <h2>A otras personas también les gustó:</h2>
