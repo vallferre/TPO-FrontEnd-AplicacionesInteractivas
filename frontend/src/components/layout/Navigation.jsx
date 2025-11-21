@@ -19,39 +19,39 @@ const { isLoggedIn, user, userUpdated } = useSelector((state) => state.auth);
 
 // Cargar datos del usuario cuando hay token
 useEffect(() => {
-if (isLoggedIn) {
-dispatch(fetchCurrentUser());
-}
+  if (isLoggedIn) {
+    dispatch(fetchCurrentUser());
+  }
 }, [isLoggedIn, userUpdated, dispatch]);
 
 // Navegaciones
 const handleFavoritesClick = (e) => {
-e.preventDefault();
-navigate(isLoggedIn ? "/favorites" : "/login");
+  e.preventDefault();
+  navigate(isLoggedIn ? "/favorites" : "/login");
 };
 
 const handleCartClick = (e) => {
-e.preventDefault();
-navigate(isLoggedIn ? "/cart" : "/login");
+  e.preventDefault();
+  navigate(isLoggedIn ? "/cart" : "/login");
 };
 
 const handleLogout = () => {
-dispatch(logoutUser());
-navigate("/");
+  dispatch(logoutUser());
+  navigate("/");
 };
 
 const handleProfile = () => {
-navigate("/profile");
-setIsDropdownOpen(false);
+  navigate("/profile");
+  setIsDropdownOpen(false);
 };
 
 const handleSearch = () => {
-const trimmed = searchTerm.trim();
-if (trimmed) {
-navigate(`/products?keyword=${encodeURIComponent(trimmed)}`);
-} else {
-navigate("/products");
-}
+  const trimmed = searchTerm.trim();
+  if (trimmed) {
+    navigate(`/products?keyword=${encodeURIComponent(trimmed)}`);
+  } else {
+    navigate("/products");
+  }
 };
 
 // Cerrar el menú al hacer click afuera

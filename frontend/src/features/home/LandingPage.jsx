@@ -1,82 +1,64 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import "./LandingPage.css";
+
+import { fetchProducts } from "../../redux/slices/ProductSlice";
+import { fetchCategories } from "../../redux/slices/CategorySlice";
+
+import {
+  selectProduct,
+  selectLoading,
+  selectError,
+} from "../../redux/slices/ProductSelectors";
+
+import {
+  selectCategories,
+  selectCategoriesLoading,
+  selectCategoriesError,
+} from "../../redux/slices/CategorySelector";
+
 import CategoryCard from "../../components/cards/CategoryCard";
 import SingleProduct from "../products/views/SingleProduct";
-
-const API_BASE = "http://localhost:8080";
+import "./LandingPage.css";
 
 export default function LandingPage() {
-  const [categories, setCategories] = useState([]);
-  const [discountedProducts, setDiscountedProducts] = useState([]);
-  const [loadingCategories, setLoadingCategories] = useState(true);
-  const [loadingDiscounts, setLoadingDiscounts] = useState(true);
-  const [errorCategories, setErrorCategories] = useState(null);
-  const [errorDiscounts, setErrorDiscounts] = useState(null);
-
-  const [infiniteItems, setInfiniteItems] = useState([]);
-  const carouselRef = useRef(null);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const carouselRef = useRef(null);
 
-  // ===== Generar items infinitos para pasarela =====
-  const generateInfiniteItems = (products) => {
-    if (!products || products.length === 0) return [];
-    const repeatCount = Math.ceil(10 / products.length); // repetir mínimo para permitir scroll
-    return Array.from({ length: repeatCount }, () => products).flat();
-  };
+  const products = useSelector(selectProduct) || [];
+  const productsLoading = useSelector(selectLoading);
+  const productsError = useSelector(selectError);
 
-  // ===== Traer categorías =====
+  const categories = useSelector(selectCategories) || [];
+  const categoriesLoading = useSelector(selectCategoriesLoading);
+  const categoriesError = useSelector(selectCategoriesError);
+
+  // ===== Filtrar 5 productos con mayor descuento =====
+  const discountedProducts = products
+    .filter((p) => (p.discountPercentage || 0) > 0)
+    .sort((a, b) => b.discountPercentage - a.discountPercentage)
+    .slice(0, 5);
+
+  // ===== Generar items infinitos para carousel =====
+  const infiniteItems = (() => {
+    if (!discountedProducts || discountedProducts.length === 0) return [];
+    const repeatCount = Math.ceil(10 / discountedProducts.length);
+    return Array.from({ length: repeatCount }, () => discountedProducts).flat();
+  })();
+
+  // ===== Tomar 5 categorías random =====
+  const featuredCategories = (() => {
+    if (!categories || categories.length === 0) return [];
+    const shuffled = [...categories].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 5);
+  })();
+
+  // ===== Fetch inicial =====
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/categories`);
-        if (!res.ok) throw new Error(`Error: ${res.status}`);
-        const data = await res.json();
-        const allCategories = (data.content || []).map((cat) => ({
-          ...cat,
-          imageId: cat.imageId || null,
-        }));
-        const shuffled = allCategories.sort(() => 0.5 - Math.random());
-        setCategories(shuffled.slice(0, 4));
-      } catch (err) {
-        console.error(err);
-        setErrorCategories("No se pudieron cargar las categorías.");
-      } finally {
-        setLoadingCategories(false);
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  // ===== Traer productos en descuento =====
-  useEffect(() => {
-    const fetchDiscountedProducts = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/products`);
-        if (!res.ok) throw new Error(`Error: ${res.status}`);
-        const data = await res.json();
-        let list = Array.isArray(data.content) ? data.content : data;
-
-        const discounted = list
-          .filter((p) => (p.discountPercentage || 0) > 0)
-          .sort((a, b) => b.discountPercentage - a.discountPercentage)
-          .slice(0, 5);
-
-        setDiscountedProducts(discounted);
-      } catch (err) {
-        console.error(err);
-        setErrorDiscounts("No se pudieron cargar los productos en descuento.");
-      } finally {
-        setLoadingDiscounts(false);
-      }
-    };
-    fetchDiscountedProducts();
-  }, []);
-
-  // ===== Actualizar items infinitos =====
-  useEffect(() => {
-    setInfiniteItems(generateInfiniteItems(discountedProducts));
-  }, [discountedProducts]);
+    dispatch(fetchProducts());
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   // ===== Scroll infinito =====
   useEffect(() => {
@@ -88,9 +70,7 @@ export default function LandingPage() {
 
     const step = () => {
       scrollPos += speed;
-      if (scrollPos >= container.scrollWidth / 2) {
-        scrollPos = 0;
-      }
+      if (scrollPos >= container.scrollWidth / 2) scrollPos = 0;
       container.scrollLeft = scrollPos;
       requestAnimationFrame(step);
     };
@@ -98,7 +78,6 @@ export default function LandingPage() {
     step();
   }, [infiniteItems]);
 
-  // ===== Manejar click en categoría =====
   const handleCategoryClick = (categoryDescription) => {
     navigate(`/products?category=${encodeURIComponent(categoryDescription)}`);
   };
@@ -123,15 +102,15 @@ export default function LandingPage() {
       {/* Productos en Descuento */}
       <section className="discount-section fade-up">
         <h2 className="section-title">Productos en Descuento</h2>
-        {loadingDiscounts ? (
+        {productsLoading ? (
           <p className="loading-text">Cargando productos...</p>
-        ) : errorDiscounts ? (
-          <p className="error-text">{errorDiscounts}</p>
+        ) : productsError ? (
+          <p className="error-text">{productsError}</p>
         ) : discountedProducts.length > 0 ? (
           <div className="discount-carousel-wrapper">
             <div className="discount-carousel-infinite" ref={carouselRef}>
-              {infiniteItems.map((prod, index) => (
-                <div key={`${prod.id}-${index}`} className="discount-carousel-item">
+              {infiniteItems.map((prod, idx) => (
+                <div key={`${prod.id}-${idx}`} className="discount-carousel-item">
                   <SingleProduct id={prod.id} />
                 </div>
               ))}
@@ -145,32 +124,22 @@ export default function LandingPage() {
       {/* Categorías Destacadas */}
       <section className="featured-section fade-up">
         <h2 className="section-title">Colecciones Destacadas</h2>
-        {loadingCategories ? (
+        {categoriesLoading ? (
           <p className="loading-text">Cargando categorías...</p>
-        ) : errorCategories ? (
-          <p className="error-text">{errorCategories}</p>
+        ) : categoriesError ? (
+          <p className="error-text">{categoriesError}</p>
         ) : (
           <div className="grid grid-4">
-            {categories.map((cat, index) => (
+            {featuredCategories.map((cat, idx) => (
               <CategoryCard
                 key={cat.id}
                 category={cat}
-                index={index}
+                index={idx}
                 onClick={() => handleCategoryClick(cat.description)}
               />
             ))}
           </div>
         )}
-      </section>
-
-      {/* Mini About */}
-      <section className="about-preview fade-up">
-        <h2>Sobre Relicaria</h2>
-        <p>
-          En <strong>Relicaria</strong> buscamos ofrecer productos que cuenten
-          historias. Conocé más sobre nosotros en la página de{" "}
-          <Link to="/about">About Us</Link>.
-        </p>
       </section>
     </div>
   );

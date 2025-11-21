@@ -6,7 +6,7 @@ export const selectRatings = (state) => state.products.ratings;
 export const selectLoading = (state) => state.products.loading;
 export const selectError = (state) => state.products.error;
 
-// 🔹 nuevos para el flujo de creación
+// nuevos para el flujo de creación
 export const selectProductCreating = (state) => state.products.creating;
 export const selectProductCreateError = (state) => state.products.createError;
 

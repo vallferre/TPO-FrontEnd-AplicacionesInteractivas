@@ -6,10 +6,11 @@ const BASE_URL = "http://localhost:8080/categories";
 /*                ASYNC THUNKS                     */
 
 // Traer categorías paginadas
+// ===== Acción async interna: fetch general de categorías =====
 export const fetchCategories = createAsyncThunk(
   "categories/fetchAll",
-  async ({ page = 0, size = 10 }) => {
-    const res = await axios.get(`${BASE_URL}?page=${page}&size=${size}`);
+  async () => {
+    const res = await axios.get(`${BASE_URL}`);
     return res.data;
   }
 );
@@ -45,7 +46,7 @@ export const createCategory = createAsyncThunk(
 export const fetchCategoryImage = createAsyncThunk(
   "categories/fetchImage",
   async (id) => {
-    const res = await fetch(`http://localhost:8080/categories/${id}/image`);
+    const res = await fetch(`${BASE_URL}/${id}/image`);
     if (!res.ok) throw new Error("Error loading image");
     const blob = await res.blob();
     return { id, url: URL.createObjectURL(blob) };
@@ -70,6 +71,8 @@ export const updateCategory = createAsyncThunk(
     return res.data;
   }
 );
+
+
 
 // Eliminar categoría
 export const deleteCategory = createAsyncThunk(
@@ -106,8 +109,9 @@ const categorySlice = createSlice({
         })
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload.content;
-        state.pageInfo = action.payload;
+        const data = action.payload;
+        state.items = Array.isArray(data.content) ? data.content : data;
+        state.pageInfo = data;
       })
       .addCase(fetchCategories.rejected, (state, action) => {
         state.loading = false;

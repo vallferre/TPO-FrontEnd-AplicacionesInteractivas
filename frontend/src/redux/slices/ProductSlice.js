@@ -5,6 +5,17 @@ import axios from "axios";
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 /* =====================================================
+   FETCH PRODUCTS GENERAL (SIN TOKEN)
+===================================================== */
+export const fetchProducts = createAsyncThunk(
+  "product/fetchAll",
+  async () => {
+    const { data } = await axios.get(`${API_BASE}/products`);
+    return Array.isArray(data.content) ? data.content : data;
+  }
+);
+
+/* =====================================================
    GET PRODUCT BY ID
 ===================================================== */
 export const fetchProductById = createAsyncThunk(
@@ -136,7 +147,7 @@ export const updateProductWithImages = createAsyncThunk(
 /**
  * Lista de productos del usuario logueado
  * (GET /products/filter-by-username)
- * 🔹 Devuelve el data crudo, SIN formateo.
+ * Devuelve el data crudo, SIN formateo.
  */
 export const fetchUserProducts = createAsyncThunk(
   "product/fetchUserProducts",
@@ -230,6 +241,25 @@ const productSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // === FETCH GENERAL PRODUCTS ===
+      .addCase(fetchProducts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProducts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.products = action.payload;
+
+        // TOP 5 POR DESCUENTO
+        state.topDiscounts = [...action.payload]
+          .sort((a, b) => b.discount - a.discount)
+          .slice(0, 5);
+      })
+      .addCase(fetchProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+
       // === PRODUCT BY ID ===
       .addCase(fetchProductById.pending, (state) => {
         state.loading = true;

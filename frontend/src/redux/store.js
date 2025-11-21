@@ -9,6 +9,7 @@ import favoritesReducer from "./slices/FavoritesSlice.js";
 import ratingReducer from "./slices/RatingSlice.js";
 import orderReducer from "./slices/OrderSlice.js";
 import productImagesReducer from "./slices/ProductImageSlice.js";
+import categoriesReducer from "./slices/CategorySlice.js";
 
 const persistConfig = {
   key: "root",
@@ -20,6 +21,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
   auth: authReducer,
   products: productReducer,
+  categories: categoriesReducer,
   cart: cartReducer,
   favorites: favoritesReducer,
   rating: ratingReducer,
