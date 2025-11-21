@@ -5,32 +5,30 @@ import { toast } from "react-toastify";
 
 import FavoriteButton from "../../../components/ui/FavoriteButton";
 import { fetchProductById } from "../../../redux/slices/ProductSlice.js";
+import { fetchProductImages } from "../../../redux/slices/ProductImageSlice.js";
+import { selectImageUploading, selectImageUploadError, selectLastImageUploadInfo } from "../../../redux/slices/ProductImageSelectors.js";
 import { selectProduct, selectLoading, selectError } from "../../../redux/slices/ProductSelectors.js";
 //import { addToCartThunk } from "../../../redux/thunks/CartThunk.js";
 
 import "./SingleProduct.css";
 
-const SingleProduct = ({ product: productProp, onRemoveFavorite }) => {
+const SingleProduct = ({ product, onRemoveFavorite }) => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const token = localStorage.getItem("jwtToken");
 
-  const productRedux = useSelector(selectProduct);
-  const loading = useSelector(selectLoading);
-  const error = useSelector(selectError);
+  const loading = useSelector((state) => state.products.loading);
+  const error = useSelector((state) => state.products.error);
 
-  // usar el de props si existe, sino el de redux
-  const product = productProp ?? productRedux;
+  const images = useSelector(state => state.productImages.items[product.id] || []);
+  const mainImageUrl = images.length > 0 ? images[0].url : "/assets/no-image.jpg";
 
-// ================================
-// Cargar producto al montar
-// ================================
-useEffect(() => {
-  if (id) {
-    dispatch(fetchProductById(id));
-  }
-}, [dispatch, id]);
+
+  useEffect(() => {
+    if (product?.id) {
+      dispatch(fetchProductById(product.id));
+      dispatch(fetchProductImages(product.id));
+    }
+  }, [dispatch, product?.id]);
+
 
 // ================================
 // Handlers
@@ -68,9 +66,11 @@ const discountPercentage = hasDiscount
 ? Math.round(((product.price - product.finalPrice) / product.price) * 100)
 : 0;
 
-const mainImageUrl = product.imageIds?.[0]
-? `http://localhost:8080/images/${product.imageIds[0]}`
-: "/assets/no-image.jpg";
+//const mainImageUrl = product.imageIds?.[0]
+//? `http://localhost:8080/images/${product.imageIds[0]}`
+//: "/assets/no-image.jpg";
+
+
 
 return (
 <div

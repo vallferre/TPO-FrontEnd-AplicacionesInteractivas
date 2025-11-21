@@ -53,7 +53,7 @@ export const deleteProductImages = createAsyncThunk(
 
 
 const initialState = {
-  items: [],          // 🔹 lista de imágenes del producto actual
+  items: {},          // lista de imágenes del producto actual
   loading: false,     // para el fetch
   uploading: false,
   deleting: false,
@@ -78,14 +78,22 @@ const productImageSlice = createSlice({
     builder
       /* ========== FETCH IMÁGENES POR PRODUCTO ========== */
       .addCase(fetchProductImages.pending, (state) => {
+        console.log('HOLI HOLI HOLI HOLI');
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchProductImages.fulfilled, (state, action) => {
+        const productId = action.meta.arg;
+        state.items[productId] = action.payload.map(img => ({
+          ...img,
+          url: `${API_BASE}/images/${img.id}`,
+        }));
         state.loading = false;
-        state.items = action.payload || [];
       })
+
       .addCase(fetchProductImages.rejected, (state, action) => {
+        console.log('FUCK FUCK FUCK FUCK');
+        console.log('ERROR fetchProductImages:', action.error);
         state.loading = false;
         state.error =
           action.payload ||
