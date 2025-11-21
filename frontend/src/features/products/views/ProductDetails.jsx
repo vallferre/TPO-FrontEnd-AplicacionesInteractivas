@@ -9,22 +9,17 @@ import RatingCard from "../../../components/cards/RatingCard.jsx";
 import BackButton from "../../../components/ui/BackButton";
 import { toast } from "react-toastify";
 
-import { fetchProductById,fetchRelatedProducts,fetchRatings, } from "../../../redux/slices/ProductSlice.js";
+import { fetchProductById, fetchRelatedProducts, fetchRatings } from "../../../redux/slices/ProductSlice.js";
+import { selectProduct, selectRelatedProducts, selectRatings, selectLoading, selectError, selectRelatedLoading } from "../../../redux/slices/ProductSelectors";
 
-import {
-  selectProduct,
-  selectRelatedProducts,
-  selectRatings,
-  selectLoading,
-  selectError,
-  selectRelatedLoading,
-} from "../../../redux/slices/ProductSelectors";
+import { increaseQuantity, fetchCart } from "../../../redux/slices/CartSlice";
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const token = localStorage.getItem("jwtToken");
+
+  const token = useSelector((state) => state.auth.token);
 
   const [currentImage, setCurrentImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -32,8 +27,7 @@ const ProductDetails = () => {
   // Datos de Redux
   const product = useSelector(selectProduct);
   const relatedProducts = useSelector(selectRelatedProducts) || [];
-  const { average = 0, counts = {}, list: productRatings = [] } =
-    useSelector(selectRatings) || {};
+  const { average = 0, counts = {}, list: productRatings = [] } = useSelector(selectRatings) || {};
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
   const relatedLoading = useSelector(selectRelatedLoading);
@@ -51,12 +45,31 @@ const ProductDetails = () => {
     if (product?.id && product?.categories?.length > 0 && !relatedLoading && relatedProducts.length === 0) {
       dispatch(fetchRelatedProducts(product.categories));
     }
-  }, [dispatch, product?.id]);
-
+  }, [dispatch, product?.id, product?.categories, relatedLoading, relatedProducts.length]);
 
   useEffect(() => {
     if (product?.stock > 0) setQuantity(1);
   }, [product]);
+
+  const handleAddToCart = () => {
+    if (!token) {
+      toast.info("Debes iniciar sesión para agregar productos al carrito.");
+      navigate("/login");
+      return;
+    }
+
+    dispatch(increaseQuantity({ productId: id, token, quantity }))
+      .unwrap()
+      .then(() => {
+        toast.success(`${product?.name || "Producto"} agregado al carrito!`);
+        // opcional: refrescar el carrito
+        dispatch(fetchCart({ token }));
+      })
+      .catch((err) => {
+        console.error("Error al agregar al carrito:", err);
+        toast.error(err || "No se pudo agregar al carrito");
+      });
+  };
 
   if (loading)
     return (
@@ -80,31 +93,6 @@ const ProductDetails = () => {
     );
 
   const imageIds = product?.imageIds || [];
-
-  const handleAddToCart = async (e) => {
-    e.stopPropagation();
-    if (!token) {
-      toast.info("Iniciá sesión para agregar productos al carrito.");
-      navigate("/login");
-      return;
-    }
-
-    try {
-      const res = await fetch(`http://localhost:8080/cart/add`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ productId: id, quantity }),
-      });
-      if (!res.ok) throw new Error(`Failed to add product: ${res.status}`);
-      toast.success(`${product?.name || "Producto"} agregado al carrito!`);
-    } catch (err) {
-      console.error("Error adding to cart:", err);
-      toast.error("Error al agregar al carrito. Intenta nuevamente.");
-    }
-  };
 
   return (
     <div>
@@ -130,9 +118,7 @@ const ProductDetails = () => {
               <button
                 className="carousel-arrow left"
                 onClick={() =>
-                  setCurrentImage((prev) =>
-                    prev === 0 ? imageIds.length - 1 : prev - 1
-                  )
+                  setCurrentImage((prev) => (prev === 0 ? imageIds.length - 1 : prev - 1))
                 }
               >
                 ‹
@@ -155,9 +141,7 @@ const ProductDetails = () => {
               <button
                 className="carousel-arrow right"
                 onClick={() =>
-                  setCurrentImage((prev) =>
-                    prev === imageIds.length - 1 ? 0 : prev + 1
-                  )
+                  setCurrentImage((prev) => (prev === imageIds.length - 1 ? 0 : prev + 1))
                 }
               >
                 ›
@@ -173,9 +157,7 @@ const ProductDetails = () => {
               {[...Array(5)].map((_, i) => (
                 <span
                   key={i}
-                  className={`star ${
-                    i < (average > 0 ? Math.round(average) : 5) ? "filled" : ""
-                  }`}
+                  className={`star ${i < (average > 0 ? Math.round(average) : 5) ? "filled" : ""}`}
                 >
                   ★
                 </span>
@@ -189,9 +171,7 @@ const ProductDetails = () => {
 
             <div className="product-price-stock">
               <span className="product-price">${product?.price}</span>
-              <span
-                className={`product-stock ${product?.stock > 0 ? "in-stock" : "out-of-stock"}`}
-              >
+              <span className={`product-stock ${product?.stock > 0 ? "in-stock" : "out-of-stock"}`}>
                 {product?.stock > 0 ? "En stock" : "Sin stock"}
               </span>
             </div>
@@ -218,7 +198,7 @@ const ProductDetails = () => {
               className="add-to-cart-btn"
               onClick={handleAddToCart}
             >
-              Agregar al carrito
+              {product?.stock <= 0 ? "Sin stock" : "Agregar al carrito"}
             </button>
           </div>
         </div>
