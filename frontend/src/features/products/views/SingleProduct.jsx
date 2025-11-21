@@ -18,7 +18,10 @@ const SingleProduct = ({ product, onRemoveFavorite }) => {
   const loading = useSelector((state) => state.products.loading);
   const error = useSelector((state) => state.products.error);
 
-  const images = useSelector(state => state.productImages.items[product.id] || []);
+  const productId = product?.id;
+  const images = useSelector(
+  state => (productId ? state.productImages.items[productId] : []) || []
+);
   const mainImageUrl = images.length > 0 ? images[0].url : "/assets/no-image.jpg";
 
 
@@ -55,7 +58,7 @@ const handleAddToCart = async (e) => {
 // ================================
 if (loading) return <div className="product-card--dynamic loading">Cargando...</div>;
 if (error) return <div className="product-card--dynamic error">{error}</div>;
-if (!product) return <div className="product-card--dynamic error">Producto no encontrado</div>;
+if (!product) return <div className="product-card--dynamic loading">Cargando producto...</div>;
 
 // ================================
 // Render data
