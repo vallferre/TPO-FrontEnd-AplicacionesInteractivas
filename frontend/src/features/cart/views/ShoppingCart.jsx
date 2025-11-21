@@ -1,39 +1,50 @@
+// src/features/cart/pages/ShoppingCart.jsx
 import React, { useEffect, useState } from "react";
-import "./ShoppingCart.css";
-import CartItem from "../components/CartItem.jsx";
-import OrderSummary from "../../orders/components/OrderSummary.jsx";
-import DeleteConfirmationModal from "../../../components/ui/DeleteConfirmationModal.jsx";
-import ErrorView from "../../../components/ui/ErrorView.jsx";
 import { useDispatch, useSelector } from "react-redux";
+
 import {
-  fetchCartThunk,
-  addToCartThunk,
-  removeFromCartThunk,
-  deleteProductThunk,
-} from "../../../redux/thunks/CartThunk.js";
+  fetchCart,
+  increaseQuantity,
+  decreaseQuantity,
+  deleteProduct,
+} from "../../../redux/slices/CartSlice";
+
+import {
+  selectCartItems,
+  selectCartTotal,
+  selectCartLoading,
+  selectCartError,
+} from "../../../redux/slices/CartSelectors";
+
+import CartItem from "../components/CartItem";
+import OrderSummary from "../../orders/components/OrderSummary";
+import ErrorView from "../../../components/ui/ErrorView";
+import DeleteConfirmationModal from "../../../components/ui/DeleteConfirmationModal";
 
 const ShoppingCart = () => {
   const dispatch = useDispatch();
-  const { items, total, loading, error } = useSelector((state) => state.cart);
+
+  const token = useSelector((state) => state.auth.token);
+
+  const items = useSelector(selectCartItems);
+  const total = useSelector(selectCartTotal);
+  const loading = useSelector(selectCartLoading);
+  const error = useSelector(selectCartError);
+
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [cartErrors, setCartErrors] = useState({});
 
+  // FETCH
   useEffect(() => {
-    dispatch(fetchCartThunk());
-  }, [dispatch]);
+    if (token) dispatch(fetchCart({ token }));
+  }, [dispatch, token]);
 
-  const handleAdd = async (productId) => {
-    try {
-      await dispatch(addToCartThunk({ productId })).unwrap();
-      setCartErrors((prev) => ({ ...prev, [productId]: null }));
-    } catch (err) {
-      setCartErrors((prev) => ({ ...prev, [productId]: err || "No hay más stock" }));
-    }
+  const handleAdd = (productId) => {
+    dispatch(increaseQuantity({ productId, token }));
   };
 
   const handleRemove = (productId) => {
-    dispatch(removeFromCartThunk(productId));
+    dispatch(decreaseQuantity({ productId, token }));
   };
 
   const handleDeleteAll = (productId, quantity, productName) => {
@@ -42,71 +53,63 @@ const ShoppingCart = () => {
   };
 
   const confirmDelete = () => {
-    if (!selectedProduct) return;
-    dispatch(deleteProductThunk(selectedProduct));
+    dispatch(deleteProduct({ productId: selectedProduct.productId, token }));
     setShowModal(false);
-    setSelectedProduct(null);
   };
 
-  const cancelDelete = () => {
-    setShowModal(false);
-    setSelectedProduct(null);
-  };
+  if (!token) return <ErrorView message="Debes iniciar sesión." />;
 
-  if (loading)
-    return <div className="app-container" style={{ padding: "2rem", textAlign: "center" }}>Loading...</div>;
+  if (loading) return <p style={{ padding: 20 }}>Cargando...</p>;
 
   if (error)
-    return <div className="app-container" style={{ padding: "2rem", textAlign: "center", color: "red" }}>{error}</div>;
+    return (
+      <ErrorView message={error || "Error cargando carrito"} />
+    );
 
-  const validCartItems = items?.filter((item) => item.quantity > 0) || [];
+  const validCartItems =
+    items?.map((i) => ({
+      id: i.productId,
+      name: i.productName,
+      size: i.productDescription,
+      price: i.priceAtAddTime,
+      quantity: i.quantity,
+      image: i.productImageUrl,
+    })) || [];
 
   if (!validCartItems.length)
-    return <ErrorView message="Agrega un par de productos a tu carrito para empezar." />;
+    return <ErrorView message="Tu carrito está vacío." />;
 
   return (
-    <div className="app-container" style={{ padding: "2rem", backgroundColor: "#f9fafb" }}>
-      <main className="main" style={{ display: "flex", justifyContent: "center", alignItems: "flex-start" }}>
-        <div className="cart-container" style={{ display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "1100px", width: "100%" }}>
-          <h2 className="cart-title fade-in" style={{ fontSize: "2rem", fontWeight: "bold", color: "#1e293b", marginBottom: "1rem" }}>
-            Shopping Cart
-          </h2>
+    <div style={{ padding: "2rem" }}>
+      <h2>Shopping Cart</h2>
 
-          <div className="cart-grid fade-in" style={{ display: "grid", gridTemplateColumns: "3fr 1fr", gap: "3rem", alignItems: "start" }}>
-            <div className="cart-items" style={{ backgroundColor: "white", padding: "1.5rem", borderRadius: "0.75rem", boxShadow: "0 1px 4px rgba(0, 0, 0, 0.1)" }}>
-              <ul style={{ display: "flex", flexDirection: "column", gap: "1.5rem", listStyle: "none", padding: 0 }}>
-                {validCartItems.map((item) => (
-                  <CartItem
-                    key={item.productId}
-                    item={{
-                      id: item.productId,
-                      name: item.productName,
-                      image: item.productImageUrl,
-                      price: item.priceAtAddTime,
-                      size: item.productDescription,
-                      quantity: item.quantity,
-                      stock: item.productStock,
-                      error: cartErrors[item.productId],
-                    }}
-                    onIncrease={() => handleAdd(item.productId)}
-                    onDecrease={() => handleRemove(item.productId)}
-                    onRemove={() =>
-                      handleDeleteAll(item.productId, item.quantity, item.productName)
-                    }
-                  />
-                ))}
-              </ul>
-            </div>
+      <div style={{ display: "grid", gridTemplateColumns: "3fr 1fr", gap: "2rem" }}>
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          {validCartItems.map((item) => (
+            <CartItem
+              key={item.id}
+              item={item}
+              onIncrease={() => handleAdd(item.id)}
+              onDecrease={() => handleRemove(item.id)}
+              onRemove={() =>
+                handleDeleteAll(item.id, item.quantity, item.name)
+              }
+            />
+          ))}
+        </ul>
 
-            <OrderSummary cartItems={validCartItems} subtotal={total} shipping="Free" total={total} />
-          </div>
-        </div>
-      </main>
+        <OrderSummary
+          cartItems={validCartItems}
+          subtotal={total}
+          total={total}
+          shipping="Free"
+        />
+      </div>
 
       <DeleteConfirmationModal
         isOpen={showModal}
         onConfirm={confirmDelete}
-        onCancel={cancelDelete}
+        onCancel={() => setShowModal(false)}
         productName={selectedProduct?.productName}
       />
     </div>

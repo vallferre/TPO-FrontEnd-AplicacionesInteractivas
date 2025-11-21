@@ -1,101 +1,59 @@
+// src/features/cart/components/CartItem.jsx
 import React from "react";
 
-export default function CartItem({ item, onRemove, onIncrease, onDecrease }) {
-  const API_BASE = "http://localhost:8080";
-  const mainImageUrl = item.image
-    ? `${API_BASE}/images/${item.image.id}`
-    : "https://via.placeholder.com/80?text=No+Image";
+const CartItem = ({ item, onIncrease, onDecrease, onRemove }) => {
+  const getImageSrc = (img) => {
+    if (!img || !img.data) return null;
+    return `data:${img.contentType};base64,${img.data}`;
+  };
 
   return (
     <li
-      className="cart-item"
       style={{
         display: "flex",
-        alignItems: "center",
-        gap: "1.5rem",
-        borderBottom: "1px solid #e2e8f0",
-        paddingBottom: "1.5rem",
+        gap: "1rem",
+        paddingBottom: "1rem",
+        borderBottom: "1px solid #ddd",
       }}
     >
-      <div className="item-image">
-        <img
-          src={mainImageUrl}
-          alt={item.name}
-          style={{ width: "80px", height: "80px", borderRadius: "0.5rem", objectFit: "cover" }}
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = "https://via.placeholder.com/80?text=No+Image";
-          }}
-        />
-      </div>
-      <div className="item-details" style={{ flex: 1 }}>
-        <div
-          className="item-top"
-          style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}
-        >
-          <h3 style={{ fontSize: "1.125rem", fontWeight: "600", color: "#1e293b" }}>
-            {item.name}
-          </h3>
-          <p className="item-price" style={{ fontWeight: "500", color: "#334155" }}>
-            ${item.price}
-          </p>
-        </div>
-        <p className="item-size" style={{ fontSize: "0.9rem", color: "#64748b" }}>
-          {item.size}
+      <img
+        src={getImageSrc(item.image) || "/placeholder.jpg"}
+        alt={item.name}
+        style={{
+          width: "120px",
+          height: "120px",
+          objectFit: "cover",
+          borderRadius: "6px",
+        }}
+      />
+
+      <div style={{ flex: 1 }}>
+        <h3 style={{ margin: 0 }}>{item.name}</h3>
+        <p style={{ color: "#666", margin: "0.3rem 0" }}>{item.size}</p>
+
+        <p style={{ fontWeight: "bold", marginTop: "0.5rem" }}>
+          ${item.price}
         </p>
-        <div
-          className="item-actions"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: "1rem",
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div
-              className="quantity"
-              style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-            >
-              <button
-                onClick={onDecrease}
-                style={{
-                  backgroundColor: "#e2e8f0",
-                  padding: "0.3rem 0.6rem",
-                  borderRadius: "0.375rem",
-                  cursor: "pointer",
-                }}
-              >
-                -
-              </button>
-              <span>{item.quantity}</span>
-              <button
-                onClick={onIncrease}
-                style={{
-                  backgroundColor: "#e2e8f0",
-                  padding: "0.3rem 0.6rem",
-                  borderRadius: "0.375rem",
-                  cursor: "pointer",
-                }}
-              >
-                +
-              </button>
-            </div>
-            {item.error && (
-              <span style={{ color: "red", fontSize: "0.75rem", marginTop: "0.25rem" }}>
-                {item.error}
-              </span>
-            )}
-          </div>
+
+        {item.error && (
+          <p style={{ color: "red", marginTop: "0.5rem" }}>{item.error}</p>
+        )}
+
+        <div style={{ display: "flex", gap: "0.8rem", marginTop: "1rem" }}>
+          <button onClick={onDecrease}>-</button>
+          <span>{item.quantity}</span>
+          <button onClick={onIncrease}>+</button>
+
           <button
+            style={{ marginLeft: "auto", color: "red" }}
             onClick={onRemove}
-            className="remove-btn"
-            style={{ color: "#ef4444" }}
           >
-            Remove
+            Eliminar
           </button>
         </div>
       </div>
     </li>
   );
-}
+};
+
+export default CartItem;

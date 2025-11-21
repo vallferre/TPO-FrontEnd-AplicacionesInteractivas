@@ -1,12 +1,78 @@
-import { createSlice } from "@reduxjs/toolkit";
-import {
-  fetchCartThunk,
-  addToCartThunk,
-  removeFromCartThunk,
-  deleteProductThunk,
-} from "../thunks/CartThunk";
+// src/redux/slices/CartSlice.js
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 
-const cartSlice = createSlice({
+const API = "http://localhost:8080/cart";
+
+const headers = (token) => ({
+  headers: { Authorization: `Bearer ${token}` },
+});
+
+// ------------------- THUNKS -------------------
+
+export const fetchCart = createAsyncThunk(
+  "cart/fetchCart",
+  async ({ token }, thunkAPI) => {
+    try {
+      const res = await axios.get(`${API}`, headers(token));
+      return res.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue("No se pudo cargar el carrito");
+    }
+  }
+);
+
+export const increaseQuantity = createAsyncThunk(
+  "cart/increase",
+  async ({ productId, token }, thunkAPI) => {
+    try {
+      const res = await axios.post(
+        `${API}/increase`,
+        { productId },
+        headers(token)
+      );
+      return res.data;
+    } catch {
+      return thunkAPI.rejectWithValue("Stock insuficiente");
+    }
+  }
+);
+
+export const decreaseQuantity = createAsyncThunk(
+  "cart/decrease",
+  async ({ productId, token }, thunkAPI) => {
+    try {
+      const res = await axios.post(
+        `${API}/decrease`,
+        { productId },
+        headers(token)
+      );
+      return res.data;
+    } catch {
+      return thunkAPI.rejectWithValue("Error al disminuir cantidad");
+    }
+  }
+);
+
+export const deleteProduct = createAsyncThunk(
+  "cart/delete",
+  async ({ productId, token }, thunkAPI) => {
+    try {
+      const res = await axios.post(
+        `${API}/delete`,
+        { productId },
+        headers(token)
+      );
+      return res.data;
+    } catch {
+      return thunkAPI.rejectWithValue("No se pudo eliminar el producto");
+    }
+  }
+);
+
+// ------------------- SLICE -------------------
+
+const CartSlice = createSlice({
   name: "cart",
   initialState: {
     items: [],
@@ -17,48 +83,36 @@ const cartSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // 🛒 FETCH CART
-      .addCase(fetchCartThunk.pending, (state) => {
+
+      // FETCH
+      .addCase(fetchCart.pending, (state) => {
         state.loading = true;
+      })
+      .addCase(fetchCart.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload.items;
+        state.total = action.payload.total;
         state.error = null;
       })
-      .addCase(fetchCartThunk.fulfilled, (state, action) => {
+      .addCase(fetchCart.rejected, (state, action) => {
         state.loading = false;
-        state.items = action.payload.items || [];
-        state.total = action.payload.total || 0;
-      })
-      .addCase(fetchCartThunk.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Failed to fetch cart";
+        state.error = action.payload;
       })
 
-      // ➕ ADD TO CART
-      .addCase(addToCartThunk.fulfilled, (state, action) => {
-        state.items = action.payload.items || [];
-        state.total = action.payload.total || 0;
+      // UPDATE OPERATIONS (INCREASE / DECREASE / DELETE)
+      .addCase(increaseQuantity.fulfilled, (state, action) => {
+        state.items = action.payload.items;
+        state.total = action.payload.total;
       })
-      .addCase(addToCartThunk.rejected, (state, action) => {
-        state.error = action.payload || "Error adding to cart";
+      .addCase(decreaseQuantity.fulfilled, (state, action) => {
+        state.items = action.payload.items;
+        state.total = action.payload.total;
       })
-
-      // ➖ REMOVE ONE
-      .addCase(removeFromCartThunk.fulfilled, (state, action) => {
-        state.items = action.payload.items || [];
-        state.total = action.payload.total || 0;
-      })
-      .addCase(removeFromCartThunk.rejected, (state, action) => {
-        state.error = action.payload || "Error removing product";
-      })
-
-      // ❌ DELETE PRODUCT
-      .addCase(deleteProductThunk.fulfilled, (state, action) => {
-        state.items = action.payload.items || [];
-        state.total = action.payload.total || 0;
-      })
-      .addCase(deleteProductThunk.rejected, (state, action) => {
-        state.error = action.payload || "Error deleting product";
+      .addCase(deleteProduct.fulfilled, (state, action) => {
+        state.items = action.payload.items;
+        state.total = action.payload.total;
       });
   },
 });
 
-export default cartSlice.reducer;
+export default CartSlice.reducer;

@@ -13,7 +13,8 @@ import productImagesReducer from "./slices/ProductImageSlice.js";
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["auth"],
+  whitelist: ["auth", "user"],  // solo lo esencial
+  blacklist: ["images"],
 };
 
 const rootReducer = combineReducers({
