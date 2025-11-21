@@ -8,16 +8,10 @@ const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
 export const fetchProductImages = createAsyncThunk(
   "productImages/fetchByProduct",
   async (productId, { rejectWithValue }) => {
-    try {
-      const { data } = await axios.get(
-        `${API_BASE}/products/${productId}/images`
-      );
-      return Array.isArray(data) ? data : [];
-    } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || err.message || "Error al obtener imágenes"
-      );
-    }
+    const { data } = await axios.get(
+      `${API_BASE}/products/${productId}/images`
+    );
+    return Array.isArray(data) ? data : [];
   }
 );
 
@@ -25,51 +19,38 @@ export const fetchProductImages = createAsyncThunk(
 export const uploadProductImages = createAsyncThunk(
   "productImages/upload",
   async ({ token, productId, files }, { rejectWithValue }) => {
-    try {
-      for (const file of files) {
-        const fd = new FormData();
-        fd.append("file", file);
+    for (const file of files) {
+      const fd = new FormData();
+      fd.append("file", file);
 
-        await axios.post(`${API_BASE}/products/${productId}/images`, fd, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-      }
-      return { productId, count: files.length };
-    } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || err.message || "Error al subir imágenes"
-      );
+      await axios.post(`${API_BASE}/products/${productId}/images`, fd, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
     }
+
+    return { productId, count: files.length };
   }
 );
 
 /* ========== ELIMINAR IMÁGENES ========== */
 export const deleteProductImages = createAsyncThunk(
   "productImages/deleteMany",
-  async ({ token, imageIds, productId }, { rejectWithValue }) => {
-    try {
-      for (const imgId of imageIds) {
-        await axios.delete(`${API_BASE}/images/${imgId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      }
-
-      // devolvemos también productId para poder tocar items[productId]
-      return { deletedIds: imageIds, productId };
-    } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message ||
-          err.message ||
-          "Error al eliminar las imágenes"
-      );
+  async ({ token, imageIds, productId }) => {
+    for (const imgId of imageIds) {
+      await axios.delete(`${API_BASE}/images/${imgId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
     }
+
+    return { deletedIds: imageIds, productId };
   }
 );
+
 
 const initialState = {
   items: {}, // { [productId]: Imagen[] }
