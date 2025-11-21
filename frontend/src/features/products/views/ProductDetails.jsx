@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 import { fetchProductById, fetchRelatedProducts, fetchRatings } from "../../../redux/slices/ProductSlice.js";
 import { selectProduct, selectRelatedProducts, selectRatings, selectLoading, selectError, selectRelatedLoading } from "../../../redux/slices/ProductSelectors";
 
-import { increaseQuantity, fetchCart } from "../../../redux/slices/CartSlice";
+import { addToCart, fetchCart } from "../../../redux/slices/CartSlice";
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -58,7 +58,7 @@ const ProductDetails = () => {
       return;
     }
 
-    dispatch(increaseQuantity({ productId: id, token, quantity }))
+    dispatch(addToCart({ productId: id, token, quantity }))
       .unwrap()
       .then(() => {
         toast.success(`${product?.name || "Producto"} agregado al carrito!`);
