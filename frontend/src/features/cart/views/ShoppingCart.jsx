@@ -4,9 +4,9 @@ import { useDispatch, useSelector } from "react-redux";
 
 import {
   fetchCart,
-  increaseQuantity,
-  decreaseQuantity,
-  deleteProduct,
+  addToCart,
+  removeFromCart,
+  clearCart,
 } from "../../../redux/slices/CartSlice";
 
 import {
@@ -23,7 +23,6 @@ import DeleteConfirmationModal from "../../../components/ui/DeleteConfirmationMo
 
 const ShoppingCart = () => {
   const dispatch = useDispatch();
-
   const token = useSelector((state) => state.auth.token);
 
   const items = useSelector(selectCartItems);
@@ -33,38 +32,51 @@ const ShoppingCart = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [cartErrors, setCartErrors] = useState({});
 
-  // FETCH
+  // Fetch cart on mount
   useEffect(() => {
     if (token) dispatch(fetchCart({ token }));
   }, [dispatch, token]);
 
-  const handleAdd = (productId) => {
-    dispatch(increaseQuantity({ productId, token }));
+  const handleIncrease = (productId) => {
+    dispatch(addToCart({ productId, token, quantity: 1 }))
+      .unwrap()
+      .then(() => setCartErrors((prev) => ({ ...prev, [productId]: null })))
+      .catch((err) =>
+        setCartErrors((prev) => ({ ...prev, [productId]: err }))
+      );
   };
 
-  const handleRemove = (productId) => {
-    dispatch(decreaseQuantity({ productId, token }));
+  const handleDecrease = (productId) => {
+    dispatch(removeFromCart({ productId, number: 1, token }))
+      .unwrap()
+      .catch((err) =>
+        setCartErrors((prev) => ({ ...prev, [productId]: err }))
+      );
   };
 
-  const handleDeleteAll = (productId, quantity, productName) => {
-    setSelectedProduct({ productId, quantity, productName });
+  const handleDeleteAll = (productId, productName, quantity) => {
+    setSelectedProduct({ productId, productName, quantity });
     setShowModal(true);
   };
 
   const confirmDelete = () => {
-    dispatch(deleteProduct({ productId: selectedProduct.productId, token }));
+    if (!selectedProduct) return;
+    dispatch(
+      removeFromCart({
+        productId: selectedProduct.productId,
+        number: selectedProduct.quantity,
+        token,
+      })
+    );
     setShowModal(false);
+    setSelectedProduct(null);
   };
 
   if (!token) return <ErrorView message="Debes iniciar sesión." />;
-
   if (loading) return <p style={{ padding: 20 }}>Cargando...</p>;
-
-  if (error)
-    return (
-      <ErrorView message={error || "Error cargando carrito"} />
-    );
+  if (error) return <ErrorView message={error || "Error cargando carrito"} />;
 
   const validCartItems =
     items?.map((i) => ({
@@ -74,6 +86,7 @@ const ShoppingCart = () => {
       price: i.priceAtAddTime,
       quantity: i.quantity,
       image: i.productImageUrl,
+      error: cartErrors[i.productId],
     })) || [];
 
   if (!validCartItems.length)
@@ -89,10 +102,10 @@ const ShoppingCart = () => {
             <CartItem
               key={item.id}
               item={item}
-              onIncrease={() => handleAdd(item.id)}
-              onDecrease={() => handleRemove(item.id)}
+              onIncrease={() => handleIncrease(item.id)}
+              onDecrease={() => handleDecrease(item.id)}
               onRemove={() =>
-                handleDeleteAll(item.id, item.quantity, item.name)
+                handleDeleteAll(item.id, item.name, item.quantity)
               }
             />
           ))}
