@@ -1,52 +1,24 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./OrderDetails.css";
+import { useDispatch, useSelector } from "react-redux";
+import { getOrderById } from "../../../redux/slices/OrderSlice";
 
 const OrderDetails = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const dispatch = useDispatch();
+
+  const token = useSelector((s) => s.auth.token);
+  const order = useSelector((s) => s.order.currentOrder);
+  const loading = useSelector((s) => s.order.loading);
+  const error = useSelector((s) => s.order.error);
 
   useEffect(() => {
-    const fetchOrder = async () => {
-      setLoading(true);
-      setError("");
-
-      const token = localStorage.getItem("jwtToken");
-      if (!token) {
-        setError("No se encontró token de autenticación");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(
-          `http://localhost:8080/orders/${orderId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            `Error ${response.status}: no se pudo obtener la orden`
-          );
-        }
-
-        const data = await response.json();
-        setOrder(data);
-      } catch (err) {
-        console.error(err);
-        setError("Error al cargar la orden. Intenta nuevamente.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOrder();
-  }, [orderId]);
+    if (token) {
+      dispatch(getOrderById({ orderId, token }));
+    }
+  }, [orderId, token, dispatch]);
 
   if (loading) return <p>Loading order...</p>;
   if (error) return <p className="error">{error}</p>;
