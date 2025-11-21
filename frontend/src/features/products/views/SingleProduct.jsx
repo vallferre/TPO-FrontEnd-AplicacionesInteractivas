@@ -6,22 +6,23 @@ import { toast } from "react-toastify";
 import FavoriteButton from "../../../components/ui/FavoriteButton";
 import { fetchProductById } from "../../../redux/slices/ProductSlice.js";
 import { fetchProductImages } from "../../../redux/slices/ProductImageSlice.js";
-import { selectImageUploading, selectImageUploadError, selectLastImageUploadInfo } from "../../../redux/slices/ProductImageSelectors.js";
+
+import { selectProductImagesById } from "../../../redux/slices/ProductImageSelectors.js";
 import { selectProduct, selectLoading, selectError } from "../../../redux/slices/ProductSelectors.js";
-//import { addToCartThunk } from "../../../redux/thunks/CartThunk.js";
+//import { addToCartThunk } from "../../../redux/slices/CartSlice.js";
 
 import "./SingleProduct.css";
 
 const SingleProduct = ({ product, onRemoveFavorite }) => {
   const dispatch = useDispatch();
 
-  const loading = useSelector((state) => state.products.loading);
-  const error = useSelector((state) => state.products.error);
+  const loading = useSelector(selectLoading);
+  const error = useSelector(selectError);
+
+  const navigate = useNavigate();
 
   const productId = product?.id;
-  const images = useSelector(
-  state => (productId ? state.productImages.items[productId] : []) || []
-);
+  const images = useSelector(state => selectProductImagesById(state, productId));
   const mainImageUrl = images.length > 0 ? images[0].url : "/assets/no-image.jpg";
 
 
@@ -36,14 +37,18 @@ const SingleProduct = ({ product, onRemoveFavorite }) => {
 // ================================
 // Handlers
 // ================================
+
 const handleCardClick = (e) => {
   if (
     e.target.closest(".btn-add--dynamic") ||
     e.target.closest(".btn-favorite--dynamic")
   ) return;
-  navigate(`/product/${id}`);
-};
 
+  if (productId) {
+    navigate(`/product/${productId}`);
+  }
+};
+/*
 const handleAddToCart = async (e) => {
     e.stopPropagation();
     if (!token) {
@@ -51,7 +56,7 @@ const handleAddToCart = async (e) => {
       navigate("/login");
     return;
   }
-};
+};*/
 
 // ================================
 // Loading / Error UI
@@ -68,10 +73,6 @@ const hasDiscount = product.finalPrice && product.finalPrice < product.price;
 const discountPercentage = hasDiscount
 ? Math.round(((product.price - product.finalPrice) / product.price) * 100)
 : 0;
-
-//const mainImageUrl = product.imageIds?.[0]
-//? `http://localhost:8080/images/${product.imageIds[0]}`
-//: "/assets/no-image.jpg";
 
 
 
@@ -211,7 +212,7 @@ onClick={(e) => e.stopPropagation()}
 
     <button
       className="btn-add--dynamic"
-      onClick={handleAddToCart}
+      //onClick={handleAddToCart}
       disabled={product.stock === 0}
       style={{
         marginTop: "0.75rem",
