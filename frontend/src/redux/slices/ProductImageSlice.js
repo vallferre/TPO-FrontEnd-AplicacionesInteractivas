@@ -78,7 +78,6 @@ const productImageSlice = createSlice({
     builder
       /* ========== FETCH IMÁGENES POR PRODUCTO ========== */
       .addCase(fetchProductImages.pending, (state) => {
-        console.log('HOLI HOLI HOLI HOLI');
         state.loading = true;
         state.error = null;
       })
