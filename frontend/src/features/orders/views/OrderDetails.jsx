@@ -22,12 +22,17 @@ const OrderDetails = () => {
       }
 
       try {
-        const response = await fetch(`http://localhost:8080/orders/${orderId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await fetch(
+          `http://localhost:8080/orders/${orderId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         if (!response.ok) {
-          throw new Error(`Error ${response.status}: no se pudo obtener la orden`);
+          throw new Error(
+            `Error ${response.status}: no se pudo obtener la orden`
+          );
         }
 
         const data = await response.json();

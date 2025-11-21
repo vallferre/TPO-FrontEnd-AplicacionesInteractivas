@@ -45,7 +45,9 @@ const Orders = () => {
         });
 
         if (!response.ok) {
-          throw new Error(`Error ${response.status}: no se pudieron obtener las órdenes`);
+          throw new Error(
+            `Error ${response.status}: no se pudieron obtener las órdenes`
+          );
         }
 
         const data = await response.json();
@@ -76,12 +78,14 @@ const Orders = () => {
 
       {loading && <p>Loading orders...</p>}
       {error && <p className="error">{error}</p>}
-      {!loading && !error && orders.length === 0 && <p>You don't have any orders yet.</p>}
+      {!loading && !error && orders.length === 0 && (
+        <p>You don't have any orders yet.</p>
+      )}
 
       <div className="orders-list">
         {orders.map((order) => (
-          <div 
-            key={order.orderId} 
+          <div
+            key={order.orderId}
             className="order-card"
             onClick={() => handleOrderClick(order.orderId)}
           >
@@ -90,7 +94,9 @@ const Orders = () => {
                 <div className="order-left">
                   <h3 className="order-title">Order #{order.orderId}</h3>
                   {order.orderDate && (
-                    <span className="order-date">{formatDate(order.orderDate)}</span>
+                    <span className="order-date">
+                      {formatDate(order.orderDate)}
+                    </span>
                   )}
                 </div>
                 <div className="order-stats">
@@ -107,7 +113,10 @@ const Orders = () => {
 
       {totalPages > 1 && (
         <div className="pagination">
-          <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+          >
             ← Prev
           </button>
           <span>

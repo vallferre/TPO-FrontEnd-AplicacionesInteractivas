@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "./OrderSummary.css";
-import { checkoutOrder } from "../../../redux/thunks/OrderThunk";
+import { checkoutOrder } from "../../../redux/slices/OrderSlice";
 import { useDispatch, useSelector } from "react-redux";
 import {
   selectOrderLoading,
@@ -24,6 +24,8 @@ export default function OrderSummary({
   const error = useSelector(selectOrderError);
   const currentOrder = useSelector(selectCurrentOrder);
 
+  const token = useSelector((s) => s.auth.token);
+
   const totalDiscount = cartItems.reduce((sum, item) => {
     if (item.discountedPrice && item.discountedPrice > 0) {
       const discountAmount =
@@ -34,15 +36,20 @@ export default function OrderSummary({
   }, 0);
 
   const handleCheckout = async () => {
-    const result = await dispatch(checkoutOrder());
+    if (!token) {
+      toast.error("Necesitas iniciar sesión para completar la compra.");
+      return;
+    }
+    //se pasa el token al thunk desde el estado global
+    const result = await dispatch(checkoutOrder({ token }));
 
     if (checkoutOrder.fulfilled.match(result)) {
-      toast.success("Order placed successfully!");
+      toast.success("Orden exitosa!");
       navigate(`/order/${result.payload.orderId}`, {
         state: { order: result.payload },
       });
     } else {
-      toast.error(result.payload || "Checkout failed.");
+      toast.error(result.payload || "Checkout fallido.");
     }
   };
 
@@ -104,7 +111,7 @@ export default function OrderSummary({
         </div>
       </div>
 
-      <button onClick={handleCheckout}>Proceed to Checkout</button>
+      <button onClick={() => navigate("/checkout")}>Proceed to Checkout</button>
 
       <p>
         or <Link to="/">Continue Shopping →</Link>

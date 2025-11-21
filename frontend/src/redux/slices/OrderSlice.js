@@ -1,10 +1,32 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { checkoutOrder } from "../thunks/OrderThunk";
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+
+const URL = "http://localhost:8080";
+
+export const checkoutOrder = createAsyncThunk(
+  "cart/checkout",
+  async ({ token }) => {
+    if (!token) throw new Error("No token found");
+
+    const { data } = await axios.post(
+      `${URL}/cart/checkout`,
+      {},
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return data;
+  }
+);
 
 const orderSlice = createSlice({
   name: "order",
   initialState: {
-    currentOrder: null,
+    currentOrder: [],
     loading: false,
     error: null,
   },
@@ -22,7 +44,7 @@ const orderSlice = createSlice({
       })
       .addCase(checkoutOrder.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentOrder = action.payload;
+        state.currentOrder = [...state.currentOrder, action.payload];
       })
       .addCase(checkoutOrder.rejected, (state, action) => {
         state.loading = false;
