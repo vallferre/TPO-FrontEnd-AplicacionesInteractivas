@@ -6,7 +6,7 @@ import { fetchProducts } from "../../redux/slices/ProductSlice";
 import { fetchCategories } from "../../redux/slices/CategorySlice";
 
 import {
-  selectProduct,
+  selectProducts,
   selectLoading,
   selectError,
 } from "../../redux/slices/ProductSelectors";
@@ -26,7 +26,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const carouselRef = useRef(null);
 
-  const products = useSelector(selectProduct) || [];
+  const products = useSelector(selectProducts) || [];
   const productsLoading = useSelector(selectLoading);
   const productsError = useSelector(selectError);
 
@@ -111,7 +111,7 @@ export default function LandingPage() {
             <div className="discount-carousel-infinite" ref={carouselRef}>
               {infiniteItems.map((prod, idx) => (
                 <div key={`${prod.id}-${idx}`} className="discount-carousel-item">
-                  <SingleProduct id={prod.id} />
+                  <SingleProduct product= {prod} />
                 </div>
               ))}
             </div>

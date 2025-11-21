@@ -28,7 +28,6 @@ const SingleProduct = ({ product, onRemoveFavorite }) => {
 
   useEffect(() => {
     if (product?.id) {
-      dispatch(fetchProductById(product.id));
       dispatch(fetchProductImages(product.id));
     }
   }, [dispatch, product?.id]);

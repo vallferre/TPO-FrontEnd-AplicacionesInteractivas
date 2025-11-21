@@ -116,7 +116,7 @@ export const updateProductWithImages = createAsyncThunk(
       : originalStock;
 
     const sentDiscount = payload.hasOwnProperty("discount")
-      ? payload.discount
+      ? payload.discountPercentage
       : originalDiscount;
 
     // 3) Si cambió stock o descuento → notificar
@@ -212,6 +212,7 @@ export const fetchProductsByIds = createAsyncThunk(
 ===================================================== */
 
 const initialState = {
+  products: [],
   product: [],
   related: [],
   ratings: { average: 0, counts: {}, list: [] },
@@ -252,7 +253,7 @@ const productSlice = createSlice({
 
         // TOP 5 POR DESCUENTO
         state.topDiscounts = [...action.payload]
-          .sort((a, b) => b.discount - a.discount)
+          .sort((a, b) => b.discountPercentage - a.discountPercentage)
           .slice(0, 5);
       })
       .addCase(fetchProducts.rejected, (state, action) => {
