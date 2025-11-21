@@ -1,15 +1,32 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import "./Orders.css";
+import {
+  selectOrders,
+  selectCurrentOrder,
+  selectOrderLoading,
+  selectOrderError,
+  selectOrderTotalPages,
+} from "../../../redux/slices/orderSelectors";
+
+import { getUserOrders } from "../../../redux/slices/OrderSlice";
+
 import "./Orders.css";
 
 const Orders = () => {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
   const [sortOrder, setSortOrder] = useState("desc");
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const orders = useSelector(selectOrders);
+  const loading = useSelector(selectOrderLoading);
+  const error = useSelector(selectOrderError);
+  const totalPages = useSelector(selectOrderTotalPages);
+
+  const token = useSelector((state) => state.auth.token);
 
   const toggleSortOrder = () => {
     setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"));
@@ -31,38 +48,9 @@ const Orders = () => {
   };
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const token = localStorage.getItem("jwtToken");
-        const API_URL = `http://localhost:8080/orders/user?page=${page}&size=10&sort=${sortOrder}`;
-
-        const response = await fetch(API_URL, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(
-            `Error ${response.status}: no se pudieron obtener las órdenes`
-          );
-        }
-
-        const data = await response.json();
-        setOrders(data.content || []);
-        setTotalPages(data.totalPages || 1);
-      } catch (err) {
-        console.error(err);
-        setError("Error al cargar las órdenes. Intenta nuevamente.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOrders();
-  }, [page, sortOrder]);
+    if (!token) return;
+    dispatch(getUserOrders({ page, sortOrder, token }));
+  }, [page, sortOrder, dispatch, token]);
 
   return (
     <div className="orders-content">
