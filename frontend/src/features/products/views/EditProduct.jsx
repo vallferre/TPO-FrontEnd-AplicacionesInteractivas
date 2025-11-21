@@ -28,9 +28,9 @@ const EditProduct = () => {
   // 🔹 token desde Redux
   const token = useSelector((state) => state.auth.token);
 
-  // 🔹 imágenes desde Redux
+  // 🔹 imágenes desde Redux (array de este producto)
   const productImages = useSelector(
-    (state) => state.productImages.items || []
+    (state) => state.productImages.items?.[id] || []
   );
 
   // Campos base
@@ -238,6 +238,7 @@ const EditProduct = () => {
       const deleteAction = await dispatch(
         deleteProductImages({
           token,
+          productId: id,        // 👈 importante para el slice
           imageIds: imagesToDelete,
         })
       );
