@@ -27,26 +27,45 @@ export const fetchProductById = createAsyncThunk(
 );
 
 /* =====================================================
-   RELATED PRODUCTS (ANTES ESTABA EN ProductService)
+   RELATED PRODUCTS
 ===================================================== */
 export const fetchRelatedProducts = createAsyncThunk(
   "product/fetchRelated",
-  async (categories) => {
-    const chosen =
-      categories[Math.floor(Math.random() * categories.length)];
+  async ({ categories, excludeProductId }, { rejectWithValue }) => {
+    const allRelated = [];
 
-    const description =
-      typeof chosen === "string" ? chosen : chosen.description;
+    for (const cat of categories) {
+      // Si es objeto con id, usar el id. Si es string, buscar el id por descripción
+      let categoryId;
 
-    const { data: categoryData } = await axios.get(
-      `${API_BASE}/categories/by-description/${description}`
+      if (typeof cat === "object" && cat.id) {
+        categoryId = cat.id;
+      } else {
+        // Es un string (descripción), buscar el ID
+        const description = typeof cat === "string" ? cat : cat.description;
+        const { data: categoryData } = await axios.get(
+          `${API_BASE}/categories/by-description/${encodeURIComponent(description)}`
+        );
+        categoryId = categoryData.id;
+      }
+
+      const { data } = await axios.get(
+        `${API_BASE}/products/by-category/${categoryId}`
+      );
+      const products = Array.isArray(data.content) ? data.content : data;
+      allRelated.push(...products);
+    }
+
+    // Eliminar duplicados y excluir el producto actual
+    const uniqueProducts = allRelated.filter(
+      (product, index, self) =>
+        product.id !== excludeProductId &&
+        self.findIndex((p) => p.id === product.id) === index
     );
 
-    const { data } = await axios.get(
-      `${API_BASE}/products/by-category/${categoryData.id}`
-    );
-
-    return data;
+    // Mezclar aleatoriamente y tomar 5
+    const shuffled = uniqueProducts.sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 5);
   }
 );
 

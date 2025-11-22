@@ -61,12 +61,15 @@ const ProductDetails = () => {
     }
   }, [id, dispatch]);
 
-  // ==== PRODUCTOS RELACIONADOS ====
-  useEffect(() => {
-    if (product?.categories?.length > 0 && !relatedLoading) {
-      dispatch(fetchRelatedProducts(product.categories));
-    }
-  }, [dispatch, product?.categories, relatedLoading]);
+// ==== PRODUCTOS RELACIONADOS ====
+useEffect(() => {
+  if (product?.categories?.length > 0 && product?.id) {
+    dispatch(fetchRelatedProducts({
+      categories: product.categories,
+      excludeProductId: product.id
+    }));
+  }
+}, [dispatch, product?.id, product?.categories]);
 
   // ==== RESET QUANTITY ====
   useEffect(() => {
@@ -260,11 +263,7 @@ const ProductDetails = () => {
               {relatedProducts.map((p) => (
                 <SingleProduct
                   key={p?.id}
-                  id={p?.id}
-                  name={p?.name}
-                  image={p?.imageIds?.[0] || null}
-                  price={p?.price}
-                  details={p?.details}
+                  product = {p}
                 />
               ))}
             </div>
