@@ -6,6 +6,8 @@ logoutUser,
 fetchCurrentUser,
 } from "../../redux/slices/AuthSlice";   // ⬅️ nuevo import
 import "./Navigation.css";
+import { selectUserAvatar } from "../../redux/slices/AuthSelectors";
+
 
 const Navigation = () => {
 const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -17,12 +19,18 @@ const dispatch = useDispatch();
 // Estado global del usuario
 const { isLoggedIn, user, userUpdated } = useSelector((state) => state.auth);
 
+const avatar = useSelector(selectUserAvatar);
+
+
 // Cargar datos del usuario cuando hay token
 useEffect(() => {
   if (isLoggedIn) {
-    dispatch(fetchCurrentUser());
+    dispatch(fetchCurrentUser()).then(() => {
+      dispatch(fetchUserAvatar());
+    });
   }
 }, [isLoggedIn, userUpdated, dispatch]);
+
 
 // Navegaciones
 const handleFavoritesClick = (e) => {
@@ -110,12 +118,13 @@ return ( <nav className="navbar">
           >
             <img
               src={
-                user?.image ||
-                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                avatar ||
+                "/assets/default-avatar.png"
               }
               alt="User"
               className="user-avatar"
             />
+
           </button>
 
           {isDropdownOpen && (
