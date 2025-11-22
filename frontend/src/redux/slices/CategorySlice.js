@@ -11,7 +11,8 @@ export const fetchCategories = createAsyncThunk(
   "categories/fetchAll",
   async () => {
     const res = await axios.get(`${BASE_URL}`);
-    return res.data;
+    const data = res.data;
+    return Array.isArray(data.content) ? data.content : [];
   }
 );
 

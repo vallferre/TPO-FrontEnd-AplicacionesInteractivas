@@ -1,4 +1,4 @@
-// src/views/EditProduct.jsx 
+// src/views/EditProduct.jsx  
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./EditProduct.css";
@@ -17,6 +17,8 @@ import {
   deleteProductImages,
   uploadProductImages,
 } from "../../../redux/slices/ProductImageSlice";
+
+import { fetchCategories } from "../../../redux/slices/CategorySlice";
 
 const API_BASE = "http://localhost:8080";
 
@@ -61,18 +63,7 @@ const EditProduct = () => {
 
   const MAX_IMAGE_SIZE = 1 * 1024 * 1024;
 
-  /* ---------- helpers para categorías (solo GET local) ---------- */
-
-  const fetchAllCategories = async () => {
-    const res = await fetch(`${API_BASE}/categories`, {
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!res.ok) throw new Error(`Error categorías: ${res.status}`);
-    const data = await res.json();
-    return data.content || [];
-  };
-
-  /* ---------- carga inicial usando Redux para el producto + imágenes ---------- */
+  /* ---------- carga inicial usando Redux para el producto + categorías + imágenes ---------- */
 
   useEffect(() => {
     const load = async () => {
@@ -80,9 +71,9 @@ const EditProduct = () => {
       setError("");
 
       try {
-        const [productAction, catsList] = await Promise.all([
+        const [productAction, categoriesAction] = await Promise.all([
           dispatch(fetchProductById(id)),
-          fetchAllCategories(),
+          dispatch(fetchCategories()),
         ]);
 
         // Si falló el fetch del producto
@@ -93,6 +84,14 @@ const EditProduct = () => {
         }
 
         const product = productAction.payload;
+
+        // Normalizar categorías desde el thunk (puede venir {content: []} o array plano)
+        const rawCats = categoriesAction.payload;
+        const catsList = Array.isArray(rawCats?.content)
+          ? rawCats.content
+          : Array.isArray(rawCats)
+          ? rawCats
+          : [];
 
         // 🔹 IMÁGENES DESDE REDUX
         const imagesAction = await dispatch(fetchProductImages(id));
@@ -238,7 +237,7 @@ const EditProduct = () => {
       const deleteAction = await dispatch(
         deleteProductImages({
           token,
-          productId: id,        // 👈 importante para el slice
+          productId: id,
           imageIds: imagesToDelete,
         })
       );

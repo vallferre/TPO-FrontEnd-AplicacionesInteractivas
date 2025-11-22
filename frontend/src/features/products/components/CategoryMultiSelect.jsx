@@ -1,3 +1,4 @@
+// src/features/.../components/CategoryMultiSelect.jsx
 import React, {
   useEffect,
   useMemo,
@@ -5,19 +6,25 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCategories } from "../../../redux/slices/CategorySlice";
 import "./CategoryMultiSelect.css";
 
 const CategoryMultiSelect = ({
   selected = [],              // [{ id, description }]
   onChange,
-  apiBase = "http://localhost:8080",
+  apiBase = "http://localhost:8080", // ya no se usa para el fetch, pero lo dejamos por compatibilidad
   lockedIds = [],             // ids que no se pueden quitar (EditProduct)
   placeholder = "Buscar categoría…",
 }) => {
-  const [all, setAll] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
 
+  // 🔹 Categorías desde Redux
+  const all = useSelector((state) => state.categories.items || []);
+  const loading = useSelector((state) => state.categories.loading);
+  const error = useSelector((state) => state.categories.error);
+
+  // UI local
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
@@ -29,31 +36,13 @@ const CategoryMultiSelect = ({
   // posición del dropdown (coordenadas viewport)
   const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
 
-  // ---- Fetch categorías
+  // ---- Fetch categorías vía Redux ----
   useEffect(() => {
-    let mounted = true;
-    setLoading(true);
-    setError(null);
-
-    fetch(`${apiBase}/categories`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        if (!mounted) return;
-        const list = Array.isArray(data) ? data : data.content || [];
-        setAll(list);
-      })
-      .catch((err) => {
-        if (!mounted) return;
-        console.error("GET /categories error:", err);
-        setError("No se pudieron cargar las categorías.");
-      })
-      .finally(() => mounted && setLoading(false));
-
-    return () => { mounted = false; };
-  }, [apiBase]);
+    // Solo dispara si no hay categorías cargadas
+    if (!all || all.length === 0) {
+      dispatch(fetchCategories());
+    }
+  }, [dispatch, all.length]);
 
   // ---- Cerrar al click afuera (incluyendo afuera del portal)
   useEffect(() => {
@@ -206,12 +195,14 @@ const CategoryMultiSelect = ({
               top: pos.top,
               left: pos.left,
               width: pos.width,
-              zIndex: 100000, // por arriba de todo
+              zIndex: 100000,
             }}
           >
             {loading && <div className="catms__item">Cargando…</div>}
             {error && (
-              <div className="catms__item catms__item--error">{error}</div>
+              <div className="catms__item catms__item--error">
+                {error}
+              </div>
             )}
 
             {!loading && !error && filtered.length === 0 && (
@@ -226,7 +217,9 @@ const CategoryMultiSelect = ({
                   <button
                     type="button"
                     key={c.id}
-                    className={`catms__itembtn ${disabled ? "is-disabled" : ""}`}
+                    className={`catms__itembtn ${
+                      disabled ? "is-disabled" : ""
+                    }`}
                     onClick={() => addCategory(c)}
                     disabled={disabled}
                     title={disabled ? "Ya está seleccionada" : "Agregar"}
