@@ -1,9 +1,12 @@
 // src/features/static/Checkout.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Cards from "react-credit-cards-2";
 import "react-credit-cards-2/dist/es/styles-compiled.css";
 
 const Checkout = () => {
+  const navigate = useNavigate();
+
   const [card, setCard] = useState({
     number: "",
     expiry: "",
@@ -101,6 +104,7 @@ const Checkout = () => {
     e.preventDefault();
     if (!isFormComplete) return;
     alert("✔ Datos validados (demo)");
+    navigate("/profile/orders");
   };
 
   /* ========================= UI ========================= */
