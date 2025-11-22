@@ -19,6 +19,8 @@ fetchUserRole,
 logoutUser,
 } from "../../redux/slices/AuthSlice";
 
+import placeholder from "../../assets/placeholder.png";
+
 import "./UserLayout.css";
 
 const UserLayout = () => {
@@ -83,54 +85,62 @@ if (error) return <p className="error">{error}</p>;
 
 const isAdmin = role === "ADMIN";
 
-return ( <div className="profile-page"> <aside className="sidebar"> <div className="profile-card"> 
-<div className="avatar-container">
-{avatar ? ( <img src={avatar} alt="User avatar" className="avatar" />
-) : ( <div className="avatar placeholder"> <span className="material-symbols-outlined">person</span> </div>
-)} </div>
+return (
+  <div className="profile-page">
+    <aside className="sidebar">
+      <div className="profile-card">
+        <div className="avatar-container">
+          {avatar ? (
+            // Si existe avatar, usamos directamente la URL que viene del backend
+            <img src={avatar} alt="User avatar" className="avatar" />
+          ) : (
+            // Si no hay avatar, mostramos un placeholder local o ícono
+            <div className="avatar placeholder">
+              <span className="material-symbols-outlined">person</span>
+            </div>
+          )}
+        </div>
 
+        <h2>
+          {user?.name} {user?.surname}
+        </h2>
+        <p className="username">{user?.username}</p>
 
-      <h2>
-        {user?.name} {user?.surname}
-      </h2>
-      <p className="username">{user?.username}</p>
+        <Link to="/editProfile" className="edit-link">
+          Editar Perfil
+        </Link>
 
-      <Link to="/editProfile" className="edit-link">
-        Editar Perfil
-      </Link>
+        <nav className="sidebar-nav">
+          {!isAdmin && (
+            <>
+              <Link to="/profile/orders" className="nav-link">
+                🛍 Mis Órdenes
+              </Link>
+              <Link to="/profile/products" className="nav-link">
+                🏪 Mis Productos
+              </Link>
+            </>
+          )}
 
-      <nav className="sidebar-nav">
-        {!isAdmin && (
-          <>
-            <Link to="/profile/orders" className="nav-link">
-              🛍 Mis Órdenes
+          {isAdmin && (
+            <Link to="/profile/categories" className="nav-link">
+              🏷 Categorías
             </Link>
-            <Link to="/profile/products" className="nav-link">
-              🏪 Mis Productos
-            </Link>
-          </>
-        )}
+          )}
 
-        {isAdmin && (
-          <Link to="/profile/categories" className="nav-link">
-            🏷 Categorías
-          </Link>
-        )}
+          <button onClick={handleLogout} className="nav-link logout">
+            Cerrar sesión
+          </button>
+        </nav>
+      </div>
+    </aside>
 
-        <button onClick={handleLogout} className="nav-link logout">
-          Cerrar sesión
-        </button>
-      </nav>
-    </div>
-  </aside>
-
-  <main className="main-content">
-    <Outlet />
-  </main>
-</div>
-
-
+    <main className="main-content">
+      <Outlet />
+    </main>
+  </div>
 );
+
 };
 
 export default UserLayout;

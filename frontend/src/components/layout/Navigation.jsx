@@ -8,6 +8,7 @@ fetchUserAvatar,
 } from "../../redux/slices/AuthSlice"; 
 import "./Navigation.css";
 import { selectUserAvatar } from "../../redux/slices/AuthSelectors";
+import placeholder from "../../assets/placeholder.png";
 
 
 const Navigation = () => {
@@ -122,11 +123,13 @@ return ( <nav className="navbar">
             className="profile-btn"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
-            {avatar ? (
-              <img src={avatar} alt="User" className="profile-avatar" />
-            ) : (
-              <span className="profile-avatar placeholder material-symbols-outlined">person</span>
-            )}
+            {avatar || placeholder ? (
+              <img
+                src={avatar || placeholder}
+                alt="User"
+                className="profile-avatar"
+              />
+            ) : null}
 
           </button>
 
