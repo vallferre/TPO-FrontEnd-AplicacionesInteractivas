@@ -3,10 +3,10 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cards from "react-credit-cards-2";
 import "react-credit-cards-2/dist/es/styles-compiled.css";
+import { useDispatch, useSelector } from "react-redux";
+import { checkoutOrder } from "../../redux/slices/OrderSlice";
 
 const Checkout = () => {
-  const navigate = useNavigate();
-
   const [card, setCard] = useState({
     number: "",
     expiry: "",
@@ -24,6 +24,10 @@ const Checkout = () => {
     postalCode: "",
     country: "",
   });
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const token = useSelector((state) => state.auth.token);
 
   /* ========================= HELPERS ========================= */
 
@@ -100,11 +104,28 @@ const Checkout = () => {
     isNonEmpty(shipping.postalCode) &&
     isNonEmpty(shipping.country);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isFormComplete) return;
-    alert("✔ Datos validados (demo)");
-    navigate("/profile/orders");
+
+    const result = await dispatch(checkoutOrder({ token }));
+
+    if (result.meta.requestStatus === "rejected") {
+      alert("Error al generar la orden");
+      return;
+    }
+
+    // Orden creada por el backend
+    const order = result.payload;
+    const orderId = order?.orderId || order?.id;
+
+    if (!orderId) {
+      alert("No se pudo obtener el ID de la orden");
+      return;
+    }
+
+    // Redirigir a OrderDetails
+    navigate(`/order/${orderId}`);
   };
 
   /* ========================= UI ========================= */
