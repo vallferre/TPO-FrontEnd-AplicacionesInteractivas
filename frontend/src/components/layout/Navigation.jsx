@@ -4,7 +4,8 @@ import { useSelector, useDispatch } from "react-redux";
 import {
 logoutUser,
 fetchCurrentUser,
-} from "../../redux/slices/AuthSlice";   // ⬅️ nuevo import
+fetchUserAvatar,
+} from "../../redux/slices/AuthSlice"; 
 import "./Navigation.css";
 import { selectUserAvatar } from "../../redux/slices/AuthSelectors";
 
