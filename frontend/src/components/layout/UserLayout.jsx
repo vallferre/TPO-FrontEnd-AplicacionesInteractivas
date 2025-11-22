@@ -1,155 +1,136 @@
-// src/layouts/UserLayout.jsx
-import React, { useEffect, useState } from "react";
+/* src/layouts/UserLayout.jsx */
+import React, { useEffect } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";            // ⬅️ agregado
+import { useDispatch, useSelector } from "react-redux";
+
+import {
+selectToken,
+selectUser,
+selectUserAvatar,
+selectUserRole,
+selectAuthLoading,
+selectAuthError,
+} from "../../redux/slices/AuthSelectors";
+
+import {
+fetchCurrentUser,
+fetchUserAvatar,
+fetchUserRole,
+logoutUser,
+} from "../../redux/slices/AuthSlice";
+
 import "./UserLayout.css";
 
-
 const UserLayout = () => {
-  const navigate = useNavigate();
+const navigate = useNavigate();
+const dispatch = useDispatch();
 
-  // ⬅️ token desde Redux
-  const token = useSelector((state) => state.auth.token);
+// Redux state
+const token = useSelector(selectToken);
+const user = useSelector(selectUser);
+const avatar = useSelector(selectUserAvatar);
+const role = useSelector(selectUserRole);
+const loading = useSelector(selectAuthLoading);
+const error = useSelector(selectAuthError);
 
-  const [user, setUser] = useState({
-    id: null,
-    fullName: "",
-    email: "",
-    username: "",
-    avatar: "",
-  });
-  const [role, setRole] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+// Auto-load user data chain whenever token exists
+useEffect(() => {
+  if (!token) {
+    navigate("/login");
+    return;
+  }
 
-  const handleLogout = () => {
-    localStorage.removeItem("jwtToken");
-    navigate("/");
-    window.location.reload();
-  };
+  (async () => {
+    try {
+      // 1 ─ Obtener user
+      const userRes = await dispatch(fetchCurrentUser()).unwrap();
 
-  useEffect(() => {
-    // ⬅️ ahora dependemos del token de Redux
-    if (!token) {
-      setError("No hay token, inicia sesión");
-      setLoading(false);
-      return;
-    }
+      // 2 ─ Obtener avatar (maneja 404 solo y no explota)
+      await dispatch(fetchUserAvatar());
 
-    const fetchUserAndRole = async () => {
-      try {
-        // Obtener datos del usuario
-        const userResponse = await fetch("http://localhost:8080/users/", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!userResponse.ok) throw new Error(`Error: ${userResponse.status}`);
-        const userData = await userResponse.json();
+      // 3 ─ Obtener rol
+      const roleRes = await dispatch(fetchUserRole()).unwrap();
 
-        // Intentar obtener la imagen del usuario
-        let avatarUrl = "";
-        try {
-          const imageResponse = await fetch(
-            `http://localhost:8080/users/${userData.id}/image`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          if (imageResponse.ok) {
-            const blob = await imageResponse.blob();
-            avatarUrl = URL.createObjectURL(blob);
-          }
-        } catch (imgErr) {
-          console.warn("No se pudo obtener la imagen de perfil:", imgErr);
+      const currentPath = window.location.pathname;
+
+      // Si está justo en /profile → redirigimos
+      if (currentPath === "/profile") {
+        if (roleRes === "ADMIN") {
+          navigate("/profile/categories", { replace: true });
+        } else {
+          navigate("/profile/products", { replace: true });
         }
-
-        setUser({
-          id: userData.id,
-          fullName: `${userData.name} ${userData.surname}`.trim() || "Usuario",
-          email: userData.email || "",
-          username: userData.username || "",
-          avatar: avatarUrl,
-        });
-
-        // Obtener el rol del usuario
-        const roleResponse = await fetch("http://localhost:8080/users/role", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!roleResponse.ok)
-          throw new Error(`Error fetching role: ${roleResponse.status}`);
-        const roleData = await roleResponse.json();
-        setRole(roleData.role);
-
-        // Redirigir automáticamente según el rol
-        if (window.location.pathname === "/profile") {
-          navigate(
-            roleData.role === "ADMIN"
-              ? "/profile/categories"
-              : "/profile/products",
-            { replace: true }
-          );
-        }
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
-        handleLogout();
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchUserAndRole();
-  }, [token, navigate]); // ⬅️ token en dependencias
+    } catch (err) {
+      console.error("Error cargando usuario:", err);
+      // Si el token expiró → lo sacamos
+      dispatch(logoutUser());
+      navigate("/login");
+    }
+  })();
 
-  if (loading) return <p>Cargando perfil...</p>;
-  if (error) return <p className="error">{error}</p>;
+}, [token, dispatch, navigate]);
 
-  const isAdmin = role === "ADMIN";
+const handleLogout = () => {
+  dispatch(logoutUser());
+  navigate("/");
+};
 
-  return (
-    <div className="profile-page">
-      <aside className="sidebar">
-        <div className="profile-card">
-          <div className="avatar-container">
-            {user.avatar ? (
-              <img src={user.avatar} alt="User avatar" className="avatar" />
-            ) : (
-              <div className="avatar placeholder">
-                <span className="material-symbols-outlined">person</span>
-              </div>
-            )}
-          </div>
-          <h2>{user.fullName}</h2>
-          <p className="username">{user.username}</p>
-          <Link to="/editProfile" className="edit-link">
-            Editar Perfil
+
+if (loading) return <p>Cargando perfil...</p>;
+if (error) return <p className="error">{error}</p>;
+
+const isAdmin = role === "ADMIN";
+
+return ( <div className="profile-page"> <aside className="sidebar"> <div className="profile-card"> 
+<div className="avatar-container">
+{avatar ? ( <img src={avatar} alt="User avatar" className="avatar" />
+) : ( <div className="avatar placeholder"> <span className="material-symbols-outlined">person</span> </div>
+)} </div>
+
+
+      <h2>
+        {user?.name} {user?.surname}
+      </h2>
+      <p className="username">{user?.username}</p>
+
+      <Link to="/editProfile" className="edit-link">
+        Editar Perfil
+      </Link>
+
+      <nav className="sidebar-nav">
+        {!isAdmin && (
+          <>
+            <Link to="/profile/orders" className="nav-link">
+              🛍 Mis Órdenes
+            </Link>
+            <Link to="/profile/products" className="nav-link">
+              🏪 Mis Productos
+            </Link>
+          </>
+        )}
+
+        {isAdmin && (
+          <Link to="/profile/categories" className="nav-link">
+            🏷 Categorías
           </Link>
+        )}
 
-          <nav className="sidebar-nav">
-            {!isAdmin && (
-              <>
-                <Link to="/profile/orders" className="nav-link">
-                  🛍 Mis Órdenes
-                </Link>
-                <Link to="/profile/products" className="nav-link">
-                  🏪 Mis Productos
-                </Link>
-              </>
-            )}
-            {isAdmin && (
-              <Link to="/profile/categories" className="nav-link">
-                🏷 Categorías
-              </Link>
-            )}
-            <button onClick={handleLogout} className="nav-link logout">
-              Cerrar sesión
-            </button>
-          </nav>
-        </div>
-      </aside>
-
-      <main className="main-content">
-        <Outlet />
-      </main>
+        <button onClick={handleLogout} className="nav-link logout">
+          Cerrar sesión
+        </button>
+      </nav>
     </div>
-  );
+  </aside>
+
+  <main className="main-content">
+    <Outlet />
+  </main>
+</div>
+
+
+);
 };
 
 export default UserLayout;

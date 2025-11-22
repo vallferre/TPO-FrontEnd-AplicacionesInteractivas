@@ -223,7 +223,7 @@ const initialState = {
   favoriteProductsError: null,
 
   // para vista de "Mis Productos"
-  userProducts: [],          // 🔹 crudos desde la API
+  userProducts: [],         
   userProductsLoading: false,
   userProductsError: null,
 

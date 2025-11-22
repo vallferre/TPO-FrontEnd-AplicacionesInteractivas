@@ -39,6 +39,78 @@ export const fetchCurrentUser = createAsyncThunk(
   }
 );
 
+// Fetch user avatar (BLOB)
+export const fetchUserAvatar = createAsyncThunk(
+  "auth/fetchUserAvatar",
+  async (_, { getState }) => {
+    const token = getState().auth.token;
+    const user = getState().auth.user;
+
+    const response = await axios.get(
+      `${API_BASE}/users/${user.id}/image`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
+
+        // Axios NO lanzará error en 404 ni 204
+        validateStatus: (status) => status < 500,
+      }
+    );
+
+    // Si el usuario NO tiene imagen
+    if (response.status === 404 || response.status === 204) {
+      return null;   // Avatar nulo → no error
+    }
+
+    // Si tiene imagen
+    return URL.createObjectURL(response.data);
+  }
+);
+
+// Fetch user role
+export const fetchUserRole = createAsyncThunk(
+  "auth/fetchUserRole",
+  async (_, { getState }) => {
+    const token = getState().auth.token;
+
+    const { data } = await axios.get(`${API_BASE}/users/role`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return data.role;
+  }
+);
+
+//Edit
+export const updateUserProfile = createAsyncThunk(
+  "auth/updateUserProfile",
+  async ({ formData, profileImage }, { getState }) => {
+
+    const token = getState().auth.token;
+
+    const submitData = new FormData();
+    submitData.append(
+      "user",
+      new Blob([JSON.stringify(formData)], { type: "application/json" })
+    );
+
+    if (profileImage) {
+      submitData.append("fileImage", profileImage);
+    }
+
+    // PUT al back
+    const { data } = await axios.put(
+      `${API_BASE}/users/edit`,
+      submitData,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    return data;
+  }
+);
+
 // Logout (solo limpia estado)
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
   return true;
@@ -51,6 +123,8 @@ export const logoutUser = createAsyncThunk("auth/logout", async () => {
 const initialState = {
   token: null,
   user: null,
+  avatar: null,
+  role: null,
   isLoggedIn: false,
   loading: false,
   error: null,
@@ -112,6 +186,46 @@ const authSlice = createSlice({
         state.isLoggedIn = true;
       })
       .addCase(fetchCurrentUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+
+      // Avatar
+    builder
+      .addCase(fetchUserAvatar.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(fetchUserAvatar.fulfilled, (state, action) => {
+        state.avatar = action.payload;
+      })
+      .addCase(fetchUserAvatar.rejected, (state, action) => {
+        state.avatar = null;
+      });
+
+
+    // Role
+    builder
+      .addCase(fetchUserRole.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(fetchUserRole.fulfilled, (state, action) => {
+        state.role = action.payload;
+      })
+      .addCase(fetchUserRole.rejected, (state, action) => {
+        state.role = null;
+      });
+
+    // Update Profile
+    builder
+      .addCase(updateUserProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateUserProfile.fulfilled, (state) => {
+        state.loading = false;
+        state.userUpdated = true;
+      })
+      .addCase(updateUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });

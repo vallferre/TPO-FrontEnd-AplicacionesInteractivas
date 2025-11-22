@@ -6,3 +6,5 @@ export const selectAuthLoading = (state) => state.auth.loading;
 export const selectAuthError = (state) => state.auth.error;
 export const selectToken = (state) => state.auth.token;
 
+export const selectUserAvatar = (state) => state.auth.avatar;
+export const selectUserRole = (state) => state.auth.role;
