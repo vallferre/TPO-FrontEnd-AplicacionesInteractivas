@@ -1,101 +1,105 @@
 // src/views/EditCategory.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-//import "../assets/EditCategory.css";
-import ImageUploader from "../../components/common/ImageUploader";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
-const API_BASE = "http://localhost:8080";
+import {
+  fetchCategoryById,
+  updateCategory,
+  fetchCategoryImage,
+  clearCategoryImage,
+} from "../../redux/slices/CategorySlice";
 
-function authHeaders() {
-  const t = localStorage.getItem("jwtToken");
-  return t ? { Authorization: `Bearer ${t}` } : {};
-}
+import ImageUploader from "../../components/common/ImageUploader";
 
 const EditCategory = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  // Estado de la categoría
+  const token = useSelector((state) => state.auth.token);
+  const category = useSelector((state) => state.categories.selected);
+  const categoryImage = useSelector((state) => state.categories.images[id]);
+  const loading = useSelector((state) => state.categories.loading);
+  const error = useSelector((state) => state.categories.error);
+
   const [description, setDescription] = useState("");
-  const [existingImage, setExistingImage] = useState(null); // {id, filename}
-  const [newImage, setNewImage] = useState(null); // File
-  const [loading, setLoading] = useState(true);
+  const [newImage, setNewImage] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
 
-  // Traer datos actuales
+  // Cargar categoría e imagen
   useEffect(() => {
-    const loadCategory = async () => {
-      try {
-        setLoading(true);
-        setError("");
+    if (id) {
+      dispatch(fetchCategoryById(id))
+        .unwrap()
+        .catch((err) => {
+          toast.error("Error al cargar la categoría");
+        });
 
-        // Traer solo datos de categoría (sin imagen)
-        const res = await fetch(`${API_BASE}/categories/${id}`);
-        if (!res.ok) throw new Error("No se pudo cargar la categoría");
+      dispatch(fetchCategoryImage(id))
+        .unwrap()
+        .catch((err) => {
+          toast.error("Error al cargar la imagen");
+        });
+    }
+  }, [dispatch, id]);
 
-        const cat = await res.json(); // ahora esto debería funcionar
-        setDescription(cat.description || "");
+  // Mostrar error del estado si existe
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
-        // Solo guardamos el id de la imagen si existe
-        if (cat.imageId) {
-          setExistingImage({ id: cat.imageId, filename: cat.imageFilename });
-        }
-      } catch (err) {
-        console.error(err);
-        setError(err.message || "Error al cargar la categoría");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadCategory();
-  }, [id]);
-
+  // Actualizar estado local cuando carga la categoría
+  useEffect(() => {
+    if (category) {
+      setDescription(category.description || "");
+    }
+  }, [category]);
 
   const handleFileChange = (files) => {
-    setNewImage(files[0] || null); // solo una imagen
+    setNewImage(files[0] || null);
   };
 
-  const handleRemoveExistingImage = () => {
-    if (!existingImage) return;
-    if (!window.confirm("¿Eliminar la imagen existente?")) return;
-    setExistingImage(null);
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!description.trim()) {
+      toast.error("La descripción es requerida");
+      return;
+    }
+
     setSaving(true);
 
-    const formData = new FormData();
-    formData.append("description", description);
-    if (newImage) formData.append("file", newImage);
-
-    try {
-      const res = await fetch(`${API_BASE}/categories/${id}`, {
-        method: "PUT",
-        headers: { ...authHeaders() }, // NO Content-Type con FormData
-        body: formData,
+    dispatch(updateCategory({
+      token,
+      id,
+      description,
+      fileImage: newImage,
+    }))
+      .unwrap()
+      .then(() => {
+        toast.success("Categoría actualizada correctamente");
+        
+        // Si se subió una nueva imagen, limpiar cache y refrescar
+        if (newImage) {
+          dispatch(clearCategoryImage(id));
+          dispatch(fetchCategoryImage(id));
+        }
+        
+        navigate(-1);
+      })
+      .catch((err) => {
+        toast.error(err?.message || err || "Error al actualizar la categoría");
+      })
+      .finally(() => {
+        setSaving(false);
       });
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `HTTP ${res.status}`);
-      }
-
-      toast.success("Categoría actualizada correctamente");
-      navigate(-1);
-    } catch (err) {
-      console.error(err);
-      toast.error(err.message || "Error al actualizar la categoría");
-    } finally {
-      setSaving(false);
-    }
   };
 
   if (loading) return <p>Cargando categoría...</p>;
-  if (error) return <p className="error">{error}</p>;
 
   return (
     <div className="edit-category-page">
@@ -118,32 +122,25 @@ const EditCategory = () => {
             </div>
 
             {/* Imagen existente */}
-            {existingImage && (
+            {categoryImage && (
               <div className="form-group">
                 <label>Imagen actual</label>
                 <div className="thumb-card">
                   <img
-                    src={`${API_BASE}/categories/${existingImage.id}/image`}
-                    alt={existingImage.filename || "category-image"}
+                    src={categoryImage}
+                    alt="category-image"
                     onError={(e) =>
                       (e.currentTarget.src =
                         "https://via.placeholder.com/200x200?text=No+image")
                     }
                   />
-                  <button
-                    type="button"
-                    onClick={handleRemoveExistingImage}
-                    className="thumb-remove"
-                  >
-                    Remove
-                  </button>
                 </div>
               </div>
             )}
 
             {/* Nueva imagen */}
             <div className="form-group">
-              <label>Nueva imagen</label>
+              <label>{categoryImage ? "Reemplazar imagen" : "Agregar imagen"}</label>
               <ImageUploader onImagesChange={handleFileChange} multiple={false} />
               {newImage && <p>Se reemplazará la imagen existente al guardar.</p>}
             </div>

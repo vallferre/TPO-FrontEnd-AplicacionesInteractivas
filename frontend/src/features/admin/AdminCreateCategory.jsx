@@ -1,80 +1,57 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../features/products/components/Categories.css";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import Toaster from "../../components/ui/Toaster";
-import ImageUploader from "../../components/common/ImageUploader"; // ⚠️ Asegurate de tener este componente
 
-const API_BASE = "http://localhost:8080";
+import { createCategory } from "../../redux/slices/CategorySlice";
+
+import "../../features/products/components/Categories.css";
+import Toaster from "../../components/ui/Toaster";
+import ImageUploader from "../../components/common/ImageUploader";
 
 const AdminCreateCategory = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const token = useSelector((state) => state.auth.token);
+
   const [description, setDescription] = useState("");
   const [touched, setTouched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [serverError, setServerError] = useState("");
-  const [imageFile, setImageFile] = useState(null); // solo una imagen
+  const [imageFile, setImageFile] = useState(null);
 
   const error = !description.trim() ? "La descripción es obligatoria." : null;
   const isValid = !error && !submitting;
 
-  const token = localStorage.getItem("jwtToken");
-
-  const authHeaders = () => ({
-    Authorization: `Bearer ${token}`,
-  });
-
-  const onSubmit = async (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
     setTouched(true);
-    setServerError("");
+
     if (!isValid) return;
 
     if (!token) {
-      toast.error("No estás autenticado. Iniciá sesión como ADMIN.", { closeButton: true });
+      toast.error("No estás autenticado. Iniciá sesión como ADMIN.");
       return;
     }
 
-    try {
-      setSubmitting(true);
+    setSubmitting(true);
 
-      // Usamos FormData para enviar descripción + imagen juntos
-      const fd = new FormData();
-      fd.append("description", description.trim());
-      if (imageFile) fd.append("file", imageFile);
-
-      const res = await fetch(`${API_BASE}/categories`, {
-        method: "POST",
-        headers: {
-          ...authHeaders(),
-          // NO poner Content-Type, lo maneja automáticamente FormData
-        },
-        body: fd,
+    dispatch(createCategory({
+      token,
+      description: description.trim(),
+      fileImage: imageFile,
+    }))
+      .unwrap()
+      .then(() => {
+        toast.success(`Categoría "${description.trim()}" creada con éxito`);
+        setTimeout(() => navigate("/profile/categories"), 2000);
+      })
+      .catch((err) => {
+        toast.error(err?.message || err || "Error al crear la categoría.");
+      })
+      .finally(() => {
+        setSubmitting(false);
       });
-
-      if (!res.ok) {
-        let msg = `Error al crear la categoría (HTTP ${res.status})`;
-        const txt = await res.text();
-        if (txt) msg = txt;
-        throw new Error(msg);
-      }
-
-      const data = await res.json();
-      toast.success(`✅ Categoría "${description.trim()}" creada con éxito`, {
-        closeButton: true,
-        autoClose: 2500,
-      });
-
-      // Redirigir al listado
-      setTimeout(() => navigate("/profile/categories"), 2000);
-
-    } catch (err) {
-      console.error(err);
-      setServerError(err.message);
-      toast.error(err.message || "Error al crear la categoría.", { closeButton: true, autoClose: 3000 });
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   return (
@@ -109,7 +86,6 @@ const AdminCreateCategory = () => {
               </div>
 
               {touched && error && <p className="error">{error}</p>}
-              {serverError && <p className="error">{serverError}</p>}
 
               <div className="actions">
                 <button

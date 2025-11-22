@@ -48,7 +48,7 @@ const UserProducts = () => {
 
   const token = useSelector((state) => state.auth.token);
 
-  // 🔹 OJO: usamos "products" (plural), como en tu store
+  // OJO: usamos "products" (plural), como en tu store
   const rawProductsFromStore = useSelector(
     (state) => state.products?.userProducts
   );
@@ -113,7 +113,7 @@ const UserProducts = () => {
     }
   };
 
-  // 🔹 Formateo de productos (igual que tenías antes)
+  // Formateo de productos (igual que tenías antes)
   const products = rawProducts.map((p) => {
     const stock = Number(p.stock ?? p.quantity ?? 0);
 

@@ -1,41 +1,33 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
+import {
+  fetchCategories,
+  fetchCategoryImage,
+  deleteCategory,
+} from "../../redux/slices/CategorySlice";
+
+import {
+  selectCategories,
+  selectCategoriesLoading,
+  selectCategoriesError,
+} from "../../redux/slices/CategorySelector";
+
 import "../auth/views/UserProducts.css";
 import "../../components/ui/DeleteConfirmationModal.css";
-import { useNavigate } from "react-router-dom";
-
-const API_BASE = "http://localhost:8080";
 
 // Componente para mostrar la imagen de cada categoría
-const CategoryImage = ({ category }) => {
-  const [imageUrl, setImageUrl] = useState(
-    `https://via.placeholder.com/300x200?text=${encodeURIComponent(category.description)}`
-  );
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/categories/${category.id}/image`);
-        if (!res.ok) throw new Error("Error cargando imagen");
-
-        const blob = await res.blob();
-        setImageUrl(URL.createObjectURL(blob));
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchImage();
-
-    return () => {
-      if (imageUrl.startsWith("blob:")) URL.revokeObjectURL(imageUrl);
-    };
-  }, [category.fileImageId]);
+const CategoryImage = ({ category, imageUrl }) => {
+  const fallback = `https://via.placeholder.com/300x200?text=${encodeURIComponent(category.description)}`;
 
   return (
     <img
-      src={imageUrl}
+      src={imageUrl || fallback}
       alt={category.description}
       style={{ width: "100px", height: "60px", objectFit: "cover" }}
+      onError={(e) => (e.target.src = fallback)}
     />
   );
 };
@@ -47,14 +39,14 @@ const DeleteConfirmationModal = ({ isOpen, onConfirm, onCancel, categoryName }) 
   return (
     <div className="modal-overlay">
       <div className="modal-container">
-        <h2>Delete Category</h2>
+        <h2>Eliminar Categoría</h2>
         <p>
-          Are you sure you want to delete <strong>"{categoryName}"</strong>?<br />
-          This action cannot be undone.
+          ¿Estás seguro de que querés eliminar <strong>"{categoryName}"</strong>?<br />
+          Esta acción no se puede deshacer.
         </p>
         <div className="modal-buttons">
-          <button className="btn-cancel" onClick={onCancel}>Cancel</button>
-          <button className="btn-confirm" onClick={onConfirm}>Delete</button>
+          <button className="btn-cancel" onClick={onCancel}>Cancelar</button>
+          <button className="btn-confirm" onClick={onConfirm}>Eliminar</button>
         </div>
       </div>
     </div>
@@ -63,56 +55,31 @@ const DeleteConfirmationModal = ({ isOpen, onConfirm, onCancel, categoryName }) 
 
 // Componente principal
 const AdminCategoriesProfile = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  const token = localStorage.getItem("jwtToken");
+  const token = useSelector((state) => state.auth.token);
+  const categories = useSelector(selectCategories) || [];
+  const loading = useSelector(selectCategoriesLoading);
+  const error = useSelector(selectCategoriesError);
+  const images = useSelector((state) => state.categories.images);
 
   // Fetch de categorías
   useEffect(() => {
-    if (!token) {
-      setError("No hay token, inicia sesión");
-      setLoading(false);
-      return;
-    }
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/categories`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) throw new Error(`Error: ${res.status}`);
-
-        const data = await res.json();
-
-        // Formatear categorías y asegurarse de tener fileImageId si el backend lo devuelve
-        const formatted = (data.content || []).map((c) => ({
-          id: c.id,
-          description: c.description || "No description",
-          fileImageId: c.image?.id || null, // importante para el fetch de la imagen
-        }));
-
-        setCategories(formatted);
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  // Fetch de imágenes para cada categoría
+  useEffect(() => {
+    categories.forEach((cat) => {
+      if (cat.id && !images[cat.id]) {
+        dispatch(fetchCategoryImage(cat.id));
       }
-    };
-
-    fetchCategories();
-  }, [token]);
+    });
+  }, [dispatch, categories, images]);
 
   // Navegación y acciones
   const handleCreate = () => navigate("/categories/create");
@@ -128,70 +95,68 @@ const AdminCategoriesProfile = () => {
     setModalOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = () => {
     if (!selectedCategory) return;
 
-    try {
-      const response = await fetch(`${API_BASE}/categories/${selectedCategory.id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+    dispatch(deleteCategory({ token, id: selectedCategory.id }))
+      .unwrap()
+      .then(() => {
+        setModalOpen(false);
+        setSelectedCategory(null);
+      })
+      .catch((err) => {
+        toast.error(`No se pudo eliminar la categoría, vuelva a intentarlo más tarde.`);
       });
-
-      if (!response.ok) throw new Error("Error al eliminar la categoría");
-
-      setCategories((prev) => prev.filter((c) => c.id !== selectedCategory.id));
-      setModalOpen(false);
-      setSelectedCategory(null);
-    } catch (error) {
-      console.error("Error deleting category:", error);
-      alert("Error al eliminar la categoría. Revisa consola.");
-    }
   };
 
   const handleEdit = (id) => navigate(`/categories/edit/${id}`);
 
+  if (!token) {
+    return <p className="error">No hay token, inicia sesión</p>;
+  }
+
   return (
     <div className="user-products-container">
       <div className="user-products-header">
-        <h1>Categories</h1>
+        <h1>Categorías</h1>
         <div className="user-products-subheader">
-          <p>Manage all product categories</p>
+          <p>Administrar todas las categorías de productos</p>
           <button className="create-btn" onClick={handleCreate}>
             <span className="material-symbols-outlined">add</span>
-            Create Category
+            Crear Categoría
           </button>
         </div>
       </div>
 
-      {loading && <p>Loading categories...</p>}
+      {loading && <p>Cargando categorías...</p>}
       {error && <p className="error">{error}</p>}
 
       {!loading && !error && categories.length === 0 ? (
         <div className="empty-products">
-          <p>No categories found.</p>
+          <p>No se encontraron categorías.</p>
         </div>
       ) : (
         <div className="products-table-wrapper">
           <table className="products-table">
             <thead>
               <tr>
-                <th>Image</th>
-                <th>Description</th>
-                <th className="text-center">Actions</th>
+                <th>Imagen</th>
+                <th>Descripción</th>
+                <th className="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {categories.map((category, idx) => (
+              {categories.map((category) => (
                 <tr
-                  key={idx}
+                  key={category.id}
                   className="product-row"
                   onClick={(e) => handleRowClick(e, category.id)}
                 >
                   <td>
-                    <CategoryImage category={category} />
+                    <CategoryImage
+                      category={category}
+                      imageUrl={images[category.id]}
+                    />
                   </td>
                   <td>
                     <span className="up-product-desc">{category.description}</span>

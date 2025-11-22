@@ -27,14 +27,15 @@ export const fetchCategoryById = createAsyncThunk(
 // Crear categoría con imagen
 export const createCategory = createAsyncThunk(
   "categories/create",
-  async ({ description, fileImage }) => {
+  async ({ token, description, fileImage }) => {
     const formData = new FormData();
     formData.append("description", description);
-    if (fileImage) formData.append("fileImage", fileImage);
+    if (fileImage) formData.append("file", fileImage);
 
     const res = await axios.post(BASE_URL, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -57,14 +58,15 @@ export const fetchCategoryImage = createAsyncThunk(
 // Actualizar categoría + imagen opcional
 export const updateCategory = createAsyncThunk(
   "categories/update",
-  async ({ id, description, fileImage }) => {
+  async ({ token, id, description, fileImage }) => {
     const formData = new FormData();
     formData.append("description", description);
-    if (fileImage) formData.append("fileImage", fileImage);
+    if (fileImage) formData.append("file", fileImage);
 
     const res = await axios.put(`${BASE_URL}/${id}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -72,13 +74,15 @@ export const updateCategory = createAsyncThunk(
   }
 );
 
-
-
 // Eliminar categoría
 export const deleteCategory = createAsyncThunk(
   "categories/delete",
-  async (id) => {
-    await axios.delete(`${BASE_URL}/${id}`);
+  async ({ token, id }) => {
+    await axios.delete(`${BASE_URL}/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return id;
   }
 );
@@ -97,7 +101,15 @@ const categorySlice = createSlice({
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    clearCategoryImage(state, action) {
+      const id = action.payload;
+      if (state.images[id]) {
+        URL.revokeObjectURL(state.images[id]); // liberar memoria
+        delete state.images[id];
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       /* Fetch All */
@@ -149,4 +161,5 @@ const categorySlice = createSlice({
   },
 });
 
+export const { clearCategoryImage } = categorySlice.actions;
 export default categorySlice.reducer;
