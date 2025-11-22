@@ -28,8 +28,12 @@ useEffect(() => {
     dispatch(fetchCurrentUser()).then(() => {
       dispatch(fetchUserAvatar());
     });
+  } else {
+    // Si no está logueado, reseteo
+    dispatch({ type: "auth/resetAvatar" });
   }
 }, [isLoggedIn, userUpdated, dispatch]);
+
 
 
 // Navegaciones
@@ -115,17 +119,20 @@ return ( <nav className="navbar">
           <button
             className="profile-btn"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          >
-            <img
-              src={
-                avatar ||
-                "/assets/default-avatar.png"
-              }
-              alt="User"
-              className="user-avatar"
-            />
-
+            >
+            {avatar ? (
+              <img
+                src={avatar}
+                alt="User"
+                className="user-avatar"
+              />
+            ) : (
+              <span className="material-symbols-outlined user-avatar-icon">
+                person
+              </span>
+            )}
           </button>
+
 
           {isDropdownOpen && (
             <div className="dropdown-menu">
