@@ -66,9 +66,10 @@ const OrderDetails = () => {
             {order.items.map((item) => (
               <tr key={item.productIdSnapshot}>
                 <td>#{item.productIdSnapshot}</td>
-                <td>{item.productDescriptionSnapshot}</td>
-                <td>{item.productQuantitySnapshot}</td>
-                <td>${item.productPriceSnapshot}</td>
+                <td>{item.description}</td>
+                <td>{item.quantity}</td>
+                <td>${item.priceAtPurchase}</td>
+                <td>${(item.quantity * item.priceAtPurchase).toFixed(2)}</td>
                 <td>
                   <button
                     onClick={() => handleRateProduct(item.productIdSnapshot)}
@@ -80,9 +81,8 @@ const OrderDetails = () => {
                       border: "none",
                       padding: "6px 12px",
                       borderRadius: "6px",
-                      cursor: item.productId ? "pointer" : "not-allowed",
+                      cursor: "pointer",
                     }}
-                    disabled={!item.productId}
                   >
                     ⭐ Calificar Producto
                   </button>

@@ -37,13 +37,14 @@ const Orders = () => {
     navigate(`/order/${orderId}`);
   };
 
-  // ✅ Función para formatear fecha (sin hora)
+  // Función para formatear fecha (sin hora)
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
+      timeZone: "UTC",
     });
   };
 
