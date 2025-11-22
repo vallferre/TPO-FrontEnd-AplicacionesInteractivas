@@ -69,14 +69,15 @@ const handleSearch = () => {
 
 // Cerrar el menú al hacer click afuera
 useEffect(() => {
-const handleClickOutside = (e) => {
-if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-setIsDropdownOpen(false);
-}
-};
-document.addEventListener("mousedown", handleClickOutside);
-return () => document.removeEventListener("mousedown", handleClickOutside);
+  const handleClickOutside = (e) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      setIsDropdownOpen(false);
+    }
+  };
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => document.removeEventListener("mousedown", handleClickOutside);
 }, []);
+
 
 return ( <nav className="navbar">
 {/* LOGO */} <div className="navbar-brand"> <Link to="/" className="logo-link"> <h1 className="logo-text">Relicaria</h1> <svg
@@ -122,16 +123,11 @@ return ( <nav className="navbar">
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
             {avatar ? (
-              <img
-                src={avatar}
-                alt="User"
-                className="user-avatar"
-              />
+              <img src={avatar} alt="User" className="profile-avatar" />
             ) : (
-              <span className="material-symbols-outlined user-avatar-icon">
-                person
-              </span>
+              <span className="profile-avatar placeholder material-symbols-outlined">person</span>
             )}
+
           </button>
 
 

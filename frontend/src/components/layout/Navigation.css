@@ -184,20 +184,7 @@ h1 {
   justify-content: center;
 }
 
-.profile-btn img {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #d4af37;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-}
 
-.profile-btn:hover img {
-  transform: scale(1.05);
-  box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
-  border-color: #f4e4b0;
-}
 
 /* Menú oculto por defecto */
 .dropdown-menu {
@@ -361,25 +348,38 @@ h1 {
   }
 }
 
-/* Avatar cuando NO hay imagen */
-.user-avatar-icon {
+/* Avatar: imagen o placeholder */
+.profile-avatar {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: white;
   border: 2px solid #d4af37;
+  object-fit: cover;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22px;
   color: #3e2723;
-  line-height: 1 !important;   
+  background: white; /* para el placeholder */
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
+/* Diferenciar placeholder del img */
+.profile-avatar.placeholder {
+  background: white;
+}
 
-
-.profile-btn:hover .user-avatar-icon {
+/* Hover */
+.profile-btn:hover .profile-avatar {
   transform: scale(1.05);
   box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
   border-color: #f4e4b0;
+}
+
+/* Responsivo */
+@media (max-width: 480px) {
+  .profile-avatar {
+    width: 36px;
+    height: 36px;
+  }
 }
