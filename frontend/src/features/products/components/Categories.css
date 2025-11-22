@@ -148,6 +148,26 @@
   padding-right: 1rem;
 }
 
+/* Imagen pequeña en la edición de categoría */
+.edit-category-page .thumb-card {
+  width: 150px;        /* tamaño del recuadro */
+  height: 150px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+}
+
+.edit-category-page .thumb-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;   /* recorte limpio sin deformar */
+}
+
+
 
 /* Responsive */
 @media (max-width: 768px) {

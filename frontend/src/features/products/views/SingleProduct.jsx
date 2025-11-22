@@ -9,6 +9,7 @@ import { fetchProductById } from "../../../redux/slices/ProductSlice.js";
 import { fetchProductImages } from "../../../redux/slices/ProductImageSlice.js";
 import { selectProductImagesById } from "../../../redux/slices/ProductImageSelectors.js";
 import { selectProduct, selectLoading, selectError } from "../../../redux/slices/ProductSelectors.js";
+import { selectUserRole } from "../../../redux/slices/AuthSelectors.js";
 
 import { addToCart } from "../../../redux/slices/CartSlice.js";
 
@@ -21,6 +22,9 @@ const SingleProduct = ({ product, onRemoveFavorite }) => {
   const token = useSelector((state) => state.auth.token);
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
+  const role = useSelector(selectUserRole);
+  const isAdmin = role === "ADMIN";
+
 
   const productId = product?.id;
   const images = useSelector((state) => selectProductImagesById(state, productId));
@@ -50,6 +54,11 @@ const SingleProduct = ({ product, onRemoveFavorite }) => {
     if (!token) {
       toast.info("Debes iniciar sesión para agregar productos al carrito.");
       navigate("/login");
+      return;
+    }
+
+    if (isAdmin) {
+      toast.error("No puedes tener carrito como 'Admin'")
       return;
     }
 
@@ -214,15 +223,18 @@ const SingleProduct = ({ product, onRemoveFavorite }) => {
         <button
           className="btn-add--dynamic"
           onClick={handleAddToCart}
-          disabled={product.stock === 0}
+          disabled={product.stock === 0 || isAdmin}
           style={{
             marginTop: "0.75rem",
-            backgroundColor: product.stock === 0 ? "#9ca3af" : "#3b82f6",
-            cursor: product.stock === 0 ? "not-allowed" : "pointer",
+            backgroundColor:
+              product.stock === 0 || isAdmin ? "#9ca3af" : "#3b82f6",
+            cursor:
+              product.stock === 0 || isAdmin ? "not-allowed" : "pointer",
           }}
         >
-          {product.stock === 0 ? "Sin Stock" : "Agregar al Carrito"}
+          {isAdmin ? "Solo usuarios" : product.stock === 0 ? "Sin Stock" : "Agregar al Carrito"}
         </button>
+
       </div>
     </div>
   );

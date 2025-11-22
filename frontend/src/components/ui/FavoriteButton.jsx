@@ -10,6 +10,8 @@ import {
 
 import { addFavorite, deleteFavorite } from "../../redux/slices/FavoritesSlice";
 
+import { selectUserRole } from "../../redux/slices/AuthSelectors.js";
+
 const FavoriteButton = ({ productId, productName }) => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
@@ -19,6 +21,9 @@ const FavoriteButton = ({ productId, productName }) => {
 
   const [isFavorite, setIsFavorite] = useState(false);
 
+  const role = useSelector(selectUserRole);
+  const isAdmin = role === "ADMIN";
+
   useEffect(() => {
     const id = Number(productId);
     setIsFavorite(favorites.includes(id));
@@ -27,6 +32,11 @@ const FavoriteButton = ({ productId, productName }) => {
   const handleToggle = () => {
     if (!token) {
       toast.info("Debes iniciar sesión para usar favoritos");
+      return;
+    }
+
+    if (isAdmin) {
+      toast.error("No puedes tener productos favoritos como 'Admin'")
       return;
     }
 

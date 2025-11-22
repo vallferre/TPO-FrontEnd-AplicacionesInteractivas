@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../../../redux/slices/AuthSlice";
+import { loginUser, clearAuthError } from "../../../redux/slices/AuthSlice";
 import { toast } from "react-toastify";
 import {
   selectAuthLoading,
@@ -20,6 +20,11 @@ export default function Login() {
   const isLoggedIn = useSelector(selectIsLoggedIn);
 
   const [form, setForm] = useState({ username: "", password: "" });
+
+  useEffect(() => {
+    dispatch(clearAuthError());
+  }, [dispatch]);
+
 
   useEffect(() => {
     if (isLoggedIn) {

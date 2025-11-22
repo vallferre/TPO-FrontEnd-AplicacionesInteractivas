@@ -21,11 +21,51 @@ export const fetchCart = createAsyncThunk(
 // Agregar producto (cantidad 1 por defecto)
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
-  async ({ productId, token, quantity = 1 }, thunkAPI) => {
-    const res = await axios.post(API + "/add", { productId, quantity }, headers(token));
-    return res.data;
+  async ({ productId, token, quantity = 1 }, { rejectWithValue }) => {
+    try {
+      const res = await axios.post(
+        API + "/add",
+        { productId, quantity },
+        headers(token)
+      );
+      return res.data;
+
+    } catch (error) {
+      const status = error.response?.status;
+      const data = error.response?.data;
+
+      // ===================
+      // 403 Forbidden Cases
+      // ===================
+      if (status === 403) {
+        // CASO 1: Forbidden sin cuerpo → intentar agregar su propio producto
+        if (!data || Object.keys(data).length === 0) {
+          return rejectWithValue("No puedes agregar tu propio producto al carrito.");
+        }
+
+        // CASO 2: JSON de Spring Security (admin o sin permisos)
+        if (data?.message === "Access Denied") {
+          return rejectWithValue("No tienes permisos para realizar esta acción.");
+        }
+
+        // fallback por seguridad
+        return rejectWithValue("Acceso denegado.");
+      }
+
+      // ===================
+      // Otros errores
+      // ===================
+      const message =
+        data?.message ||
+        data?.error ||
+        "No se pudo agregar el producto al carrito.";
+
+      return rejectWithValue(message);
+    }
   }
 );
+
+
 
 // Quitar unidades de un producto
 export const removeFromCart = createAsyncThunk(

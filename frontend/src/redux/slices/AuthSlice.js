@@ -116,8 +116,6 @@ export const logoutUser = createAsyncThunk("auth/logout", async () => {
   return true;
 });
 
-
-
 // SLICE
 
 const initialState = {
@@ -134,7 +132,11 @@ const initialState = {
 const authSlice = createSlice({
   name: "auth",
   initialState,
-  reducers: {},
+  reducers: {
+    clearAuthError: (state) => {
+      state.error = null;
+    }
+  },
 
   extraReducers: (builder) => {
 
@@ -151,7 +153,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = "Credenciales inválidas";
       });
 
 
@@ -246,4 +248,5 @@ const authSlice = createSlice({
   },
 });
 
+export const { clearAuthError } = authSlice.actions;
 export default authSlice.reducer;

@@ -8,8 +8,6 @@ export const getProductById = async (id) => {
 
 export const getRelatedProducts = async (categories) => {
   if (!categories || categories.length === 0) return [];
-
-  console.log("Categorías recibidas para productos relacionados:", categories);
   // Elegimos una categoría aleatoria
   const randomIndex = Math.floor(Math.random() * categories.length);
   const chosenCategory = categories[randomIndex];

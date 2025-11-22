@@ -171,7 +171,6 @@
 
 /* Error State */
 .error {
-  width: 100%;
   text-align: center;
   padding: 2rem;
   background: #fee;

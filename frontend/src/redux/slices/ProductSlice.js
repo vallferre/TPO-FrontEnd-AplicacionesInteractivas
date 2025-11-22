@@ -127,8 +127,6 @@ export const updateProductWithImages = createAsyncThunk(
       }
     );
 
-    console.log("Producto actualizado en el servidor:", updated);
-
     // 2) Detectar cambios
     const sentQuantity = payload.hasOwnProperty("quantity")
       ? payload.quantity

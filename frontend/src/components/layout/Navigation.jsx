@@ -9,7 +9,8 @@ fetchUserAvatar,
 import "./Navigation.css";
 import { selectUserAvatar } from "../../redux/slices/AuthSelectors";
 import placeholder from "../../assets/placeholder.png";
-
+import { selectUserRole } from "../../redux/slices/AuthSelectors.js";
+import { toast } from "react-toastify";
 
 const Navigation = () => {
 const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -23,6 +24,8 @@ const { isLoggedIn, user, userUpdated } = useSelector((state) => state.auth);
 
 const avatar = useSelector(selectUserAvatar);
 
+const role = useSelector(selectUserRole);
+const isAdmin = role === "ADMIN";
 
 // Cargar datos del usuario cuando hay token
 useEffect(() => {
@@ -41,11 +44,19 @@ useEffect(() => {
 // Navegaciones
 const handleFavoritesClick = (e) => {
   e.preventDefault();
+  if (isAdmin) {
+    toast.error("No puedes tener productos favoritos como 'Admin'")
+    return; // El admin NO puede usar favoritos
+  }
   navigate(isLoggedIn ? "/favorites" : "/login");
 };
 
 const handleCartClick = (e) => {
   e.preventDefault();
+  if (isAdmin) {
+    toast.error("No puedes tener carrito como 'Admin'")
+    return;
+  }
   navigate(isLoggedIn ? "/cart" : "/login");
 };
 

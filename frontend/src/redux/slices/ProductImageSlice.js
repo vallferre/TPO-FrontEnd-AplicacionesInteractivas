@@ -90,7 +90,6 @@ const productImageSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchProductImages.rejected, (state, action) => {
-        console.log("ERROR fetchProductImages:", action.error);
         state.loading = false;
         state.error =
           action.payload ||

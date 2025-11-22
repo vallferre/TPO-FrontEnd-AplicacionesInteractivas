@@ -95,8 +95,14 @@ return (
             <img src={avatar} alt="User avatar" className="avatar" />
           ) : (
             // Si no hay avatar, mostramos un placeholder local o ícono
-            <div className="avatar placeholder">
-              <span className="material-symbols-outlined">person</span>
+            <div>
+              {avatar || placeholder ? (
+                            <img
+                              src={avatar || placeholder}
+                              alt="User"
+                              className="avatar"
+                            />
+                          ) : null}
             </div>
           )}
         </div>
@@ -114,17 +120,17 @@ return (
           {!isAdmin && (
             <>
               <Link to="/profile/orders" className="nav-link">
-                🛍 Mis Órdenes
+                Mis Órdenes
               </Link>
               <Link to="/profile/products" className="nav-link">
-                🏪 Mis Productos
+                Mis Productos
               </Link>
             </>
           )}
 
           {isAdmin && (
             <Link to="/profile/categories" className="nav-link">
-              🏷 Categorías
+              Categorías
             </Link>
           )}
 
