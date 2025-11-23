@@ -67,11 +67,6 @@ const OrderDetails = () => {
           <tbody>
             {order.items.map((item) => (
               <tr key={item.productIdSnapshot}>
-                {console.log(item.productNameSnapshot )}
-                {console.log(item.name)}
-                {console.log(item.productName)}
-                {console.log(item.productNameSnapshot)}
-                {console.log(item)}
                 <td>#{item.productIdSnapshot}</td>
                 <td>{item.productName}</td>
                 <td>{item.quantity}</td>

@@ -12,17 +12,16 @@ import { toast } from "react-toastify";
 import {
   fetchProductById,
   fetchRelatedProducts,
-  fetchRatings,
 } from "../../../redux/slices/ProductSlice.js";
 
 import {
   selectProduct,
   selectRelatedProducts,
-  selectRatings,
   selectLoading,
   selectError,
-  selectRelatedLoading,
 } from "../../../redux/slices/ProductSelectors";
+
+import { fetchRatingsByProduct } from "../../../redux/slices/RatingSlice.js";
 
 import { addToCart, fetchCart } from "../../../redux/slices/CartSlice";
 import { fetchProductImages } from "../../../redux/slices/ProductImageSlice.js";
@@ -41,11 +40,23 @@ const ProductDetails = () => {
   // === PRODUCTO ===
   const product = useSelector(selectProduct);
   const relatedProducts = useSelector(selectRelatedProducts) || [];
-  const { average = 0, counts = {}, list: productRatings = [] } =
-    useSelector(selectRatings) || {};
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
-  const relatedLoading = useSelector(selectRelatedLoading);
+
+  // === RATINGS desde RatingSlice ===
+  const ratingsByProduct = useSelector((state) => state.rating.ratingsByProduct);
+  const ratingsLoading = useSelector((state) => state.rating.loading);
+  const productRatings = ratingsByProduct[id] || [];
+
+  // Calcular promedio y conteos
+  const average = productRatings.length > 0
+    ? productRatings.reduce((sum, r) => sum + r.value, 0) / productRatings.length
+    : 0;
+
+  const counts = productRatings.reduce((acc, r) => {
+    acc[r.value] = (acc[r.value] || 0) + 1;
+    return acc;
+  }, {});
 
   // === IMÁGENES ===
   const images = useSelector((state) => selectProductImagesById(state, id));
@@ -56,20 +67,23 @@ const ProductDetails = () => {
   useEffect(() => {
     if (id) {
       dispatch(fetchProductById(id));
-      dispatch(fetchRatings(id));
       dispatch(fetchProductImages(id));
+      // Fetch ratings usando RatingSlice (no requiere token para ver)
+      if (token) {
+        dispatch(fetchRatingsByProduct({ productId: id, token }));
+      }
     }
-  }, [id, dispatch]);
+  }, [id, dispatch, token]);
 
-// ==== PRODUCTOS RELACIONADOS ====
-useEffect(() => {
-  if (product?.categories?.length > 0 && product?.id) {
-    dispatch(fetchRelatedProducts({
-      categories: product.categories,
-      excludeProductId: product.id
-    }));
-  }
-}, [dispatch, product?.id, product?.categories]);
+  // ==== PRODUCTOS RELACIONADOS ====
+  useEffect(() => {
+    if (product?.categories?.length > 0 && product?.id) {
+      dispatch(fetchRelatedProducts({
+        categories: product.categories,
+        excludeProductId: product.id
+      }));
+    }
+  }, [dispatch, product?.id, product?.categories]);
 
   // ==== RESET QUANTITY ====
   useEffect(() => {
@@ -114,7 +128,6 @@ useEffect(() => {
         <div className="product-details">
           {/* ===== IMÁGENES ===== */}
           <div className="image-carousel-container" style={{ position: "relative" }}>
-            {/* Botón favorito */}
             <div
               className="btn-favorite--dynamic"
               style={{ position: "absolute", top: "12px", right: "12px", zIndex: 10 }}
@@ -123,7 +136,6 @@ useEffect(() => {
               <FavoriteButton productId={id} productName={product?.name} token={token} />
             </div>
 
-            {/* Flechas */}
             {imageIds.length > 1 && (
               <button
                 className="carousel-arrow left"
@@ -165,18 +177,18 @@ useEffect(() => {
           <div className="product-info">
             <h1 className="product-title">{product?.name}</h1>
 
-            {/* Rating */}
+            {/* Rating - inicializa en 0 estrellas */}
             <div className="star-container">
               {[...Array(5)].map((_, i) => (
                 <span
                   key={i}
-                  className={`star ${i < (average > 0 ? Math.round(average) : 5) ? "filled" : ""}`}
+                  className={`star ${i < Math.round(average) ? "filled" : ""}`}
                 >
                   ★
                 </span>
               ))}
               <span style={{ marginLeft: "0.5rem" }}>
-                ({average > 0 ? average.toFixed(1) : 5})
+                ({average > 0 ? average.toFixed(1) : "0.0"})
               </span>
             </div>
 
@@ -230,24 +242,35 @@ useEffect(() => {
         <div className="product-description-section rating-opinions-container">
           <div className="rating-column">
             <h2>Calificación</h2>
-            {[5, 4, 3, 2, 1].map((star) => (
-              <div key={star} className="rating-row">
-                <span className="star-row">{star} </span>
-                {[...Array(star)].map((_, i) => (
-                  <span key={i} className="star filled">
-                    ★
-                  </span>
-                ))}
-                <span className="rating-count"> ({counts?.[star] || 0})</span>
-              </div>
-            ))}
+            {ratingsLoading ? (
+              <p>Cargando calificaciones...</p>
+            ) : (
+              [5, 4, 3, 2, 1].map((star) => (
+                <div key={star} className="rating-row">
+                  <span className="star-row">{star} </span>
+                  {[...Array(star)].map((_, i) => (
+                    <span key={i} className="star filled">
+                      ★
+                    </span>
+                  ))}
+                  <span className="rating-count"> ({counts[star] || 0})</span>
+                </div>
+              ))
+            )}
           </div>
 
           <div className="opinions-column">
             <h2>Opiniones</h2>
-            {productRatings?.length > 0 ? (
+            {ratingsLoading ? (
+              <p>Cargando opiniones...</p>
+            ) : productRatings.length > 0 ? (
               productRatings.slice(0, 3).map((r, idx) => (
-                <RatingCard key={idx} userName={r?.username} value={r?.value} comment={r?.comment} />
+                <RatingCard 
+                  key={idx} 
+                  userName={r?.username} 
+                  value={r?.value} 
+                  comment={r?.comment} 
+                />
               ))
             ) : (
               <p>No hay opiniones aún.</p>
@@ -261,10 +284,7 @@ useEffect(() => {
             <h2>A otras personas también les gustó:</h2>
             <div className="related-products-grid">
               {relatedProducts.map((p) => (
-                <SingleProduct
-                  key={p?.id}
-                  product = {p}
-                />
+                <SingleProduct key={p?.id} product={p} />
               ))}
             </div>
           </div>
