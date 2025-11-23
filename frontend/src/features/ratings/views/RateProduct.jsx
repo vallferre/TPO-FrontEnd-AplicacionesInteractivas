@@ -1,161 +1,117 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import "./RateProduct.css";
+import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
-// Redux
 import { useDispatch, useSelector } from "react-redux";
-import {
-  addOrUpdateRating,
-  fetchRatingsByProduct,
-} from "../../../redux/slices/RatingSlice";
+import { fetchProductById } from "../../../redux/slices/ProductSlice";
+import { addOrUpdateRating, fetchRatingsByProduct } from "../../../redux/slices/RatingSlice";
 
-const API_BASE = "http://localhost:8080";
+
+import { selectToken, selectUser } from "../../../redux/slices/AuthSelectors";
 
 const RateProduct = () => {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { productId } = useParams();
+const { productId } = useParams();
+const navigate = useNavigate();
+const dispatch = useDispatch();
 
-  // Estado global autenticación
-  const { token, user } = useSelector((state) => state.auth);
+const token = useSelector(selectToken);
+const user = useSelector(selectUser);
 
-  // 🟣 OBTENER ORDEN ACTUAL DESDE REDUX
-  const currentOrder = useSelector((state) => state.orders.currentOrder);
+const product = useSelector((state) => state.products.product);
+const loadingGlobal = useSelector((state) => state.products.loading);
 
-  const isSameProduct =
-    String(currentOrder.snapshotProductId) === String(productId);
+const [rating, setRating] = useState(0);
+const [comment, setComment] = useState("");
+const [loadingLocal, setLoadingLocal] = useState(true);
 
-  // Estado local
-  const [product, setProduct] = useState(null);
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  // Cargar producto + ratings
-  useEffect(() => {
-    if (!productId) {
-      setError("No se especificó ningún producto para calificar.");
-      setLoading(false);
-      return;
-    }
+useEffect(() => {
+if (!productId || !token) return;
 
-    const fetchProduct = {
 
-        // SI EL PRODUCTO COINCIDE CON LA ORDEN → CARGAR RATINGS
-        if (isSameProduct) {
-          dispatch(fetchRatingsByProduct({productId, comment, value, userId}));//{productid, comentario, rtaing}
-        }
-      
-    };
+Promise.all([
+  dispatch(fetchProductById(productId)),
+  dispatch(fetchRatingsByProduct({ productId, token })),
+]).finally(() => setLoadingLocal(false));
 
-    fetchProduct();
-  }, [isSameProduct, productId, dispatch]);
 
-  // ⭐ Enviar rating usando Redux Thunk
-  const handleSubmit = async () => {
-    if (!rating) {
-      toast.error("Por favor seleccioná una calificación antes de confirmar.");
-      return;
-    }
+}, [dispatch, productId, token]);
 
-    if (!user?.id) {
-      toast.error("Debés iniciar sesión para calificar.");
-      return;
-    }
 
-    try {
-      const resultAction = await dispatch(
-        addOrUpdateRating({
-          productId,
-          userId: user.id,
-          value: rating,
-          comment,
-        })
-      );
+const handleSubmit = () => {
+if (!rating) return toast.error("Seleccioná una calificación.");
+if (!user?.id) return toast.error("Debés iniciar sesión.");
+if (!product || product.deleted)
+return toast.error("No se puede calificar un producto eliminado.");
 
-      if (addOrUpdateRating.fulfilled.match(resultAction)) {
-        toast.success("¡Gracias por tu reseña!");
-        navigate(-1);
-      } else {
-        throw new Error(resultAction.error?.message || "Error al enviar reseña");
-      }
-    } catch (err) {
-      console.error("Error al enviar reseña:", err);
-      toast.error("Error al enviar la reseña. Intenta nuevamente.");
-    }
-  };
 
-  if (loading) return <div className="rate-loading">Cargando producto...</div>;
-  if (error) return <div className="rate-error">{error}</div>;
+dispatch(
+  addOrUpdateRating({
+    token,
+    productId,
+    value: rating,
+    comment,
+  })
+)
+  .unwrap()
+  .then(() => {
+    toast.success("¡Gracias por tu reseña!");
+    navigate(-1);
+  })
+  .catch(() => {
+    toast.error("Error al enviar la reseña.");
+  });
 
-  return (
-    <div className="rate-page">
-      <div className="rate-header">
-        <h1>Calificar producto</h1>
-        <p>Contanos qué te pareció tu compra.</p>
-      </div>
 
-      {product && (
-        <div className="rate-card">
-          <div className="rate-product-info">
-            <div
-              className="rate-product-image"
-              style={{
-                backgroundImage: `url(${API_BASE}/images/${
-                  product.imageIds?.[0] || "placeholder.jpg"
-                })`,
-              }}
-            ></div>
+};
 
-            <div className="rate-product-text">
-              <p className="rate-product-name">{product.name}</p>
-              <p className="rate-product-detail">{product.description}</p>
-            </div>
-          </div>
 
-          {/* Estrellas */}
-          <div className="rate-stars">
-            {[1, 2, 3, 4, 5].map((val) => (
-              <span
-                key={val}
-                className={`material-symbols-outlined star-icon ${
-                  val <= rating ? "filled" : ""
-                }`}
-                onClick={() => setRating(val)}
-              >
-                star
-              </span>
-            ))}
-          </div>
+if (loadingLocal || loadingGlobal) return <p>Cargando producto...</p>;
+if (!product) return <p>No se encontró el producto.</p>;
 
-          {/* Comentario */}
-          <div className="rate-textarea">
-            <label htmlFor="review">Dejá un comentario (opcional)</label>
-            <textarea
-              id="review"
-              placeholder="Contanos tu experiencia..."
-              rows="3"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-            ></textarea>
-          </div>
+return (
+<div style={{ padding: "20px" }}> <h1>Calificar producto</h1>
 
-          {/* Botones */}
-          <div className="rate-actions">
-            <button className="rate-confirm" onClick={handleSubmit}>
-              Confirmar
-            </button>
 
-            <button className="rate-cancel" onClick={() => navigate(-1)}>
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  <p>
+    <strong>{product.name}</strong>
+  </p>
+  <p>{product.description}</p>
+
+  <div style={{ fontSize: "24px", margin: "10px 0" }}>
+    {[1, 2, 3, 4, 5].map((val) => (
+      <span
+        key={val}
+        onClick={() => setRating(val)}
+        style={{
+          cursor: "pointer",
+          color: val <= rating ? "gold" : "gray",
+          marginRight: "4px",
+        }}
+      >
+        ★
+      </span>
+    ))}
+  </div>
+
+  <textarea
+    placeholder="Dejá un comentario..."
+    value={comment}
+    onChange={(e) => setComment(e.target.value)}
+    style={{ width: "100%", height: "80px" }}
+  />
+
+  <br />
+  <br />
+
+  <button onClick={handleSubmit} style={{ marginRight: "10px" }}>
+    Confirmar
+  </button>
+
+  <button onClick={() => navigate(-1)}>Cancelar</button>
+</div>
+
+
+);
 };
 
 export default RateProduct;

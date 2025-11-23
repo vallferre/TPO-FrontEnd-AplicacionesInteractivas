@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./OrderDetails.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,29 +24,31 @@ const OrderDetails = () => {
   if (error) return <p className="error">{error}</p>;
   if (!order) return <p>No order found.</p>;
 
-  // 🔹 Navegar a RateProduct usando ruta con parámetro
+  //  Ahora solo pasamos el productId por URL
   const handleRateProduct = (productIdSnapshot) => {
+    console.log("productId recibido:", productIdSnapshot);
     navigate(`/rate-product/${productIdSnapshot}`);
   };
+
 
   return (
     <div className="order-details-container">
       <div className="order-details-header">
-        <h1>Order Details</h1>
+        <h1>Detalle de Orden</h1>
         <p className="order-id">Order #{order.orderId}</p>
       </div>
 
       <div className="order-summary">
         <div className="summary-card">
-          <p className="summary-label">Total Amount</p>
+          <p className="summary-label">Total </p>
           <p className="summary-value">${order.totalAmount}</p>
         </div>
         <div className="summary-card">
-          <p className="summary-label">Total Items</p>
+          <p className="summary-label">Items Totales</p>
           <p className="summary-value">{order.count}</p>
         </div>
         <div className="summary-card">
-          <p className="summary-label">Order Date</p>
+          <p className="summary-label">Fecha de Orden</p>
           <p className="summary-value">{order.orderDate}</p>
         </div>
       </div>
@@ -55,11 +57,12 @@ const OrderDetails = () => {
         <table className="order-table">
           <thead>
             <tr>
-              <th>Product ID</th>
-              <th>Product Description</th>
-              <th>Quantity</th>
-              <th>Price</th>
-              <th>Action</th>
+              <th>ID</th>
+              <th>Descripción</th>
+              <th>Cantidad</th>
+              <th>Precio</th>
+              <th>Subtotal</th>
+              <th>Total</th>
             </tr>
           </thead>
           <tbody>

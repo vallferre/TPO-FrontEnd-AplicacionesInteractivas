@@ -73,12 +73,62 @@ export const fetchRelatedProducts = createAsyncThunk(
    RATINGS DEL PRODUCTO (ANTES ESTABA EN ProductService)
 ===================================================== */
 export const fetchRatings = createAsyncThunk(
-  "product/fetchRatings",
-  async (id) => {
+  "rating/fetchByProduct",
+  async ({ productId, token }) => {
     const { data } = await axios.get(
-      `${API_BASE}/ratings/by-product/${id}`
+      `${API_BASE}/ratings/by-product/${productId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
-    return data;
+    return { productId, ratings: data };
+  }
+);
+
+/* =====================================================
+   FETCH AVERAGE RATING
+===================================================== */
+export const fetchAverageRating = createAsyncThunk(
+  "rating/fetchAverage",
+  async (productId) => {
+    const { data } = await axios.get(
+      `${API_BASE}/ratings/average/${productId}`
+    );
+    return { productId, average: data };
+  }
+);
+
+/* =====================================================
+   FETCH COUNTS (GROUPED BY STARS)
+===================================================== */
+export const fetchRatingCounts = createAsyncThunk(
+  "rating/fetchCounts",
+  async (productId) => {
+    const results = {};
+
+    for (let value = 1; value <= 5; value++) {
+      const { data } = await axios.get(
+        `${API_BASE}/ratings/count-by-value/${productId}/${value}`
+      );
+      results[value] = data;
+    }
+
+    return { productId, counts: results };
+  }
+);
+
+/* =====================================================
+   FETCH LIST OF RATINGS (COMMENTS)
+===================================================== */
+export const fetchProductRatings = createAsyncThunk(
+  "rating/fetchList",
+  async (productId) => {
+    const { data } = await axios.get(
+      `${API_BASE}/ratings/by-product/${productId}`
+    );
+    return { productId, list: data };
   }
 );
 
@@ -230,10 +280,13 @@ export const fetchProductsByIds = createAsyncThunk(
 
 const initialState = {
   products: [],
-  product: [],
+  product: null,
   related: [],
-  ratings: { average: 0, counts: {}, list: [] },
-
+  ratings: {
+    average: 0,
+    counts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+    list: []
+  },
   // === FAVORITES PRODUCTS ===
   favoriteProducts: [],
   favoriteProductsLoading: false,
@@ -309,6 +362,21 @@ const productSlice = createSlice({
       // === RATINGS ===
       .addCase(fetchRatings.fulfilled, (state, action) => {
         state.ratings = action.payload;
+      })
+
+            // === RATINGS: AVERAGE ===
+      .addCase(fetchAverageRating.fulfilled, (state, action) => {
+        state.ratings.average = action.payload.average;
+      })
+
+      // === RATINGS: COUNTS BY VALUE ===
+      .addCase(fetchRatingCounts.fulfilled, (state, action) => {
+        state.ratings.counts = action.payload.counts;
+      })
+
+      // === RATINGS: LIST ===
+      .addCase(fetchProductRatings.fulfilled, (state, action) => {
+        state.ratings.list = action.payload.list;
       })
 
       // === CREATE PRODUCT ===
