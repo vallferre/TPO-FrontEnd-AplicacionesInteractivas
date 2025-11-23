@@ -29,6 +29,12 @@ const OrderDetails = () => {
     navigate(`/rate-product/${productIdSnapshot}`);
   };
 
+  const totalConDescuentos = order.items.reduce((acc, item) => {
+    const precioConDescuento =
+      item.priceAtPurchase * (1 - item.discountedPriceAtPurchase / 100);
+
+    return acc + item.quantity * precioConDescuento;
+  }, 0);
 
   return (
     <div className="order-details-container">
@@ -40,7 +46,7 @@ const OrderDetails = () => {
       <div className="order-summary">
         <div className="summary-card">
           <p className="summary-label">Total </p>
-          <p className="summary-value">${order.totalAmount}</p>
+          <p className="summary-value">${totalConDescuentos.toFixed(2)}</p>
         </div>
         <div className="summary-card">
           <p className="summary-label">Items Totales</p>
@@ -61,7 +67,7 @@ const OrderDetails = () => {
               <th>Cantidad</th>
               <th>Precio</th>
               <th>Subtotal</th>
-              <th>Total</th>
+              <th>Calificaciones</th>
             </tr>
           </thead>
           <tbody>
@@ -70,9 +76,22 @@ const OrderDetails = () => {
                 <td>#{item.productIdSnapshot}</td>
                 <td>{item.productName}</td>
                 <td>{item.quantity}</td>
-                <td>${(item.priceAtPurchase * (1 - item.discountedPriceAtPurchase/100)).toFixed(2)}</td>
-                <td>${(item.quantity * (item.priceAtPurchase * (1 - item.discountedPriceAtPurchase/100))).toFixed(2)}</td>
                 <td>
+                  $
+                  {(
+                    item.priceAtPurchase *
+                    (1 - item.discountedPriceAtPurchase / 100)
+                  ).toFixed(2)}
+                </td>
+                <td>
+                  $
+                  {(
+                    item.quantity *
+                    (item.priceAtPurchase *
+                      (1 - item.discountedPriceAtPurchase / 100))
+                  ).toFixed(2)}
+                </td>
+                <td style={{ textAlign: "center" }}>
                   <button
                     onClick={() => handleRateProduct(item.productIdSnapshot)}
                     className="rate-btn"
