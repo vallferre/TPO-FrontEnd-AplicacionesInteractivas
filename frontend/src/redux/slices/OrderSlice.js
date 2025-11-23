@@ -1,5 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 const URL = "http://localhost:8080";
@@ -7,8 +6,6 @@ const URL = "http://localhost:8080";
 export const checkoutOrder = createAsyncThunk(
   "cart/checkout",
   async ({ token }) => {
-    if (!token) throw new Error("No token found");
-
     const { data } = await axios.post(
       `${URL}/cart/checkout`,
       {},
@@ -26,23 +23,18 @@ export const checkoutOrder = createAsyncThunk(
 export const getOrderById = createAsyncThunk(
   "order/getById",
   async ({ orderId, token }) => {
-    if (!token) throw new Error("No token found");
-
     const { data } = await axios.get(`${URL}/orders/${orderId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-
     return data;
   }
 );
 
 export const getUserOrders = createAsyncThunk(
   "order/getUserOrders",
-  async ({ page, sortOrder, token }) => {
-    if (!token) throw new Error("No token found");
-
+  async ({ page = 0, sortOrder = "desc", token }) => {
     const { data } = await axios.get(
       `${URL}/orders/user?page=${page}&size=10&sort=${sortOrder}`,
       {
@@ -51,7 +43,6 @@ export const getUserOrders = createAsyncThunk(
         },
       }
     );
-
     return data;
   }
 );
@@ -83,10 +74,9 @@ const orderSlice = createSlice({
       })
       .addCase(checkoutOrder.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Error during checkout";
+        state.error = action.error?.message;
       });
 
-    // GET ORDER BY ID
     builder
       .addCase(getOrderById.pending, (state) => {
         state.loading = true;
@@ -98,7 +88,7 @@ const orderSlice = createSlice({
       })
       .addCase(getOrderById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error?.message || "Error fetching order details";
+        state.error = action.error?.message;
       });
 
     builder
@@ -108,8 +98,13 @@ const orderSlice = createSlice({
       })
       .addCase(getUserOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.orders = [...state.orders, action.payload];
-        state.totalPages = action.payload.totalPages;
+        const pageData = action.payload;
+        state.orders = Array.isArray(pageData.content)
+          ? pageData.content
+          : Array.isArray(pageData)
+          ? pageData
+          : [];
+        state.totalPages = pageData.totalPages ?? 1;
       })
       .addCase(getUserOrders.rejected, (state, action) => {
         state.loading = false;
