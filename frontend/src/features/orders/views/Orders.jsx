@@ -4,15 +4,11 @@ import { useDispatch, useSelector } from "react-redux";
 import "./Orders.css";
 import {
   selectOrders,
-  selectCurrentOrder,
   selectOrderLoading,
   selectOrderError,
   selectOrderTotalPages,
 } from "../../../redux/slices/orderSelectors";
-
 import { getUserOrders } from "../../../redux/slices/OrderSlice";
-
-import "./Orders.css";
 
 const Orders = () => {
   const [page, setPage] = useState(0);
@@ -21,10 +17,10 @@ const Orders = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const orders = useSelector(selectOrders);
+  const orders = useSelector(selectOrders) || [];
   const loading = useSelector(selectOrderLoading);
   const error = useSelector(selectOrderError);
-  const totalPages = useSelector(selectOrderTotalPages);
+  const totalPages = useSelector(selectOrderTotalPages) || 1;
 
   const token = useSelector((state) => state.auth.token);
 
@@ -34,11 +30,12 @@ const Orders = () => {
   };
 
   const handleOrderClick = (orderId) => {
+    if (!orderId) return;
     navigate(`/order/${orderId}`);
   };
 
-  // Función para formatear fecha (sin hora)
   const formatDate = (dateString) => {
+    if (!dateString) return "";
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
@@ -74,26 +71,29 @@ const Orders = () => {
       <div className="orders-list">
         {orders.map((order) => (
           <div
-            key={order.orderId}
+            key={order.orderId ?? order.id}
             className="order-card"
-            onClick={() => handleOrderClick(order.orderId)}
+            onClick={() => handleOrderClick(order.orderId ?? order.id)}
           >
             <div className="order-card-content">
               <div className="order-basic-info">
                 <div className="order-left">
-                  <h3 className="order-title">Order #{order.orderId}</h3>
+                  <h3 className="order-title">
+                    Order #{order.orderId ?? order.id}
+                  </h3>
                   {order.orderDate && (
-                    <span className="order-date">
-                      {formatDate(order.orderDate)}
-                    </span>
+                    <span className="order-date">{formatDate(order.orderDate)}</span>
                   )}
                 </div>
                 <div className="order-stats">
-                  <span className="items-count">{order.count} items</span>
-                  <span className="total-amount">${order.totalAmount}</span>
+                  <span className="items-count">
+                    {order.count ?? order.itemsCount} items
+                  </span>
+                  <span className="total-amount">
+                    ${order.totalAmount ?? order.total}
+                  </span>
                 </div>
               </div>
-
               <div className="view-details">Click to view details →</div>
             </div>
           </div>
