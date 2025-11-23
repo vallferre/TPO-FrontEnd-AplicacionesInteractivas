@@ -84,6 +84,7 @@ const ShoppingCart = () => {
       name: i.productName,
       size: i.productDescription,
       price: i.priceAtAddTime,
+      discountedPrice: i.discountedPrice,
       quantity: i.quantity,
       image: i.productImageUrl,
       error: cartErrors[i.productId],

@@ -1,0 +1,79 @@
+/* ============================= */
+/* Estilos para el CartItem      */
+/* ============================= */
+
+.cart-item {
+  display: flex;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.cart-item img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.cart-item-info {
+  flex: 1;
+}
+
+.cart-item-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.cart-item-size {
+  color: #666;
+  margin: 0.3rem 0;
+}
+
+/* Precio original tachado */
+.cart-item-price-original {
+  color: #888;
+  text-decoration: line-through;
+  margin: 0.2rem 0;
+}
+
+/* Porcentaje de descuento */
+.cart-item-discount {
+  color: #10b981;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0.2rem 0;
+}
+
+/* Precio final */
+.cart-item-finalprice {
+  font-weight: bold;
+  color: #111;
+  margin: 0.2rem 0;
+}
+
+/* Sin descuento */
+.cart-item-price {
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
+/* Error */
+.cart-item-error {
+  color: red;
+  margin-top: 0.5rem;
+}
+
+/* Controles */
+.cart-item-controls {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.cart-item-remove {
+  margin-left: auto;
+  color: red;
+  cursor: pointer;
+}

@@ -4,32 +4,28 @@ import { toast } from "react-toastify";
 import "./OrderSummary.css";
 import { checkoutOrder } from "../../../redux/slices/OrderSlice";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  selectOrderLoading,
-  selectOrderError,
-  selectCurrentOrder,
-} from "../../../redux/slices/orderSelectors";
 
 export default function OrderSummary({
   subtotal,
   shipping,
-  tax,
   total,
   cartItems = [],
 }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const loading = useSelector(selectOrderLoading);
-  const error = useSelector(selectOrderError);
-  const currentOrder = useSelector(selectCurrentOrder);
-
   const token = useSelector((s) => s.auth.token);
 
   const totalDiscount = cartItems.reduce((sum, item) => {
+    console.log(item.discountAmount)
+    console.log(item.discountedPrice)
+    console.log(item.price)
     if (item.discountedPrice && item.discountedPrice > 0) {
       const discountAmount =
-        ((item.priceAtAddTime * item.discountedPrice) / 100) * item.quantity;
+        ((item.price * item.discountedPrice) / 100) * item.quantity;
+        console.log("Price" + item.priceAtAddTime)
+        console.log("Discount" + item.discountedPrice)
+        console.log("Discount amount"+discountAmount)
       return sum + discountAmount;
     }
     return sum;
@@ -66,7 +62,7 @@ export default function OrderSummary({
 
         {/* Shipping */}
         <div>
-          <p>Shipping</p>
+          <p>Envío</p>
           <p>{shipping}</p>
         </div>
 
@@ -74,7 +70,7 @@ export default function OrderSummary({
         {totalDiscount > 0 && (
           <>
             <div>
-              <p>Discount</p>
+              <p>Descuento</p>
               <p>- ${totalDiscount.toFixed(2)}</p>
             </div>
 
@@ -84,13 +80,13 @@ export default function OrderSummary({
               )
               .map((item) => {
                 const discountAmount =
-                  ((item.priceAtAddTime * item.discountedPrice) / 100) *
+                  ((item.price * item.discountedPrice) / 100) *
                   item.quantity;
                 return (
                   <div key={item.productId}>
                     <div>
                       <p>
-                        {item.productName}
+                        {item.name}
                         <br />
                         <span>({item.discountedPrice}% off)</span>
                       </p>
@@ -101,8 +97,6 @@ export default function OrderSummary({
               })}
           </>
         )}
-
-        <div></div>
 
         {/* Total */}
         <div>
