@@ -6,6 +6,7 @@ export const selectRelatedLoading = (state) => state.products.relatedLoading;
 export const selectRatings = (state) => state.products.ratings;
 export const selectLoading = (state) => state.products.loading;
 export const selectError = (state) => state.products.error;
+export const selectStock = (state) => state.products.product.stock;
 
 export const selectTopDiscounts = (state) => state.product.topDiscounts;
 

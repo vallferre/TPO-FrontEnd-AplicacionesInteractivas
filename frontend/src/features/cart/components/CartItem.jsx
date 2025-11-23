@@ -47,7 +47,9 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove }) => {
         <div className="cart-controls">
           <button onClick={onDecrease}>-</button>
           <span>{item.quantity}</span>
-          <button onClick={onIncrease}>+</button>
+          <button onClick={onIncrease}
+            disabled={item.quantity >= item.stock}
+            className={item.quantity >= item.stock ? "disabled-btn" : ""}>+</button>
 
           <button className="remove-btn" onClick={onRemove}>
             Eliminar

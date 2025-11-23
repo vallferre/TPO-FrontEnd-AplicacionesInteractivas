@@ -16,6 +16,10 @@ import {
   selectCartError,
 } from "../../../redux/slices/CartSelectors";
 
+import {
+  selectStock,
+} from "../../../redux/slices/ProductSelectors";
+
 import CartItem from "../components/CartItem";
 import OrderSummary from "../../orders/components/OrderSummary";
 import ErrorView from "../../../components/ui/ErrorView";
@@ -29,6 +33,7 @@ const ShoppingCart = () => {
   const total = useSelector(selectCartTotal);
   const loading = useSelector(selectCartLoading);
   const error = useSelector(selectCartError);
+  const stock = useSelector(selectStock);
 
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -42,10 +47,33 @@ const ShoppingCart = () => {
   const handleIncrease = (productId) => {
     dispatch(addToCart({ productId, token, quantity: 1 }))
       .unwrap()
-      .then(() => setCartErrors((prev) => ({ ...prev, [productId]: null })))
-      .catch((err) =>
-        setCartErrors((prev) => ({ ...prev, [productId]: err }))
-      );
+      .then(() => {
+        // eliminar error previo
+        setCartErrors((prev) => ({ ...prev, [productId]: null }));
+      })
+      .catch((errorResponse) => {
+        const status = errorResponse?.status;
+        const data = errorResponse || {};
+
+        let message = "Error agregando producto.";
+
+        if (status === 403) {
+          if (!data || Object.keys(data).length === 0) {
+            message = "No puedes agregar tu propio producto al carrito.";
+          } else if (data.message === "Access Denied") {
+            message = "No tienes permisos para realizar esta acción.";
+          } else {
+            message = "Acceso denegado.";
+          }
+        } else {
+          message =
+            data?.message ||
+            data?.error ||
+            "No se pudo agregar el producto al carrito.";
+        }
+
+        setCartErrors((prev) => ({ ...prev, [productId]: message }));
+      });
   };
 
   const handleDecrease = (productId) => {
@@ -86,6 +114,7 @@ const ShoppingCart = () => {
       price: i.priceAtAddTime,
       discountedPrice: i.discountedPrice,
       quantity: i.quantity,
+      stock: stock,
       image: i.productImageUrl,
       error: cartErrors[i.productId],
     })) || [];
@@ -100,9 +129,6 @@ const ShoppingCart = () => {
       <div style={{ display: "grid", gridTemplateColumns: "3fr 1fr", gap: "2rem" }}>
         <ul style={{ listStyle: "none", padding: 0 }}>
           {validCartItems.map((item) => (
-            console.log(item.name),
-            console.log(item.productName),
-            console.log(item.productNameSnapshot),
             <CartItem
               key={item.id}
               item={item}

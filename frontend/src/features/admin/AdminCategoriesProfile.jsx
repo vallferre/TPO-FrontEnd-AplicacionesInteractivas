@@ -104,8 +104,8 @@ const AdminCategoriesProfile = () => {
         setModalOpen(false);
         setSelectedCategory(null);
       })
-      .catch((err) => {
-        toast.error(`No se pudo eliminar la categoría, vuelva a intentarlo más tarde.`);
+      .catch(() => {
+        toast.error(`No se puede eliminar una categoría que ya está en uso, pruebe editarla.`);
       });
   };
 
