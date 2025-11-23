@@ -1,27 +1,36 @@
+// src/redux/slices/RatingSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// Cambiá la URL base según tu backend
-const BASE_URL = "http://localhost:8080/api/ratings";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
-
-// Obtener ratings de un producto
+/* =====================================================
+   GET RATINGS OF PRODUCT
+===================================================== */
 export const fetchRatingsByProduct = createAsyncThunk(
-  "ratings/fetchByProduct",
-  async (productId) => {
-    const response = await axios.get(`${BASE_URL}/product/${productId}`);
-    return response.data; 
+  "rating/fetchByProduct",
+  async ({ productId, token }) => {
+    const { data } = await axios.get(
+      `${API_BASE}/ratings/by-product/${productId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return { productId, ratings: data };
   }
 );
 
-// Agregar o actualizar un rating
+/* =====================================================
+   ADD OR UPDATE RATING
+===================================================== */
 export const addOrUpdateRating = createAsyncThunk(
-  "ratings/addOrUpdate",
-  async ({ productId, userId, value, comment }, { getState }) => {
-    const token = getState().auth.token; // 👈 lo saca del estado global
-    const response = await axios.post(
-      `${BASE_URL}/add`,
-      { productId, userId, value, comment },
+  "rating/addOrUpdate",
+  async ({ productId, value, comment, token }) => {
+    const { data } = await axios.post(
+      `${API_BASE}/ratings/add/${productId}`,
+      { value, comment },
       {
         headers: {
           "Content-Type": "application/json",
@@ -29,89 +38,61 @@ export const addOrUpdateRating = createAsyncThunk(
         },
       }
     );
-    return response.data;
+    return data; // rating guardado
   }
 );
 
+/* =====================================================
+   SLICE
+===================================================== */
 
-// Obtener promedio de un producto
-export const fetchAverageRating = createAsyncThunk(
-  "ratings/fetchAverage",
-  async (productId) => {
-    const response = await axios.get(`${BASE_URL}/average/${productId}`);
-    return { productId, average: response.data };
-  }
-);
-
-// Obtener cantidad total de ratings
-export const fetchRatingCount = createAsyncThunk(
-  "ratings/fetchCount",
-  async (productId) => {
-    const response = await axios.get(`${BASE_URL}/count/${productId}`);
-    return { productId, count: response.data };
-  }
-);
-
-// -----------------------------------------
+const initialState = {
+  ratingsByProduct: {}, // { [productId]: [ ...ratings ] }
+  loading: false,
+  error: null,
+};
 
 const ratingSlice = createSlice({
-  name: "ratings",
-  initialState: {
-    ratingsByProduct: {}, // { [productId]: [ratings] }
-    averages: {}, // { [productId]: average }
-    counts: {}, // { [productId]: totalRatings }
-    status: "idle", //
-    error: null,
-  },
+  name: "rating",
+  initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // Obtener ratings
+      /* === FETCH LIST === */
       .addCase(fetchRatingsByProduct.pending, (state) => {
-        state.status = "loading";
+        state.loading = true;
+        state.error = null;
       })
       .addCase(fetchRatingsByProduct.fulfilled, (state, action) => {
-        const productId = action.meta.arg;
-        state.ratingsByProduct[productId] = action.payload;
-        state.status = "succeeded";
+        state.loading = false;
+        const { productId, ratings } = action.payload;
+        state.ratingsByProduct[productId] = ratings;
       })
       .addCase(fetchRatingsByProduct.rejected, (state, action) => {
-        state.status = "failed";
+        state.loading = false;
         state.error = action.error.message;
       })
 
-      // Agregar o actualizar rating
+      /* === ADD / UPDATE === */
       .addCase(addOrUpdateRating.fulfilled, (state, action) => {
-        const rating = action.payload;
-        const productId = rating.product.id;
+        const newRating = action.payload; // { productId, userId, value, comment }
+        const productId = newRating.productId;
 
         if (!state.ratingsByProduct[productId]) {
           state.ratingsByProduct[productId] = [];
         }
 
-        const index = state.ratingsByProduct[productId].findIndex(
-          (r) => r.user.id === rating.user.id
+        const list = state.ratingsByProduct[productId];
+
+        const index = list.findIndex(
+          (r) => r.userId === newRating.userId
         );
 
         if (index !== -1) {
-          // actualizar existente
-          state.ratingsByProduct[productId][index] = rating;
+          list[index] = newRating;
         } else {
-          // agregar nuevo
-          state.ratingsByProduct[productId].push(rating);
+          list.push(newRating);
         }
-      })
-
-      // Promedio
-      .addCase(fetchAverageRating.fulfilled, (state, action) => {
-        const { productId, average } = action.payload;
-        state.averages[productId] = average;
-      })
-
-      // Conteo total
-      .addCase(fetchRatingCount.fulfilled, (state, action) => {
-        const { productId, count } = action.payload;
-        state.counts[productId] = count;
       });
   },
 });
