@@ -16,6 +16,10 @@
   position: relative;
 }
 
+.title {
+  margin-bottom: 2rem;
+}
+
 .cart-item:hover {
   border-color: #d4af37;
   box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);

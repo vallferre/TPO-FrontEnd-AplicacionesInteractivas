@@ -46,9 +46,10 @@
 
 /* Summary Row */
 .summary-details > div {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  width: 100%;
+  align-items: center;
   gap: 1rem;
 }
 
@@ -60,7 +61,6 @@
 
 /* Left Side (Label) */
 .summary-details > div p:first-child {
-  flex: 1;
   color: #5d4037;
   font-weight: 500;
 }
@@ -83,10 +83,6 @@
 }
 
 /* Discount Section */
-.discount-total {
-  font-weight: 600 !important;
-}
-
 .discount-total p:last-child {
   color: #059669 !important;
   font-weight: 700 !important;
@@ -94,6 +90,11 @@
 
 /* Individual Discount Items */
 .discount-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  width: 100%;
+  align-items: center;
+  gap: 1rem;
   font-size: 0.9rem !important;
   color: #059669;
   padding-left: 1rem;
@@ -102,7 +103,6 @@
 }
 
 .discount-item p:first-child {
-  flex: 1;
   margin: 0;
   line-height: 1.3;
   word-wrap: break-word;
