@@ -27,6 +27,19 @@ export const fetchProductById = createAsyncThunk(
 );
 
 /* =====================================================
+   SEARCH PRODUCTS BY KEYWORD
+===================================================== */
+export const searchProducts = createAsyncThunk(
+  "product/search",
+  async (keyword) => {
+    const { data } = await axios.get(
+      `${API_BASE}/products/search?keyword=${encodeURIComponent(keyword)}`
+    );
+    return data; // List<ProductResponse>
+  }
+);
+
+/* =====================================================
    RELATED PRODUCTS
 ===================================================== */
 export const fetchRelatedProducts = createAsyncThunk(
@@ -308,6 +321,20 @@ const productSlice = createSlice({
       .addCase(fetchProductById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+      })
+
+            // === SEARCH PRODUCTS ===
+      .addCase(searchProducts.pending, (state) => {
+        state.searchLoading = true;
+        state.searchError = null;
+      })
+      .addCase(searchProducts.fulfilled, (state, action) => {
+        state.searchLoading = false;
+        state.searchResults = action.payload;
+      })
+      .addCase(searchProducts.rejected, (state, action) => {
+        state.searchLoading = false;
+        state.searchError = action.payload || action.error.message;
       })
 
       // === RELATED PRODUCTS ===

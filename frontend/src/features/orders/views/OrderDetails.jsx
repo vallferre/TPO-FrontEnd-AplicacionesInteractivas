@@ -70,8 +70,8 @@ const OrderDetails = () => {
                 <td>#{item.productIdSnapshot}</td>
                 <td>{item.productName}</td>
                 <td>{item.quantity}</td>
-                <td>${item.priceAtPurchase}</td>
-                <td>${(item.quantity * item.priceAtPurchase).toFixed(2)}</td>
+                <td>${(item.priceAtPurchase * (1 - item.discountedPriceAtPurchase/100)).toFixed(2)}</td>
+                <td>${(item.quantity * (item.priceAtPurchase * (1 - item.discountedPriceAtPurchase/100))).toFixed(2)}</td>
                 <td>
                   <button
                     onClick={() => handleRateProduct(item.productIdSnapshot)}
