@@ -11,10 +11,7 @@ import {
   deleteUserProduct,
 } from "../../../redux/slices/ProductSlice";
 
-import { fetchProductImages } from "../../../redux/slices/ProductImageSlice";
-import { selectProductImagesById } from "../../../redux/slices/ProductImageSelectors";
-
-
+const API_BASE = "http://localhost:8080";
 
 const DeleteConfirmationModal = ({
   isOpen,
@@ -61,12 +58,10 @@ const UserProducts = () => {
     (state) => state.products?.userProductsError
   );
 
-  // Normalizamos fuera del selector (así no creamos [] nuevos dentro)
   const rawProducts = rawProductsFromStore || [];
   const loading = loadingFromStore ?? false;
   const reduxError = reduxErrorFromStore ?? null;
 
-  // error local para el caso "no hay token"
   const [localError, setLocalError] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -81,13 +76,7 @@ const UserProducts = () => {
     }
 
     setLocalError(null);
-    dispatch(fetchUserProducts(token)).then((action) => {
-    const prods = action.payload || [];
-
-    // pedir imágenes de cada producto
-    prods.forEach((p) => dispatch(fetchProductImages(p.id)));
-  });
-    
+    dispatch(fetchUserProducts(token));
   }, [token, dispatch]);
 
   const handleCreate = () => navigate("/create");
@@ -121,29 +110,22 @@ const UserProducts = () => {
     }
   };
 
-  const productImages = useSelector(
-  (state) => state.productImages?.items || {}
-);
-
-  // Formateo de productos (igual que tenías antes)
   const products = rawProducts.map((p) => {
     const stock = Number(p.stock ?? p.quantity ?? 0);
 
     const statusText = stock > 0 ? stock : "Sold-Out";
     const statusClass = stock > 0 ? "status-active" : "status-soldout";
 
-  const images = productImages[p.id] || [];
-  const imageUrl =
-    images.length > 0 ? images[0].url : "/assets/no-image.jpg";
-
-  return {
-    id: p.id,
-    name: p.name,
-    img: imageUrl,
-    status: statusText,
-    statusClass,
-  };
-});
+    return {
+      id: p.id,
+      name: p.name,
+      img: p.imageIds?.[0]
+        ? `${API_BASE}/images/${p.imageIds[0]}`
+        : null,
+      status: statusText,
+      statusClass,
+    };
+  });
 
   return (
     <div className="user-products-container">

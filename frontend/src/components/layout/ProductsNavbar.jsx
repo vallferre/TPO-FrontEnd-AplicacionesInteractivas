@@ -4,7 +4,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import "./ProductsNavbar.css";
 
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts } from "../../redux/slices/ProductSlice";
+import {
+  fetchProducts,
+  searchProducts,
+} from "../../redux/slices/ProductSlice";
 import { fetchCategories } from "../../redux/slices/CategorySlice";
 
 const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) => {
@@ -12,9 +15,10 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
   const [searchParams, setSearchParams] = useSearchParams();
   const dispatch = useDispatch();
 
+  // Categorías desde Redux
   const categories = useSelector((state) => state.categories?.items || []);
 
-  // Estados de filtros
+  // Filtros
   const [searchTerm, setSearchTerm] = useState(
     searchParams.get("keyword") || ""
   );
@@ -48,16 +52,17 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
     sortOrder;
 
   /* =====================================================
-     TRAER CATEGORÍAS
+     TRAER CATEGORÍAS DESDE REDUX
   ====================================================== */
   useEffect(() => {
     if (!categories || categories.length === 0) {
       dispatch(fetchCategories());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* =====================================================
-     TRAER PRODUCTOS Y FILTRAR EN FRONT
+     FETCH + FILTRADO
   ====================================================== */
   const fetchAndFilterProducts = async (filters = {}) => {
     try {
@@ -65,23 +70,38 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
       setError(null);
       setHasQueried(true);
 
-      const action = await dispatch(fetchProducts());
+      let action;
 
-      if (!fetchProducts.fulfilled.match(action)) {
-        const msg =
-          action.error?.message || "Error al cargar productos desde el servidor";
-        throw new Error(msg);
-      }
-
-      let list = Array.isArray(action.payload) ? action.payload : [];
-
-      // === Filtrado por frontend ===
-      if (filters.searchTerm) {
-        list = list.filter((p) =>
-          p.name?.toLowerCase().includes(filters.searchTerm.trim().toLowerCase())
+      // 👇 Si hay searchTerm, voy al endpoint de búsqueda
+      if (filters.searchTerm && filters.searchTerm.trim() !== "") {
+        action = await dispatch(
+          searchProducts(filters.searchTerm.trim())
         );
+
+        if (!searchProducts.fulfilled.match(action)) {
+          const msg =
+            action.error?.message ||
+            "Error al buscar productos por nombre";
+          throw new Error(msg);
+        }
+      } else {
+        action = await dispatch(fetchProducts());
+
+        if (!fetchProducts.fulfilled.match(action)) {
+          const msg =
+            action.error?.message || "Error al cargar productos";
+          throw new Error(msg);
+        }
       }
 
+      // Normalizamos el resultado en una lista
+      let list = Array.isArray(action.payload)
+        ? action.payload
+        : Array.isArray(action.payload?.content)
+        ? action.payload.content
+        : [];
+
+      // === Filtrado extra en frontend (categorías, precio, etc.) ===
       if (filters.selectedCategories?.length > 0) {
         list = list.filter((p) =>
           p.categories?.some((cat) =>
@@ -114,7 +134,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
         );
       }
 
-      // === Ordenar por finalPrice (OJO: copiar antes de sort) ===
+      // Ordenar por precio
       if (filters.sortOrder === "asc") {
         list = [...list].sort((a, b) => a.finalPrice - b.finalPrice);
       } else if (filters.sortOrder === "desc") {
@@ -131,12 +151,13 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
     }
   };
 
-  /* =====================================================
-     TRAER PRODUCTOS AL MONTAR (RESPETA searchParams)
-  ====================================================== */
   useEffect(() => {
+    const keywordFromUrl = searchParams.get("keyword") || "";
+
+    setSearchTerm(keywordFromUrl);
+
     fetchAndFilterProducts({
-      searchTerm,
+      searchTerm: keywordFromUrl,
       selectedCategories,
       minPrice,
       maxPrice,
@@ -144,7 +165,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
       rating,
       sortOrder,
     });
-  }, []);
+  }, [searchParams]);
 
   /* =====================================================
      APLICAR FILTROS
