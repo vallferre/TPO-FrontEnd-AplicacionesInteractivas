@@ -1,80 +1,124 @@
+// src/components/layout/ProductsNavbar.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./ProductsNavbar.css";
 
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProducts } from "../../redux/slices/ProductSlice";
+import { fetchCategories } from "../../redux/slices/CategorySlice";
+
 const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const dispatch = useDispatch();
+
+  const categories = useSelector((state) => state.categories?.items || []);
 
   // Estados de filtros
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("keyword") || "");
-  const [categories, setCategories] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(
+    searchParams.get("keyword") || ""
+  );
   const [selectedCategories, setSelectedCategories] = useState(
     searchParams.getAll("category") || []
   );
-  const [minPrice, setMinPrice] = useState(searchParams.get("minPrice") || "");
-  const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "");
-  const [discount, setDiscount] = useState(searchParams.get("discount") || "");
-  const [rating, setRating] = useState(searchParams.get("rating") || "");
-  const [sortOrder, setSortOrder] = useState(searchParams.get("sort") || "");
+  const [minPrice, setMinPrice] = useState(
+    searchParams.get("minPrice") || ""
+  );
+  const [maxPrice, setMaxPrice] = useState(
+    searchParams.get("maxPrice") || ""
+  );
+  const [discount, setDiscount] = useState(
+    searchParams.get("discount") || ""
+  );
+  const [rating, setRating] = useState(
+    searchParams.get("rating") || ""
+  );
+  const [sortOrder, setSortOrder] = useState(
+    searchParams.get("sort") || ""
+  );
   const [showCategories, setShowCategories] = useState(false);
 
   const hasActiveFilters =
-    searchTerm || selectedCategories.length > 0 || minPrice || maxPrice || discount || rating || sortOrder;
+    searchTerm ||
+    selectedCategories.length > 0 ||
+    minPrice ||
+    maxPrice ||
+    discount ||
+    rating ||
+    sortOrder;
 
-  // Traer categorías
+  /* =====================================================
+     TRAER CATEGORÍAS
+  ====================================================== */
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch("http://localhost:8080/categories");
-        if (!res.ok) throw new Error("Error al cargar categorías");
-        const data = await res.json();
-        setCategories(data.content || []);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchCategories();
+    if (!categories || categories.length === 0) {
+      dispatch(fetchCategories());
+    }
   }, []);
 
-  // Función para traer y filtrar productos
+  /* =====================================================
+     TRAER PRODUCTOS Y FILTRAR EN FRONT
+  ====================================================== */
   const fetchAndFilterProducts = async (filters = {}) => {
     try {
       setLoading(true);
       setError(null);
       setHasQueried(true);
 
-      const res = await fetch("http://localhost:8080/products", {
-        headers: { "Content-Type": "application/json" },
-      });
+      const action = await dispatch(fetchProducts());
 
-      if (!res.ok) throw new Error(`Error: ${res.status}`);
-      const data = await res.json();
-      let list = Array.isArray(data.content) ? data.content : data;
+      if (!fetchProducts.fulfilled.match(action)) {
+        const msg =
+          action.error?.message || "Error al cargar productos desde el servidor";
+        throw new Error(msg);
+      }
 
-      // Filtrado por frontend
-      if (filters.searchTerm)
+      let list = Array.isArray(action.payload) ? action.payload : [];
+
+      // === Filtrado por frontend ===
+      if (filters.searchTerm) {
         list = list.filter((p) =>
-          p.name.toLowerCase().includes(filters.searchTerm.trim().toLowerCase())
+          p.name?.toLowerCase().includes(filters.searchTerm.trim().toLowerCase())
         );
+      }
 
-      if (filters.selectedCategories?.length > 0)
+      if (filters.selectedCategories?.length > 0) {
         list = list.filter((p) =>
-          p.categories.some((cat) => filters.selectedCategories.includes(cat))
+          p.categories?.some((cat) =>
+            filters.selectedCategories.includes(cat)
+          )
         );
+      }
 
-      if (filters.minPrice) list = list.filter((p) => p.finalPrice >= parseFloat(filters.minPrice));
-      if (filters.maxPrice) list = list.filter((p) => p.finalPrice <= parseFloat(filters.maxPrice));
-      if (filters.discount)
-        list = list.filter((p) => (p.discountPercentage || 0) >= parseFloat(filters.discount));
-      if (filters.rating)
-        list = list.filter((p) => (p.rating || 0) >= parseInt(filters.rating));
+      if (filters.minPrice) {
+        list = list.filter(
+          (p) => p.finalPrice >= parseFloat(filters.minPrice)
+        );
+      }
 
-      // Ordenar por finalPrice
+      if (filters.maxPrice) {
+        list = list.filter(
+          (p) => p.finalPrice <= parseFloat(filters.maxPrice)
+        );
+      }
+
+      if (filters.discount) {
+        list = list.filter(
+          (p) => (p.discountPercentage || 0) >= parseFloat(filters.discount)
+        );
+      }
+
+      if (filters.rating) {
+        list = list.filter(
+          (p) => (p.rating || 0) >= parseInt(filters.rating)
+        );
+      }
+
+      // === Ordenar por finalPrice (OJO: copiar antes de sort) ===
       if (filters.sortOrder === "asc") {
-        list = list.sort((a, b) => a.finalPrice - b.finalPrice);
+        list = [...list].sort((a, b) => a.finalPrice - b.finalPrice);
       } else if (filters.sortOrder === "desc") {
-        list = list.sort((a, b) => b.finalPrice - a.finalPrice);
+        list = [...list].sort((a, b) => b.finalPrice - a.finalPrice);
       }
 
       setProducts(list);
@@ -87,7 +131,9 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
     }
   };
 
-  // Traer productos al montar la barra, respetando searchParams
+  /* =====================================================
+     TRAER PRODUCTOS AL MONTAR (RESPETA searchParams)
+  ====================================================== */
   useEffect(() => {
     fetchAndFilterProducts({
       searchTerm,
@@ -98,10 +144,11 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
       rating,
       sortOrder,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Aplicar filtros
+  /* =====================================================
+     APLICAR FILTROS
+  ====================================================== */
   const applyFilters = () => {
     setHasQueried(true);
     const params = {};
@@ -127,7 +174,9 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
     });
   };
 
-  // Limpiar filtros
+  /* =====================================================
+     LIMPIAR FILTROS
+  ====================================================== */
   const clearFilters = () => {
     setHasQueried(true);
     setSearchTerm("");
@@ -156,16 +205,23 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
       <div className="filters-section">
         <h2>Filtros</h2>
 
+        {/* CATEGORÍAS */}
         <div className="filter-group">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <h3>Categorías</h3>
-            <button 
+            <button
               className="toggle-categories-btn"
               onClick={() => setShowCategories(!showCategories)}
-              style={{ 
-                padding: '4px 8px', 
-                fontSize: '12px',
-                minWidth: 'auto'
+              style={{
+                padding: "4px 8px",
+                fontSize: "12px",
+                minWidth: "auto",
               }}
             >
               {showCategories ? "▲" : "▼"}
@@ -187,6 +243,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
           )}
         </div>
 
+        {/* PRECIO */}
         <div className="filter-group">
           <h3>Precio</h3>
           <input
@@ -203,9 +260,13 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
           />
         </div>
 
+        {/* DESCUENTO */}
         <div className="filter-group">
           <h3>Descuento</h3>
-          <select value={discount} onChange={(e) => setDiscount(e.target.value)}>
+          <select
+            value={discount}
+            onChange={(e) => setDiscount(e.target.value)}
+          >
             <option value="">Cualquiera</option>
             <option value="10">10%+</option>
             <option value="20">20%+</option>
@@ -213,9 +274,13 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
           </select>
         </div>
 
+        {/* ORDEN */}
         <div className="filter-group">
           <h3>Ordenar por precio</h3>
-          <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+          >
             <option value="">Por defecto</option>
             <option value="asc">Menor a mayor</option>
             <option value="desc">Mayor a menor</option>
