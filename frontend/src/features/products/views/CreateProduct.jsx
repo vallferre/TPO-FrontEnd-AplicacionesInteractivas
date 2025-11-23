@@ -13,16 +13,13 @@ import { uploadProductImages } from "../../../redux/slices/ProductImageSlice.js"
 import { selectProductCreating } from "../../../redux/slices/ProductSelectors";
 import { selectImageUploading } from "../../../redux/slices/ProductImageSelectors";
 
-const API_BASE = "http://localhost:8080"; // para CategoryMultiSelect
+const API_BASE = "http://localhost:8080";
 
 const CreateProduct = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  // 🔹 Token desde Redux
   const token = useSelector((s) => s.auth.token);
 
-  // estados de loading opcionales
   const creating = useSelector(selectProductCreating);
   const uploadingImages = useSelector(selectImageUploading);
 
@@ -32,8 +29,8 @@ const CreateProduct = () => {
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [discount, setDiscount] = useState("");
-  const [categories, setCategories] = useState([]); // [{id, description}]
-  const [imageFiles, setImageFiles] = useState([]); // File[]
+  const [categories, setCategories] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]);
 
   const [touched, setTouched] = useState({});
 
@@ -95,7 +92,7 @@ const CreateProduct = () => {
 
     if (!isValid) return;
 
-    // Validar imágenes antes de enviar (lógica en JSX, no en thunks)
+    // Validar imágenes antes de enviar
     if (imageFiles.length === 0) {
       toast.error("Debés subir al menos una imagen del producto.");
       return;
@@ -113,7 +110,7 @@ const CreateProduct = () => {
       }
     }
 
-    // Armar form para backend (sin lógica en el thunk)
+    // Armar form
     const form = {
       name: name.trim(),
       description: desc.trim(),
@@ -124,9 +121,8 @@ const CreateProduct = () => {
     };
 
     try {
-      // 1) Crear producto (PRIMER DISPATCH)
-      const createAction = await dispatch(createProduct({ token, form })
-      );
+      // 1) Crear producto
+      const createAction = await dispatch(createProduct({ token, form }));
 
       if (createAction.meta.requestStatus === "rejected") {
         const msg =
@@ -144,20 +140,24 @@ const CreateProduct = () => {
         toast.error("No se pudo obtener el ID del producto creado.");
         return;
       }
+        // 2) Subir imágenes
+      for (const file of imageFiles) {
+        const fd = new FormData();
+        fd.append("file", file);
 
-      // 2) Subir imágenes (SEGUNDO DISPATCH)
-      const uploadAction = await dispatch(uploadProductImages({ token, productId, files: imageFiles })
-      );
+        const uploadAction = await dispatch(
+          uploadProductImages({ token, productId, formData: fd })
+        );
 
-      if (uploadAction.meta.requestStatus === "rejected") {
-        const msg =
-          uploadAction.payload ||
-          uploadAction.error?.message ||
-          "Error al subir las imágenes.";
-        toast.error(msg);
-        return;
+        if (uploadProductImages.rejected.match(uploadAction)) {
+          const msg =
+            uploadAction.payload ||
+            uploadAction.error?.message ||
+            "Error al subir las imágenes.";
+          toast.error(msg);
+          return;
+        }
       }
-
       toast.success("✅ Producto creado y fotos subidas.");
 
       // Reset

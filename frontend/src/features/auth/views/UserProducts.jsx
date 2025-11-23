@@ -48,7 +48,6 @@ const UserProducts = () => {
 
   const token = useSelector((state) => state.auth.token);
 
-  // OJO: usamos "products" (plural), como en tu store
   const rawProductsFromStore = useSelector(
     (state) => state.products?.userProducts
   );
@@ -59,12 +58,10 @@ const UserProducts = () => {
     (state) => state.products?.userProductsError
   );
 
-  // Normalizamos fuera del selector (así no creamos [] nuevos dentro)
   const rawProducts = rawProductsFromStore || [];
   const loading = loadingFromStore ?? false;
   const reduxError = reduxErrorFromStore ?? null;
 
-  // error local para el caso "no hay token"
   const [localError, setLocalError] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -113,7 +110,6 @@ const UserProducts = () => {
     }
   };
 
-  // Formateo de productos (igual que tenías antes)
   const products = rawProducts.map((p) => {
     const stock = Number(p.stock ?? p.quantity ?? 0);
 

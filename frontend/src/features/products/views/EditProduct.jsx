@@ -1,4 +1,4 @@
-// src/views/EditProduct.jsx  
+// src/views/EditProduct.jsx 
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./EditProduct.css";
@@ -27,10 +27,7 @@ const EditProduct = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // 🔹 token desde Redux
   const token = useSelector((state) => state.auth.token);
-
-  // 🔹 imágenes desde Redux (array de este producto)
   const productImages = useSelector(
     (state) => state.productImages.items?.[id] || []
   );
@@ -38,10 +35,8 @@ const EditProduct = () => {
   // Campos base
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [price, setPrice] = useState(""); // string
-  const [discountStr, setDiscountStr] = useState(""); // string (permite vacío)
-
-  // stock como string y vacío (placeholder muestra el actual)
+  const [price, setPrice] = useState("");
+  const [discountStr, setDiscountStr] = useState("");
   const [stockStr, setStockStr] = useState("");
 
   // Originales
@@ -52,7 +47,7 @@ const EditProduct = () => {
   const [originalCategories, setOriginalCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
 
-  // Imágenes (solo frontend)
+  // Imágenes
   const [newImages, setNewImages] = useState([]);
   const [imagesToDelete, setImagesToDelete] = useState([]);
 
@@ -63,7 +58,6 @@ const EditProduct = () => {
 
   const MAX_IMAGE_SIZE = 1 * 1024 * 1024;
 
-  /* ---------- carga inicial usando Redux para el producto + categorías + imágenes ---------- */
 
   useEffect(() => {
     const load = async () => {
@@ -76,7 +70,6 @@ const EditProduct = () => {
           dispatch(fetchCategories()),
         ]);
 
-        // Si falló el fetch del producto
         if (!fetchProductById.fulfilled.match(productAction)) {
           console.error("Error al cargar producto:", productAction.error);
           setError("No se pudo cargar el producto.");
@@ -85,7 +78,6 @@ const EditProduct = () => {
 
         const product = productAction.payload;
 
-        // Normalizar categorías desde el thunk (puede venir {content: []} o array plano)
         const rawCats = categoriesAction.payload;
         const catsList = Array.isArray(rawCats?.content)
           ? rawCats.content
@@ -93,11 +85,11 @@ const EditProduct = () => {
           ? rawCats
           : [];
 
-        // 🔹 IMÁGENES DESDE REDUX
+        //IMÁGENES DESDE REDUX
         const imagesAction = await dispatch(fetchProductImages(id));
         if (!fetchProductImages.fulfilled.match(imagesAction)) {
           console.error("Error al cargar imágenes:", imagesAction.error);
-          // no cortamos el flujo, solo logueamos
+          
         }
 
         setName(product.name ?? "");
@@ -115,7 +107,7 @@ const EditProduct = () => {
         const currentQty = Number(product.quantity ?? product.stock ?? 0);
         setOriginalStock(Number.isFinite(currentQty) ? currentQty : 0);
 
-        // input stock vacío (placeholder con originalStock)
+        // input stock vacío
         setStockStr("");
 
         const prodCats = Array.isArray(product.categories)
@@ -234,23 +226,25 @@ const EditProduct = () => {
 
     // 1) Eliminar imágenes marcadas
     if (imagesToDelete.length > 0) {
-      const deleteAction = await dispatch(
-        deleteProductImages({
-          token,
-          productId: id,
-          imageIds: imagesToDelete,
-        })
-      );
+      for (const imgId of imagesToDelete) {
+        const deleteAction = await dispatch(
+          deleteProductImages({
+            token,
+            productId: id,
+            imageId: imgId,
+          })
+        );
 
-      if (deleteProductImages.rejected.match(deleteAction)) {
-        console.error("Error al eliminar imágenes:", deleteAction.error);
-        toast.error("Hubo un error al eliminar las imágenes");
-        setSaving(false);
-        return;
+        if (deleteProductImages.rejected.match(deleteAction)) {
+          console.error("Error al eliminar imágenes:", deleteAction.error);
+          toast.error("Hubo un error al eliminar las imágenes");
+          setSaving(false);
+          return;
+        }
       }
     }
 
-    // 2) Actualizar producto (PUT + notificación)
+    // 2) Actualizar producto
     const updateAction = await dispatch(
       updateProductWithImages({
         token,
@@ -267,25 +261,23 @@ const EditProduct = () => {
       setSaving(false);
       return;
     }
-
-    // 3) Subir nuevas imágenes
+// 3) Subir nuevas imágenes
     if (newImages.length > 0) {
-      const uploadAction = await dispatch(
-        uploadProductImages({
-          token,
-          productId: id,
-          files: newImages,
-        })
-      );
+      for (const file of newImages) {
+        const fd = new FormData();
+        fd.append("file", file);
 
-      if (uploadProductImages.rejected.match(uploadAction)) {
-        console.error("Error al subir imágenes:", uploadAction.error);
-        toast.error("Hubo un error al subir las nuevas imágenes");
-        setSaving(false);
-        return;
+        const uploadAction = await dispatch(
+          uploadProductImages({token,productId: id,formData: fd,})
+        );
+        if (uploadProductImages.rejected.match(uploadAction)) {
+          console.error("Error al subir imágenes:", uploadAction.error);
+          toast.error("Hubo un error al subir las nuevas imágenes");
+          setSaving(false);
+          return;
+        }
       }
     }
-
     toast.success("Producto actualizado correctamente");
     setSaving(false);
     navigate(-1);

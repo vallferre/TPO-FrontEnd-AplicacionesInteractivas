@@ -161,9 +161,7 @@ export const updateProductWithImages = createAsyncThunk(
   async ({
     token,
     id,
-    payload,
-    originalStock,
-    originalDiscount,
+    payload
   }) => {
     // 1) Actualizar producto
     const { data: updated } = await axios.put(
@@ -176,33 +174,6 @@ export const updateProductWithImages = createAsyncThunk(
         },
       }
     );
-
-    // 2) Detectar cambios
-    const sentQuantity = payload.hasOwnProperty("quantity")
-      ? payload.quantity
-      : originalStock;
-
-    const sentDiscount = payload.hasOwnProperty("discount")
-      ? payload.discountPercentage
-      : originalDiscount;
-
-    // 3) Si cambió stock o descuento → notificar
-    if (
-      Number(sentQuantity) !== originalStock ||
-      sentDiscount !== originalDiscount
-    ) {
-      await axios.post(
-        `${API_BASE}/api/notifications/product/${id}`,
-        {},
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-    }
-
     return updated;
   }
 );
@@ -211,11 +182,6 @@ export const updateProductWithImages = createAsyncThunk(
    USER PRODUCTS (MIS PRODUCTOS)
 ===================================================== */
 
-/**
- * Lista de productos del usuario logueado
- * (GET /products/filter-by-username)
- * Devuelve el data crudo, SIN formateo.
- */
 export const fetchUserProducts = createAsyncThunk(
   "product/fetchUserProducts",
   async (token) => {
@@ -230,14 +196,13 @@ export const fetchUserProducts = createAsyncThunk(
       }
     );
 
-    return data; // sin map, sin status, sin img
+    return data;
   }
 );
 
-/**
- * Eliminar un producto del usuario
- * (DELETE /products/{id})
- */
+/* =====================================================
+Eliminar un producto del usuario
+=====================================================*/
 export const deleteUserProduct = createAsyncThunk(
   "product/deleteUserProduct",
   async ({ token, id }) => {
@@ -248,7 +213,7 @@ export const deleteUserProduct = createAsyncThunk(
       },
     });
 
-    return id; // devolvemos el id borrado
+    return id;
   }
 );
 

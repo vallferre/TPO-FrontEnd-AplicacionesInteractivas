@@ -7,7 +7,7 @@ const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
 /* ========== FETCH IMÁGENES POR PRODUCTO ========== */
 export const fetchProductImages = createAsyncThunk(
   "productImages/fetchByProduct",
-  async (productId, { rejectWithValue }) => {
+  async (productId) => {
     const { data } = await axios.get(
       `${API_BASE}/products/${productId}/images`
     );
@@ -15,50 +15,43 @@ export const fetchProductImages = createAsyncThunk(
   }
 );
 
-/* ========== SUBIR IMÁGENES ========== */
+/* ========== SUBIR UNA IMAGEN ========== */
 export const uploadProductImages = createAsyncThunk(
   "productImages/upload",
-  async ({ token, productId, files }, { rejectWithValue }) => {
-    for (const file of files) {
-      const fd = new FormData();
-      fd.append("file", file);
+  async ({ token, productId, formData }) => {
+    await axios.post(`${API_BASE}/products/${productId}/images`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-      await axios.post(`${API_BASE}/products/${productId}/images`, fd, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-    }
-
-    return { productId, count: files.length };
+    return { productId };
   }
 );
 
-/* ========== ELIMINAR IMÁGENES ========== */
+
+/* ========== ELIMINAR UNA IMAGEN ========== */
 export const deleteProductImages = createAsyncThunk(
   "productImages/deleteMany",
-  async ({ token, imageIds, productId }) => {
-    for (const imgId of imageIds) {
-      await axios.delete(`${API_BASE}/images/${imgId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-    }
+  async ({ token, imageId, productId }) => {
+    await axios.delete(`${API_BASE}/images/${imageId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-    return { deletedIds: imageIds, productId };
+    return { deletedId: imageId, productId };
   }
 );
 
-
 const initialState = {
-  items: {}, // { [productId]: Imagen[] }
+  items: {},
   loading: false,
   uploading: false,
   deleting: false,
   error: null,
-  lastUploadInfo: null, // {productId, count}
+  lastUploadInfo: null,
 };
 
 const productImageSlice = createSlice({
@@ -71,7 +64,7 @@ const productImageSlice = createSlice({
       state.deleting = false;
       state.error = null;
       state.lastUploadInfo = null;
-      state.items = {}; // 👈 importante: vuelve a ser objeto, no []
+      state.items = {};
     },
   },
   extraReducers: (builder) => {
@@ -104,8 +97,10 @@ const productImageSlice = createSlice({
       })
       .addCase(uploadProductImages.fulfilled, (state, action) => {
         state.uploading = false;
-        state.lastUploadInfo = action.payload || null;
-        // si querés, podés hacer un refetch en el componente después
+        state.lastUploadInfo = {
+          productId: action.payload?.productId,
+          count: 1,
+        };
       })
       .addCase(uploadProductImages.rejected, (state, action) => {
         state.uploading = false;
@@ -122,16 +117,15 @@ const productImageSlice = createSlice({
       })
       .addCase(deleteProductImages.fulfilled, (state, action) => {
         state.deleting = false;
-        const { deletedIds, productId } = action.payload || {};
+        const { deletedId, productId } = action.payload || {};
 
         if (
-          deletedIds &&
-          deletedIds.length > 0 &&
+          deletedId &&
           state.items[productId] &&
           Array.isArray(state.items[productId])
         ) {
           state.items[productId] = state.items[productId].filter(
-            (img) => !deletedIds.includes(img.id)
+            (img) => img.id !== deletedId
           );
         }
       })
