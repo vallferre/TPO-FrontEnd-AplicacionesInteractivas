@@ -17,37 +17,13 @@ export default function OrderSummary({
   const token = useSelector((s) => s.auth.token);
 
   const totalDiscount = cartItems.reduce((sum, item) => {
-    console.log(item.discountAmount)
-    console.log(item.discountedPrice)
-    console.log(item.price)
     if (item.discountedPrice && item.discountedPrice > 0) {
       const discountAmount =
         ((item.price * item.discountedPrice) / 100) * item.quantity;
-        console.log("Price" + item.priceAtAddTime)
-        console.log("Discount" + item.discountedPrice)
-        console.log("Discount amount"+discountAmount)
       return sum + discountAmount;
     }
     return sum;
   }, 0);
-
-  const handleCheckout = async () => {
-    if (!token) {
-      toast.error("Necesitas iniciar sesión para completar la compra.");
-      return;
-    }
-    //se pasa el token al thunk desde el estado global
-    const result = await dispatch(checkoutOrder({ token }));
-
-    if (checkoutOrder.fulfilled.match(result)) {
-      toast.success("Orden exitosa!");
-      navigate(`/order/${result.payload.orderId}`, {
-        state: { order: result.payload },
-      });
-    } else {
-      toast.error(result.payload || "Checkout fallido.");
-    }
-  };
 
   return (
     <div className="order-summary">

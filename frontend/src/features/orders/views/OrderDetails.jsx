@@ -26,7 +26,6 @@ const OrderDetails = () => {
 
   //  Ahora solo pasamos el productId por URL
   const handleRateProduct = (productIdSnapshot) => {
-    console.log("productId recibido:", productIdSnapshot);
     navigate(`/rate-product/${productIdSnapshot}`);
   };
 
@@ -58,7 +57,7 @@ const OrderDetails = () => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Descripción</th>
+              <th>Nombre</th>
               <th>Cantidad</th>
               <th>Precio</th>
               <th>Subtotal</th>
@@ -68,8 +67,13 @@ const OrderDetails = () => {
           <tbody>
             {order.items.map((item) => (
               <tr key={item.productIdSnapshot}>
+                {console.log(item.productNameSnapshot )}
+                {console.log(item.name)}
+                {console.log(item.productName)}
+                {console.log(item.productNameSnapshot)}
+                {console.log(item)}
                 <td>#{item.productIdSnapshot}</td>
-                <td>{item.description}</td>
+                <td>{item.productName}</td>
                 <td>{item.quantity}</td>
                 <td>${item.priceAtPurchase}</td>
                 <td>${(item.quantity * item.priceAtPurchase).toFixed(2)}</td>

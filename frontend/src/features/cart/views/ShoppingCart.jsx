@@ -100,6 +100,9 @@ const ShoppingCart = () => {
       <div style={{ display: "grid", gridTemplateColumns: "3fr 1fr", gap: "2rem" }}>
         <ul style={{ listStyle: "none", padding: 0 }}>
           {validCartItems.map((item) => (
+            console.log(item.name),
+            console.log(item.productName),
+            console.log(item.productNameSnapshot),
             <CartItem
               key={item.id}
               item={item}
