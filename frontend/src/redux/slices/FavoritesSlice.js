@@ -11,62 +11,51 @@ const API_BASE = "http://localhost:8080/users/favorites";
 export const fetchFavorites = createAsyncThunk(
   "favorites/fetchFavorites",
   async (token, { rejectWithValue }) => {
-    try {
-      const res = await axios.get(API_BASE, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    const res = await axios.get(API_BASE, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      // Normalización: todos los IDs en un único array numérico
-      return res.data.flatMap((fr) =>
-        fr.favoriteProductIds.map((id) => Number(id))
-      );
-    } catch (err) {
-      return rejectWithValue("No se pudieron cargar los favoritos");
-    }
+    return res.data.flatMap((fr) =>
+      fr.favoriteProductIds.map((id) => Number(id))
+    );
   }
 );
+
 
 export const addFavorite = createAsyncThunk(
   "favorites/addFavorite",
   async ({ token, productId }, { rejectWithValue }) => {
-    try {
-      const res = await axios.post(
-        API_BASE,
-        { productId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      // ID del favorito agregado
-      return Number(res.data.favoriteProductIds[0]);
-    } catch (err) {
-      return rejectWithValue("No se pudo agregar a favoritos");
-    }
-  }
-);
-
-export const deleteFavorite = createAsyncThunk(
-  "favorites/deleteFavorite",
-  async ({ token, productId }, { rejectWithValue }) => {
-    try {
-      await axios.delete(API_BASE, {
+    const res = await axios.post(
+      API_BASE,
+      { productId },
+      {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        data: { productId },
-      });
+      }
+    );
 
-      return Number(productId);
-    } catch (err) {
-      return rejectWithValue("No se pudo eliminar de favoritos");
-    }
+    return Number(res.data.favoriteProductIds[0]);
   }
 );
+
+
+export const deleteFavorite = createAsyncThunk(
+  "favorites/deleteFavorite",
+  async ({ token, productId }, { rejectWithValue }) => {
+    await axios.delete(API_BASE, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      data: { productId },
+    });
+
+    return Number(productId);
+  }
+);
+
 
 // ----------------------------------------------------------
 // INITIAL STATE

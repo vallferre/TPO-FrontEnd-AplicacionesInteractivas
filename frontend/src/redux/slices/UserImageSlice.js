@@ -6,27 +6,23 @@ const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
 export const fetchUserAvatar = createAsyncThunk(
   "userImage/fetchAvatar",
   async (_, { getState, rejectWithValue }) => {
-    try {
-      const { token, user } = getState().auth;
+    const { token, user } = getState().auth;
 
-      if (!token || !user?.id) {
-        return rejectWithValue("Usuario no logueado");
-      }
-
-      const response = await axios.get(
-        `${API_BASE}/users/${user.id}/image`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: "blob",
-        }
-      );
-
-      return URL.createObjectURL(response.data);
-
-    } catch {
-      return rejectWithValue("No se pudo cargar la imagen");
+    if (!token || !user?.id) {
+      return rejectWithValue("Usuario no logueado");
     }
-  }
+
+    const response = await axios.get(
+      `${API_BASE}/users/${user.id}/image`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
+      }
+    );
+
+    return URL.createObjectURL(response.data);
+
+    }
 );
 
 

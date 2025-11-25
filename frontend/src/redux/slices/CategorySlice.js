@@ -79,23 +79,15 @@ export const updateCategory = createAsyncThunk(
 export const deleteCategory = createAsyncThunk(
   "categories/delete",
   async ({ token, id }, { rejectWithValue }) => {
-    try {
-      await axios.delete(`${BASE_URL}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      return id;
+    const res = await axios.delete(`${BASE_URL}/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-    } catch (err) {
-
-      // si axios trae response (400)
-      if (err.response && err.response.data) {
-        return rejectWithValue(err.response.data);
-      }
-
-      return rejectWithValue("Error de red");
-    }
+    // Si llegó acá, se eliminó bien
+    return id;
   }
 );
+
 
 
 /* ──────────────────────────────────────────────── */
