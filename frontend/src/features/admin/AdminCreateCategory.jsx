@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 import { createCategory } from "../../redux/slices/CategorySlice";
+import { createCategoryImage } from "../../redux/slices/CategoryImagesSlice";
 
 import "../../features/products/components/Categories.css";
 import Toaster from "../../components/ui/Toaster";
@@ -23,7 +24,7 @@ const AdminCreateCategory = () => {
   const error = !description.trim() ? "La descripción es obligatoria." : null;
   const isValid = !error && !submitting;
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     setTouched(true);
 
@@ -36,22 +37,31 @@ const AdminCreateCategory = () => {
 
     setSubmitting(true);
 
-    dispatch(createCategory({
-      token,
-      description: description.trim(),
-      fileImage: imageFile,
-    }))
-      .unwrap()
-      .then(() => {
-        toast.success(`Categoría "${description.trim()}" creada con éxito`);
-        setTimeout(() => navigate("/profile/categories"), 2000);
-      })
-      .catch((err) => {
-        toast.error(err?.message || err || "Error al crear la categoría.");
-      })
-      .finally(() => {
-        setSubmitting(false);
-      });
+    try {
+      // 1. Crear la categoría
+      const result = await dispatch(createCategory({
+        token,
+        description: description.trim(),
+      })).unwrap();
+
+      const newCategoryId = result?.id;
+
+      // 2. Si hay imagen, subirla
+      if (imageFile && newCategoryId) {
+        await dispatch(createCategoryImage({
+          token,
+          categoryId: newCategoryId,
+          fileImage: imageFile,
+        })).unwrap();
+      }
+
+      toast.success(`Categoría "${description.trim()}" creada con éxito`);
+      setTimeout(() => navigate("/profile/categories"), 2000);
+    } catch (err) {
+      toast.error(err?.message || err || "Error al crear la categoría.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

@@ -7,12 +7,16 @@ import { toast } from "react-toastify";
 import {
   fetchCategoryById,
   updateCategory,
-  clearCategoryImage,
 } from "../../redux/slices/CategorySlice";
 
 import {
   fetchCategoryImage,
+  createCategoryImage,
+  deleteCategoryImage,
+  clearSingleCategoryImage,
 } from "../../redux/slices/CategoryImagesSlice";
+
+import { selectCategoryImageById } from "../../redux/slices/CategoryImagesSelector";
 
 import ImageUploader from "../../components/common/ImageUploader";
 
@@ -23,13 +27,14 @@ const EditCategory = () => {
 
   const token = useSelector((state) => state.auth.token);
   const category = useSelector((state) => state.categories.selected);
-  const categoryImage = useSelector((state) => state.categories.images[id]);
+  const categoryImage = useSelector((state) => selectCategoryImageById(state, id));
   const loading = useSelector((state) => state.categories.loading);
   const error = useSelector((state) => state.categories.error);
 
   const [description, setDescription] = useState("");
   const [newImage, setNewImage] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [deletingImage, setDeletingImage] = useState(false);
 
   // Cargar categoría e imagen
   useEffect(() => {
@@ -42,8 +47,8 @@ const EditCategory = () => {
 
       dispatch(fetchCategoryImage(id))
         .unwrap()
-        .catch((err) => {
-          toast.error("Error al cargar la imagen");
+        .catch(() => {
+          // Silenciar error si no hay imagen
         });
     }
   }, [dispatch, id]);
@@ -66,7 +71,25 @@ const EditCategory = () => {
     setNewImage(files[0] || null);
   };
 
-  const handleSubmit = (e) => {
+  const handleDeleteImage = async () => {
+    if (!window.confirm("¿Seguro que querés eliminar la imagen actual?")) {
+      return;
+    }
+
+    setDeletingImage(true);
+
+    try {
+      await dispatch(deleteCategoryImage({ token, categoryId: id })).unwrap();
+      toast.success("Imagen eliminada correctamente");
+      dispatch(clearSingleCategoryImage(id));
+    } catch (err) {
+      toast.error(err?.message || "Error al eliminar la imagen");
+    } finally {
+      setDeletingImage(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!description.trim()) {
@@ -76,30 +99,34 @@ const EditCategory = () => {
 
     setSaving(true);
 
-    dispatch(updateCategory({
-      token,
-      id,
-      description,
-      fileImage: newImage,
-    }))
-      .unwrap()
-      .then(() => {
-        toast.success("Categoría actualizada correctamente");
-        
-        // Si se subió una nueva imagen, limpiar cache y refrescar
-        if (newImage) {
-          dispatch(clearCategoryImage(id));
-          dispatch(fetchCategoryImage(id));
-        }
-        
-        navigate(-1);
-      })
-      .catch((err) => {
-        toast.error(err?.message || err || "Error al actualizar la categoría");
-      })
-      .finally(() => {
-        setSaving(false);
-      });
+    try {
+      // 1. Actualizar categoría
+      await dispatch(updateCategory({
+        token,
+        id,
+        description,
+      })).unwrap();
+
+      // 2. Si hay nueva imagen, subirla
+      if (newImage) {
+        await dispatch(createCategoryImage({
+          token,
+          categoryId: id,
+          fileImage: newImage,
+        })).unwrap();
+
+        // Limpiar cache y refrescar
+        dispatch(clearSingleCategoryImage(id));
+        dispatch(fetchCategoryImage(id));
+      }
+
+      toast.success("Categoría actualizada correctamente");
+      navigate(-1);
+    } catch (err) {
+      toast.error(err?.message || err || "Error al actualizar la categoría");
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) return <p>Cargando categoría...</p>;
@@ -138,6 +165,14 @@ const EditCategory = () => {
                     }
                   />
                 </div>
+                <button
+                  type="button"
+                  onClick={handleDeleteImage}
+                  disabled={deletingImage || saving}
+                  className="delete-image-btn"
+                >
+                  {deletingImage ? "Eliminando..." : "Eliminar imagen"}
+                </button>
               </div>
             )}
 

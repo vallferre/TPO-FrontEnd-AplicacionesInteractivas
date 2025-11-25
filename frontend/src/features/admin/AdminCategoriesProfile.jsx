@@ -10,8 +10,9 @@ import {
 
 import {
   fetchCategoryImage,
-  selectCategoryImageById,
 } from "../../redux/slices/CategoryImagesSlice";
+
+import {selectCategoryImageById} from "../../redux/slices/CategoryImagesSelector"
 
 import {
   selectCategories,

@@ -29,6 +29,19 @@ const Orders = () => {
     setPage(0);
   };
 
+  // Función para calcular el total con descuentos de UNA orden específica
+  const calculateOrderTotal = (order) => {
+    if (!order.items || order.items.length === 0) {
+      return order.total || 0;
+    }
+
+    return order.items.reduce((acc, item) => {
+      const discount = item.discountedPriceAtPurchase || 0;
+      const precioConDescuento = item.priceAtPurchase * (1 - discount / 100);
+      return acc + item.quantity * precioConDescuento;
+    }, 0);
+  };
+
   const handleOrderClick = (orderId) => {
     if (!orderId) return;
     navigate(`/order/${orderId}`);
@@ -57,47 +70,51 @@ const Orders = () => {
         <div className="orders-subheader">
           <p>Consulta tu historial completo de pedidos y sigue tus entregas actuales.</p>
           <button className="sort-button" onClick={toggleSortOrder}>
-            {sortOrder === "desc" ? "⬇ Newest first" : "⬆ Oldest first"}
+            {sortOrder === "desc" ? "⬇ Nuevos Primero" : "⬆ Antiguos Primero"}
           </button>
         </div>
       </div>
 
-      {loading && <p>Loading orders...</p>}
+      {loading && <p>Cargando órdenes...</p>}
       {error && <p className="error">{error}</p>}
       {!loading && !error && orders.length === 0 && (
         <p>Aún no realizaste pedidos.</p>
       )}
 
       <div className="orders-list">
-        {orders.map((order) => (
-          <div
-            key={order.orderId ?? order.id}
-            className="order-card"
-            onClick={() => handleOrderClick(order.orderId ?? order.id)}
-          >
-            <div className="order-card-content">
-              <div className="order-basic-info">
-                <div className="order-left">
-                  <h3 className="order-title">
-                    Orden #{order.orderId ?? order.id}
-                  </h3>
-                  {order.orderDate && (
-                    <span className="order-date">{formatDate(order.orderDate)}</span>
-                  )}
+        {orders.map((order) => {
+          const orderTotal = calculateOrderTotal(order);
+          
+          return (
+            <div
+              key={order.orderId ?? order.id}
+              className="order-card"
+              onClick={() => handleOrderClick(order.orderId ?? order.id)}
+            >
+              <div className="order-card-content">
+                <div className="order-basic-info">
+                  <div className="order-left">
+                    <h3 className="order-title">
+                      Orden #{order.orderId ?? order.id}
+                    </h3>
+                    {order.orderDate && (
+                      <span className="order-date">{formatDate(order.orderDate)}</span>
+                    )}
+                  </div>
+                  <div className="order-stats">
+                    <span className="items-count">
+                      {order.count ?? order.itemsCount} items
+                    </span>
+                    <span className="total-amount">
+                      ${orderTotal.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
-                <div className="order-stats">
-                  <span className="items-count">
-                    {order.count ?? order.itemsCount} items
-                  </span>
-                  <span className="total-amount">
-                    ${order.totalAmount ?? order.total}
-                  </span>
-                </div>
+                <div className="view-details">Haz clic para ver los detalles →</div>
               </div>
-              <div className="view-details">Haz clic para ver los detalles →</div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {totalPages > 1 && (

@@ -21,9 +21,9 @@ const OrderDetails = () => {
     }
   }, [orderId, token, dispatch]);
 
-  if (loading) return <p>Loading order...</p>;
+  if (loading) return <p>Cargando orden...</p>;
   if (error) return <p className="error">{error}</p>;
-  if (!order) return <p>No order found.</p>;
+  if (!order) return <p>Orden no encontrada.</p>;
 
   //  Ahora solo pasamos el productId por URL
   const handleRateProduct = (productIdSnapshot) => {

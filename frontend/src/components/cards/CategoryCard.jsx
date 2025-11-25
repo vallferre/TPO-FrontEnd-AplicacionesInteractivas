@@ -1,7 +1,8 @@
 // src/components/CategoryCard.jsx (o donde lo tengas)
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchCategoryImage, selectCategoryImageById } from "../../redux/slices/CategoryImagesSlice";
+import { fetchCategoryImage} from "../../redux/slices/CategoryImagesSlice";
+import {selectCategoryImageById} from "../../redux/slices/CategoryImagesSelector"
 
 
 export default function CategoryCard({ category, index, onClick }) {
