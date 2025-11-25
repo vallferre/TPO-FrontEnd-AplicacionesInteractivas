@@ -5,9 +5,13 @@ import { toast } from "react-toastify";
 
 import {
   fetchCategories,
-  fetchCategoryImage,
   deleteCategory,
 } from "../../redux/slices/CategorySlice";
+
+import {
+  fetchCategoryImage,
+  selectCategoryImageById,
+} from "../../redux/slices/CategoryImagesSlice";
 
 import {
   selectCategories,
@@ -19,8 +23,20 @@ import "../auth/views/UserProducts.css";
 import "../../components/ui/DeleteConfirmationModal.css";
 
 // Componente para mostrar la imagen de cada categoría
-const CategoryImage = ({ category, imageUrl }) => {
+const CategoryImage = ({ category }) => {
+  const dispatch = useDispatch();
+  
+  const imageUrl = useSelector((state) =>
+    selectCategoryImageById(state, category.id)
+  );
+  
   const fallback = `https://via.placeholder.com/300x200?text=${encodeURIComponent(category.description)}`;
+
+  useEffect(() => {
+    if (category.fileImageId && !imageUrl) {
+      dispatch(fetchCategoryImage(category.id));
+    }
+  }, [dispatch, category.id, category.fileImageId, imageUrl]);
 
   return (
     <img
@@ -65,21 +81,11 @@ const AdminCategoriesProfile = () => {
   const categories = useSelector(selectCategories) || [];
   const loading = useSelector(selectCategoriesLoading);
   const error = useSelector(selectCategoriesError);
-  const images = useSelector((state) => state.categories.images);
 
   // Fetch de categorías
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
-
-  // Fetch de imágenes para cada categoría
-  useEffect(() => {
-    categories.forEach((cat) => {
-      if (cat.id && !images[cat.id]) {
-        dispatch(fetchCategoryImage(cat.id));
-      }
-    });
-  }, [dispatch, categories, images]);
 
   // Navegación y acciones
   const handleCreate = () => navigate("/categories/create");
@@ -153,10 +159,7 @@ const AdminCategoriesProfile = () => {
                   onClick={(e) => handleRowClick(e, category.id)}
                 >
                   <td>
-                    <CategoryImage
-                      category={category}
-                      imageUrl={images[category.id]}
-                    />
+                    <CategoryImage category={category} />
                   </td>
                   <td>
                     <span className="up-product-desc">{category.description}</span>

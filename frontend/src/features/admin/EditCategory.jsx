@@ -7,9 +7,12 @@ import { toast } from "react-toastify";
 import {
   fetchCategoryById,
   updateCategory,
-  fetchCategoryImage,
   clearCategoryImage,
 } from "../../redux/slices/CategorySlice";
+
+import {
+  fetchCategoryImage,
+} from "../../redux/slices/CategoryImagesSlice";
 
 import ImageUploader from "../../components/common/ImageUploader";
 

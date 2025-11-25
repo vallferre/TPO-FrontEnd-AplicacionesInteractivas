@@ -44,18 +44,6 @@ export const createCategory = createAsyncThunk(
   }
 );
 
-// fetch imagen
-export const fetchCategoryImage = createAsyncThunk(
-  "categories/fetchImage",
-  async (id) => {
-    const res = await fetch(`${BASE_URL}/${id}/image`);
-    if (!res.ok) throw new Error("Error loading image");
-    const blob = await res.blob();
-    return { id, url: URL.createObjectURL(blob) };
-  }
-);
-
-
 // Actualizar categoría + imagen opcional
 export const updateCategory = createAsyncThunk(
   "categories/update",
@@ -88,8 +76,6 @@ export const deleteCategory = createAsyncThunk(
   }
 );
 
-
-
 /* ──────────────────────────────────────────────── */
 /*                SLICE                             */
 /* ──────────────────────────────────────────────── */
@@ -119,9 +105,6 @@ const categorySlice = createSlice({
       .addCase(fetchCategories.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchCategoryImage.fulfilled, (state, action) => {
-        state.images[action.payload.id] = action.payload.url;
-        })
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.loading = false;
         const data = action.payload;
