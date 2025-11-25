@@ -29,25 +29,36 @@ const FavoriteButton = ({ productId, productName }) => {
     setIsFavorite(favorites.includes(id));
   }, [favorites, productId]);
 
-  const handleToggle = () => {
+  const handleToggle = async () => {
     if (!token) {
       toast.info("Debes iniciar sesión para usar favoritos");
       return;
     }
 
     if (isAdmin) {
-      toast.error("No puedes tener productos favoritos como 'Admin'")
+      toast.error("No puedes tener productos favoritos como 'Admin'");
       return;
     }
 
     const id = Number(productId);
 
     if (isFavorite) {
-      dispatch(deleteFavorite({ token, productId: id }));
-      toast.success(`"${productName}" eliminado de favoritos`);
+      const action = await dispatch(deleteFavorite({ token, productId: id }));
+
+      if (deleteFavorite.fulfilled.match(action)) {
+        toast.success(`"${productName}" eliminado de favoritos`);
+      } else {
+        toast.error(action.error?.message || "No se pudo eliminar de favoritos");
+      }
+
     } else {
-      dispatch(addFavorite({ token, productId: id }));
-      toast.success(`"${productName}" agregado a favoritos`);
+      const action = await dispatch(addFavorite({ token, productId: id }));
+
+      if (addFavorite.fulfilled.match(action)) {
+        toast.success(`"${productName}" agregado a favoritos`);
+      } else {
+        toast.error("No se puede agregar tu mismo producto a favoritos");
+      }
     }
   };
 
