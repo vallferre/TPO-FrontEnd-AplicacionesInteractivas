@@ -51,7 +51,7 @@ export default function LandingPage() {
   const featuredCategories = (() => {
     if (!categories || categories.length === 0) return [];
     const shuffled = [...categories].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 5);
+    return shuffled.slice(0, 4);
   })();
 
   // ===== Fetch inicial =====

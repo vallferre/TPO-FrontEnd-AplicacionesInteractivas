@@ -179,14 +179,19 @@ const ProductDetails = () => {
 
             {/* Rating - inicializa en 0 estrellas */}
             <div className="star-container">
-              {[...Array(5)].map((_, i) => (
-                <span
-                  key={i}
-                  className={`star ${i < Math.round(average) ? "filled" : ""}`}
-                >
-                  ★
-                </span>
-              ))}
+              {[...Array(5)].map((_, i) => {
+                const full = average >= i + 1;
+                const half = average > i && average < i + 1;
+
+                return (
+                  <span
+                    key={i}
+                    className={`star ${full ? "full" : half ? "half" : ""}`}
+                  >
+                    ★
+                  </span>
+                );
+              })}
               <span style={{ marginLeft: "0.5rem" }}>
                 ({average > 0 ? average.toFixed(1) : "0.0"})
               </span>

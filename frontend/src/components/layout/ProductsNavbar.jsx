@@ -72,7 +72,7 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
 
       let action;
 
-      // 👇 Si hay searchTerm, voy al endpoint de búsqueda
+      // Si hay searchTerm, voy al endpoint de búsqueda
       if (filters.searchTerm && filters.searchTerm.trim() !== "") {
         action = await dispatch(
           searchProducts(filters.searchTerm.trim())

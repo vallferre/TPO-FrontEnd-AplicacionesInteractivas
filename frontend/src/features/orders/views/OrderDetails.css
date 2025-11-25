@@ -1,6 +1,26 @@
 /* =========================
    OrderDetails.css – Estilos completos y centrados
    ========================= */
+
+   /* Wrapper for positioning back button */
+.back-button-container {
+  position: relative;
+  min-height: 100vh;
+}
+
+h1 {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+}
+
+.back-button-container {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
+}
+
 body {
   font-family: "Inter", sans-serif;
   background-color: #f6f7f8;

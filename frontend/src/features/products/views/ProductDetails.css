@@ -317,11 +317,29 @@ h1 {
 .star-container .star {
   font-size: 2rem;
   color: #d7ccc8;
+  position: relative;
+  display: inline-block;
 }
 
-.star-container .star.filled {
+/* Estrella llena */
+.star-container .star.full {
   color: #d4af37;
 }
+
+/* Media estrella */
+.star-container .star.half {
+  color: #d7ccc8; /* gris como vacía */
+}
+
+.star-container .star.half::before {
+  content: "★";
+  color: #d4af37;
+  position: absolute;
+  left: 0;
+  width: 50%;
+  overflow: hidden;
+}
+
 
 .star-container span {
   font-size: 1.2rem;

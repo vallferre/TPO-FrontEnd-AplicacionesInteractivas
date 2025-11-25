@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import "./OrderDetails.css";
 import { useDispatch, useSelector } from "react-redux";
 import { getOrderById } from "../../../redux/slices/OrderSlice";
+import BackButton from "../../../components/ui/BackButton";
 
 const OrderDetails = () => {
   const { orderId } = useParams();
@@ -38,6 +39,9 @@ const OrderDetails = () => {
 
   return (
     <div className="order-details-container">
+      <div className="back-button-container">
+        <BackButton to="/profile/orders" />
+      </div>
       <div className="order-details-header">
         <h1>Detalle de Orden</h1>
         <p className="order-id">Order #{order.orderId}</p>
