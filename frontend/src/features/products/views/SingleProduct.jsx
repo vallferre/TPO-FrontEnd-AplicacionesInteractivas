@@ -66,7 +66,7 @@ const SingleProduct = ({ product, onRemoveFavorite }) => {
       await dispatch(addToCart({ productId, token, quantity: 1 })).unwrap();
       toast.success("Producto agregado al carrito!");
     } catch (err) {
-      toast.error(err || "No se pudo agregar el producto al carrito.");
+      toast.error("No se pudo agregar el producto al carrito.");
     }
   };
 

@@ -106,7 +106,7 @@ const ProductDetails = () => {
       })
       .catch((err) => {
         console.error("Error al agregar al carrito:", err);
-        toast.error(err || "No se pudo agregar al carrito");
+        toast.error("No se pudo agregar al carrito");
       });
   };
 
