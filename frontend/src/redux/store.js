@@ -10,6 +10,7 @@ import ratingReducer from "./slices/RatingSlice.js";
 import orderReducer from "./slices/OrderSlice.js";
 import productImagesReducer from "./slices/ProductImageSlice.js";
 import categoriesReducer from "./slices/CategorySlice.js";
+import categoryImagesReducer from "./slices/CategoryImagesSlice.js";
 
 const persistConfig = {
   key: "root",
@@ -27,6 +28,7 @@ const rootReducer = combineReducers({
   rating: ratingReducer,
   order: orderReducer,
   productImages: productImagesReducer,
+  categoryImages: categoryImagesReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

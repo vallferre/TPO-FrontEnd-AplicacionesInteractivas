@@ -43,7 +43,7 @@ const Favorites = () => {
     dispatch(deleteFavorite({ token, productId }));
   };
 
-  if (loading) return <p>Loading favorites...</p>;
+  if (loading) return <p>Cargando favoritos...</p>;
   if (error) return <p className="error">{error}</p>;
   if (!favoriteIds || favoriteIds.length === 0)
     return <ErrorView message="No tienes productos en favoritos aún." />;
@@ -51,8 +51,8 @@ const Favorites = () => {
   return (
     <div className="favorites-page">
       <main className="content">
-        <h1 className="fade-in-title">Your Favorites</h1>
-        <p className="fade-in-subtitle">Items you've saved for later.</p>
+        <h1 className="fade-in-title">Tus favoritos</h1>
+        <p className="fade-in-subtitle">Productos que guardaste para más tarde.</p>
 
         <div className="grid">
           {favoriteProducts.map(product => (

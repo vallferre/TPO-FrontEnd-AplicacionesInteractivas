@@ -31,7 +31,7 @@ const AllProducts = () => {
 
   return (
     <div className="explore-page">
-      <title>Explore Products</title>
+      <title>Explorar productos</title>
 
       <ProductsNavbar
         setProducts={setProducts}
@@ -41,7 +41,7 @@ const AllProducts = () => {
       />
 
       <main className="container">
-        <h1 className="title">Explore Products</h1>
+        <h1 className="title">Explorar productos</h1>
 
         {loading && <p>Cargando productos...</p>}
         {error && (

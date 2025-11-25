@@ -1,37 +1,26 @@
-import React, { useState, useEffect } from "react";
+// src/components/CategoryCard.jsx (o donde lo tengas)
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCategoryImage, selectCategoryImageById } from "../../redux/slices/CategoryImagesSlice";
 
-const API_BASE = "http://localhost:8080";
 
 export default function CategoryCard({ category, index, onClick }) {
-  const [imageUrl, setImageUrl] = useState(
-    `https://via.placeholder.com/300x200?text=${encodeURIComponent(category.description)}`
+  const dispatch = useDispatch();
+
+  const reduxImageUrl = useSelector((state) =>
+    selectCategoryImageById(state, category.id)
   );
+
+  const placeholder = `https://via.placeholder.com/300x200?text=${encodeURIComponent(
+    category.description
+  )}`;
+
+  const imageUrl = reduxImageUrl || placeholder;
 
   useEffect(() => {
     if (!category.fileImageId) return;
-
-    const fetchImage = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/categories/${category.id}/image`, {
-        });
-
-        if (!res.ok) throw new Error("Error cargando imagen");
-
-        const blob = await res.blob();
-        setImageUrl(URL.createObjectURL(blob));
-      } catch (err) {
-        console.error(err);
-        // Mantiene el placeholder si falla
-      }
-    };
-
-    fetchImage();
-
-    // Limpiar URL al desmontar
-    return () => {
-      if (imageUrl.startsWith("blob:")) URL.revokeObjectURL(imageUrl);
-    };
-  }, [category.fileImageId]);
+    dispatch(fetchCategoryImage(category.id));
+  }, [dispatch, category.id, category.fileImageId]);
 
   return (
     <div

@@ -53,9 +53,9 @@ const Orders = () => {
   return (
     <div className="orders-content">
       <div className="orders-header">
-        <h1>Your Orders</h1>
+        <h1>Sus Ordenes</h1>
         <div className="orders-subheader">
-          <p>View your complete order history and track current deliveries.</p>
+          <p>Consulta tu historial completo de pedidos y sigue tus entregas actuales.</p>
           <button className="sort-button" onClick={toggleSortOrder}>
             {sortOrder === "desc" ? "⬇ Newest first" : "⬆ Oldest first"}
           </button>
@@ -65,7 +65,7 @@ const Orders = () => {
       {loading && <p>Loading orders...</p>}
       {error && <p className="error">{error}</p>}
       {!loading && !error && orders.length === 0 && (
-        <p>You don't have any orders yet.</p>
+        <p>Aún no realizaste pedidos.</p>
       )}
 
       <div className="orders-list">
@@ -79,7 +79,7 @@ const Orders = () => {
               <div className="order-basic-info">
                 <div className="order-left">
                   <h3 className="order-title">
-                    Order #{order.orderId ?? order.id}
+                    Orden #{order.orderId ?? order.id}
                   </h3>
                   {order.orderDate && (
                     <span className="order-date">{formatDate(order.orderDate)}</span>
@@ -94,7 +94,7 @@ const Orders = () => {
                   </span>
                 </div>
               </div>
-              <div className="view-details">Click to view details →</div>
+              <div className="view-details">Haz clic para ver los detalles →</div>
             </div>
           </div>
         ))}

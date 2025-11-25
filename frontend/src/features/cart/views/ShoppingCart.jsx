@@ -124,7 +124,7 @@ const ShoppingCart = () => {
 
   return (
     <div style={{ padding: "2rem" }}>
-      <h2 className="title">Shopping Cart</h2>
+      <h2 className="title">Carrito de compras</h2>
 
       <div style={{ display: "grid", gridTemplateColumns: "3fr 1fr", gap: "2rem" }}>
         <ul style={{ listStyle: "none", padding: 0 }}>

@@ -27,7 +27,7 @@ export default function OrderSummary({
 
   return (
     <div className="order-summary">
-      <h3>Order Summary</h3>
+      <h3>Resumen de orden</h3>
 
       <div className="summary-details">
         {/* Subtotal */}
@@ -81,10 +81,10 @@ export default function OrderSummary({
         </div>
       </div>
 
-      <button onClick={() => navigate("/checkout")}>Proceed to Checkout</button>
+      <button onClick={() => navigate("/checkout")}>Continuar al pago</button>
 
       <p>
-        or <Link to="/">Continue Shopping →</Link>
+        or <Link to="/products">Seguir comprando →</Link>
       </p>
     </div>
   );
