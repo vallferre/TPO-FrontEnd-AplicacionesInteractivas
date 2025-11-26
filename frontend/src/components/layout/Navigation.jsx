@@ -69,7 +69,7 @@ const Navigation = () => {
     setIsDropdownOpen(false);
   };
 
-  // 🔹 NUEVO: usar searchProducts para buscar por nombre
+  // usar searchProducts para buscar por nombre
   const handleSearch = async () => {
     const trimmed = searchTerm.trim();
 
@@ -98,7 +98,6 @@ const Navigation = () => {
 
   return (
     <nav className="navbar">
-      {/* LOGO */}
       <div className="navbar-brand">
         <Link to="/" className="logo-link">
           <h1 className="logo-text">Relicaria</h1>
@@ -117,7 +116,6 @@ const Navigation = () => {
         </Link>
       </div>
 
-      {/* BÚSQUEDA + BOTONES */}
       <div className="header-actions">
         <input
           type="text"
@@ -141,7 +139,6 @@ const Navigation = () => {
               <span className="material-symbols-outlined">shopping_bag</span>
             </button>
 
-            {/* PERFIL DROPDOWN */}
             <div className="profile-dropdown" ref={dropdownRef}>
               <button
                 className="profile-btn"

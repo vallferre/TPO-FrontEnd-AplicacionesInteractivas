@@ -10,8 +10,7 @@ import {
   fetchUserProducts,
   deleteUserProduct,
 } from "../../../redux/slices/ProductSlice";
-
-const API_BASE = "http://localhost:8080";
+import { fetchProductImages } from "../../../redux/slices/ProductImageSlice";
 
 const DeleteConfirmationModal = ({
   isOpen,
@@ -58,6 +57,9 @@ const UserProducts = () => {
     (state) => state.products?.userProductsError
   );
 
+  // Obtener todas las imágenes del estado
+  const productImagesState = useSelector((state) => state.productImages.items);
+
   const rawProducts = rawProductsFromStore || [];
   const loading = loadingFromStore ?? false;
   const reduxError = reduxErrorFromStore ?? null;
@@ -78,6 +80,17 @@ const UserProducts = () => {
     setLocalError(null);
     dispatch(fetchUserProducts(token));
   }, [token, dispatch]);
+
+  // Cargar imágenes para cada producto
+  useEffect(() => {
+    if (rawProducts.length > 0) {
+      rawProducts.forEach((product) => {
+        if (product.id && !productImagesState[product.id]) {
+          dispatch(fetchProductImages(product.id));
+        }
+      });
+    }
+  }, [rawProducts, productImagesState, dispatch]);
 
   const handleCreate = () => navigate("/create");
   const handleEdit = (productId) => navigate(`/edit/${productId}`);
@@ -105,8 +118,7 @@ const UserProducts = () => {
       setModalOpen(false);
       setSelectedProduct(null);
     } catch (error) {
-      console.error("Error deleting product:", error);
-      toast.error("Error al eliminar el producto. Revisa consola.");
+      toast.error("No se pudo eliminar el producto.");
     }
   };
 
@@ -116,12 +128,14 @@ const UserProducts = () => {
     const statusText = stock > 0 ? stock : "Sold-Out";
     const statusClass = stock > 0 ? "status-active" : "status-soldout";
 
+    // Obtener la primera imagen del producto
+    const productImages = productImagesState[p.id] || [];
+    const firstImage = productImages[0]?.url || null;
+
     return {
       id: p.id,
       name: p.name,
-      img: p.imageIds?.[0]
-        ? `${API_BASE}/images/${p.imageIds[0]}`
-        : null,
+      img: firstImage,
       status: statusText,
       statusClass,
     };

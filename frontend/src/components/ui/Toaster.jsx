@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 const Toaster = () => (
   <ToastContainer
     position="top-right"
-    autoClose={4000}           // ⏱ dura 4s si no se cierra con la X
+    autoClose={4000}
     hideProgressBar={false}
     newestOnTop
     closeOnClick
@@ -15,7 +15,7 @@ const Toaster = () => (
     draggable
     pauseOnHover
     theme="light"
-    closeButton                 // ✅ muestra la X
+    closeButton
   />
 );
 

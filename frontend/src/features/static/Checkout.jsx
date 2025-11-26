@@ -139,7 +139,6 @@ const Checkout = () => {
             <p>Ingresá los datos necesarios para completar la compra.</p>
           </div>
 
-          {/* 🔹 FORMULARIO VERTICAL */}
           <form className="edit-form" onSubmit={handleSubmit}>
             {/* ================= Sección Tarjeta ================= */}
             <div

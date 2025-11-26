@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import "./EditCategory.css";
 
 import {
   fetchCategoryById,
@@ -20,6 +21,27 @@ import { selectCategoryImageById } from "../../redux/slices/CategoryImagesSelect
 
 import ImageUploader from "../../components/common/ImageUploader";
 
+// Modal de confirmación para eliminar imagen
+const DeleteImageModal = ({ isOpen, onConfirm, onCancel }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-container">
+        <h2>Eliminar Imagen</h2>
+        <p>
+          ¿Estás seguro de que querés eliminar la imagen de esta categoría?<br />
+          Esta acción no se puede deshacer.
+        </p>
+        <div className="modal-buttons">
+          <button className="btn-cancel" onClick={onCancel}>Cancelar</button>
+          <button className="btn-confirm" onClick={onConfirm}>Eliminar</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const EditCategory = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -31,6 +53,7 @@ const EditCategory = () => {
   const loading = useSelector((state) => state.categories.loading);
   const error = useSelector((state) => state.categories.error);
 
+  const [modalOpen, setModalOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [newImage, setNewImage] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -71,11 +94,12 @@ const EditCategory = () => {
     setNewImage(files[0] || null);
   };
 
-  const handleDeleteImage = async () => {
-    if (!window.confirm("¿Seguro que querés eliminar la imagen actual?")) {
-      return;
-    }
+  const handleDeleteClick = () => {
+    setModalOpen(true);
+  };
 
+  const handleConfirmDelete = async () => {
+    setModalOpen(false);
     setDeletingImage(true);
 
     try {
@@ -167,7 +191,7 @@ const EditCategory = () => {
                 </div>
                 <button
                   type="button"
-                  onClick={handleDeleteImage}
+                  onClick={handleDeleteClick}
                   disabled={deletingImage || saving}
                   className="delete-image-btn"
                 >
@@ -197,6 +221,13 @@ const EditCategory = () => {
               </button>
             </div>
           </form>
+
+          {/* Modal de confirmación */}
+          <DeleteImageModal
+            isOpen={modalOpen}
+            onConfirm={handleConfirmDelete}
+            onCancel={() => setModalOpen(false)}
+          />
         </div>
       </main>
     </div>

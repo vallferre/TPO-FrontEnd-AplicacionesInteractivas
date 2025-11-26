@@ -13,8 +13,6 @@ import { uploadProductImages } from "../../../redux/slices/ProductImageSlice.js"
 import { selectProductCreating } from "../../../redux/slices/ProductSelectors";
 import { selectImageUploading } from "../../../redux/slices/ProductImageSelectors";
 
-const API_BASE = "http://localhost:8080";
-
 const CreateProduct = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -158,7 +156,7 @@ const CreateProduct = () => {
           return;
         }
       }
-      toast.success("✅ Producto creado y fotos subidas.");
+      toast.success("Producto creado y fotos subidas.");
 
       // Reset
       setName("");
@@ -282,7 +280,6 @@ const CreateProduct = () => {
                 <CategoryMultiSelect
                   selected={categories}
                   onChange={setCategories}
-                  apiBase={API_BASE}
                 />
                 {touched.categories && errors.categories && (
                   <p className="error">{errors.categories}</p>

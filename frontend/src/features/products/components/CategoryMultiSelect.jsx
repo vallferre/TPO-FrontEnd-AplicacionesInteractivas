@@ -13,13 +13,12 @@ import "./CategoryMultiSelect.css";
 const CategoryMultiSelect = ({
   selected = [],              // [{ id, description }]
   onChange,
-  apiBase = "http://localhost:8080", // ya no se usa para el fetch, pero lo dejamos por compatibilidad
   lockedIds = [],             // ids que no se pueden quitar (EditProduct)
   placeholder = "Buscar categoría…",
 }) => {
   const dispatch = useDispatch();
 
-  // 🔹 Categorías desde Redux
+  // Categorías desde Redux
   const all = useSelector((state) => state.categories.items || []);
   const loading = useSelector((state) => state.categories.loading);
   const error = useSelector((state) => state.categories.error);

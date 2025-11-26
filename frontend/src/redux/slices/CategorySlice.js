@@ -89,11 +89,7 @@ const categorySlice = createSlice({
     loading: false,
     error: null,
   },
-  reducers: {
-    clearSelectedCategory(state) {
-      state.selected = null;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       /* Fetch All */
@@ -177,5 +173,4 @@ const categorySlice = createSlice({
   },
 });
 
-export const { clearSelectedCategory } = categorySlice.actions;
 export default categorySlice.reducer;

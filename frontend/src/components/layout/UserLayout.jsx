@@ -1,4 +1,4 @@
-/* src/layouts/UserLayout.jsx */
+/* src/layout/UserLayout.jsx */
 import React, { useEffect } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,7 +27,6 @@ const UserLayout = () => {
 const navigate = useNavigate();
 const dispatch = useDispatch();
 
-// Redux state
 const token = useSelector(selectToken);
 const user = useSelector(selectUser);
 const avatar = useSelector(selectUserAvatar);
@@ -35,7 +34,6 @@ const role = useSelector(selectUserRole);
 const loading = useSelector(selectAuthLoading);
 const error = useSelector(selectAuthError);
 
-// Auto-load user data chain whenever token exists
 useEffect(() => {
   if (!token) {
     navigate("/login");

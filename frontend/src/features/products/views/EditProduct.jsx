@@ -18,9 +18,9 @@ import {
   uploadProductImages,
 } from "../../../redux/slices/ProductImageSlice";
 
-import { fetchCategories } from "../../../redux/slices/CategorySlice";
+import { selectProductImagesById } from "../../../redux/slices/ProductImageSelectors";
 
-const API_BASE = "http://localhost:8080";
+import { fetchCategories } from "../../../redux/slices/CategorySlice";
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -28,9 +28,9 @@ const EditProduct = () => {
   const dispatch = useDispatch();
 
   const token = useSelector((state) => state.auth.token);
-  const productImages = useSelector(
-    (state) => state.productImages.items?.[id] || []
-  );
+  
+  // Usar el selector correctamente
+  const productImages = useSelector((state) => selectProductImagesById(state, id));
 
   // Campos base
   const [name, setName] = useState("");
@@ -58,7 +58,6 @@ const EditProduct = () => {
 
   const MAX_IMAGE_SIZE = 1 * 1024 * 1024;
 
-
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -85,11 +84,10 @@ const EditProduct = () => {
           ? rawCats
           : [];
 
-        //IMÁGENES DESDE REDUX
+        // IMÁGENES DESDE REDUX
         const imagesAction = await dispatch(fetchProductImages(id));
         if (!fetchProductImages.fulfilled.match(imagesAction)) {
           console.error("Error al cargar imágenes:", imagesAction.error);
-          
         }
 
         setName(product.name ?? "");
@@ -150,7 +148,7 @@ const EditProduct = () => {
     e.preventDefault();
 
     if (!token) {
-      toast.error("⚠️ Iniciá sesión nuevamente.");
+      toast.error("Iniciá sesión nuevamente.");
       return;
     }
 
@@ -158,7 +156,7 @@ const EditProduct = () => {
       productImages.length - imagesToDelete.length + newImages.length;
     if (totalImagesAfterDelete === 0) {
       toast.error(
-        "⚠️ Debe haber al menos una imagen antes de guardar el producto."
+        "Debe haber al menos una imagen antes de guardar el producto."
       );
       return;
     }
@@ -224,63 +222,71 @@ const EditProduct = () => {
 
     setSaving(true);
 
-    // 1) Eliminar imágenes marcadas
-    if (imagesToDelete.length > 0) {
-      for (const imgId of imagesToDelete) {
-        const deleteAction = await dispatch(
-          deleteProductImages({
-            token,
-            productId: id,
-            imageId: imgId,
-          })
-        );
+    try {
+      // 1) Eliminar imágenes marcadas
+      if (imagesToDelete.length > 0) {
+        for (const imgId of imagesToDelete) {
+          const deleteAction = await dispatch(
+            deleteProductImages({
+              token,
+              productId: id,
+              imageId: imgId,
+            })
+          );
 
-        if (deleteProductImages.rejected.match(deleteAction)) {
-          console.error("Error al eliminar imágenes:", deleteAction.error);
-          toast.error("Hubo un error al eliminar las imágenes");
-          setSaving(false);
-          return;
+          if (deleteProductImages.rejected.match(deleteAction)) {
+            console.error("Error al eliminar imágenes:", deleteAction.error);
+            toast.error("Hubo un error al eliminar las imágenes");
+            setSaving(false);
+            return;
+          }
         }
       }
-    }
 
-    // 2) Actualizar producto
-    const updateAction = await dispatch(
-      updateProductWithImages({
-        token,
-        id,
-        payload,
-        originalStock,
-        originalDiscount,
-      })
-    );
+      // 2) Actualizar producto
+      const updateAction = await dispatch(
+        updateProductWithImages({
+          token,
+          id,
+          payload,
+          originalStock,
+          originalDiscount,
+        })
+      );
 
-    if (updateProductWithImages.rejected.match(updateAction)) {
-      console.error("Error al actualizar producto:", updateAction.error);
-      toast.error("Hubo un error al actualizar el producto");
+      if (updateProductWithImages.rejected.match(updateAction)) {
+        console.error("Error al actualizar producto:", updateAction.error);
+        toast.error("Hubo un error al actualizar el producto");
+        setSaving(false);
+        return;
+      }
+
+      // 3) Subir nuevas imágenes
+      if (newImages.length > 0) {
+        for (const file of newImages) {
+          const fd = new FormData();
+          fd.append("file", file);
+
+          const uploadAction = await dispatch(
+            uploadProductImages({ token, productId: id, formData: fd })
+          );
+          if (uploadProductImages.rejected.match(uploadAction)) {
+            console.error("Error al subir imágenes:", uploadAction.error);
+            toast.error("Hubo un error al subir las nuevas imágenes");
+            setSaving(false);
+            return;
+          }
+        }
+      }
+
+      toast.success("Producto actualizado correctamente");
+      navigate(-1);
+    } catch (err) {
+      console.error("Error en handleSubmit:", err);
+      toast.error("Error inesperado al guardar el producto");
+    } finally {
       setSaving(false);
-      return;
     }
-// 3) Subir nuevas imágenes
-    if (newImages.length > 0) {
-      for (const file of newImages) {
-        const fd = new FormData();
-        fd.append("file", file);
-
-        const uploadAction = await dispatch(
-          uploadProductImages({token,productId: id,formData: fd,})
-        );
-        if (uploadProductImages.rejected.match(uploadAction)) {
-          console.error("Error al subir imágenes:", uploadAction.error);
-          toast.error("Hubo un error al subir las nuevas imágenes");
-          setSaving(false);
-          return;
-        }
-      }
-    }
-    toast.success("Producto actualizado correctamente");
-    setSaving(false);
-    navigate(-1);
   };
 
   if (loading) return <p>Cargando producto...</p>;
@@ -379,7 +385,6 @@ const EditProduct = () => {
             <div className="form-group">
               <div className="cms-hide-selected">
                 <CategoryMultiSelect
-                  apiBase={API_BASE}
                   selected={selectedCategories}
                   onChange={handleCategoriesChange}
                   lockedIds={originalCategories.map((c) => c.id)}
@@ -408,7 +413,7 @@ const EditProduct = () => {
                     .map((img) => (
                       <div key={img.id} className="thumb-card">
                         <img
-                          src={`${API_BASE}/images/${img.id}`}
+                          src={img.url}
                           alt={img.filename || `image-${img.id}`}
                           onError={(e) => {
                             e.currentTarget.src =
@@ -442,7 +447,7 @@ const EditProduct = () => {
 
             {noImages && (
               <p className="error" style={{ marginBottom: ".5rem" }}>
-                ⚠️ Debe haber al menos una imagen antes de guardar.
+                Debe haber al menos una imagen antes de guardar.
               </p>
             )}
 

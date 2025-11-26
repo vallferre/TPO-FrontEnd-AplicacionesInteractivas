@@ -15,7 +15,6 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
   const [searchParams, setSearchParams] = useSearchParams();
   const dispatch = useDispatch();
 
-  // Categorías desde Redux
   const categories = useSelector((state) => state.categories?.items || []);
 
   // Filtros
@@ -58,7 +57,6 @@ const ProductsNavbar = ({ setProducts, setLoading, setError, setHasQueried }) =>
     if (!categories || categories.length === 0) {
       dispatch(fetchCategories());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* =====================================================

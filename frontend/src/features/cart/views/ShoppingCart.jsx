@@ -44,44 +44,49 @@ const ShoppingCart = () => {
     if (token) dispatch(fetchCart({ token }));
   }, [dispatch, token]);
 
-  const handleIncrease = (productId) => {
-    dispatch(addToCart({ productId, token, quantity: 1 }))
-      .unwrap()
-      .then(() => {
-        // eliminar error previo
-        setCartErrors((prev) => ({ ...prev, [productId]: null }));
-      })
-      .catch((errorResponse) => {
-        const status = errorResponse?.status;
-        const data = errorResponse || {};
+  const handleIncrease = async (productId) => {
+    const resultAction = await dispatch(addToCart({ productId, token, quantity: 1 }));
+    
+    // Verificar si la acción fue exitosa
+    if (addToCart.fulfilled.match(resultAction)) {
+      // Éxito: eliminar error previo
+      setCartErrors((prev) => ({ ...prev, [productId]: null }));
+    } else if (addToCart.rejected.match(resultAction)) {
+      // Error: manejar el rechazo
+      const errorResponse = resultAction.payload || resultAction.error;
+      const status = errorResponse?.status;
+      const data = errorResponse || {};
 
-        let message = "Error agregando producto.";
+      let message = "Error agregando producto.";
 
-        if (status === 403) {
-          if (!data || Object.keys(data).length === 0) {
-            message = "No puedes agregar tu propio producto al carrito.";
-          } else if (data.message === "Access Denied") {
-            message = "No tienes permisos para realizar esta acción.";
-          } else {
-            message = "Acceso denegado.";
-          }
+      if (status === 403) {
+        if (!data || Object.keys(data).length === 0) {
+          message = "No puedes agregar tu propio producto al carrito.";
+        } else if (data.message === "Access Denied") {
+          message = "No tienes permisos para realizar esta acción.";
         } else {
-          message =
-            data?.message ||
-            data?.error ||
-            "No se pudo agregar el producto al carrito.";
+          message = "Acceso denegado.";
         }
+      } else {
+        message =
+          data?.message ||
+          data?.error ||
+          "No se pudo agregar el producto al carrito.";
+      }
 
-        setCartErrors((prev) => ({ ...prev, [productId]: message }));
-      });
+      setCartErrors((prev) => ({ ...prev, [productId]: message }));
+    }
   };
 
-  const handleDecrease = (productId) => {
-    dispatch(removeFromCart({ productId, number: 1, token }))
-      .unwrap()
-      .catch((err) =>
-        setCartErrors((prev) => ({ ...prev, [productId]: err }))
-      );
+  const handleDecrease = async (productId) => {
+    const resultAction = await dispatch(removeFromCart({ productId, number: 1, token }));
+    
+    if (removeFromCart.rejected.match(resultAction)) {
+      const errorMessage = resultAction.payload?.message || 
+                          resultAction.error?.message || 
+                          "Error al disminuir cantidad";
+      setCartErrors((prev) => ({ ...prev, [productId]: errorMessage }));
+    }
   };
 
   const handleDeleteAll = (productId, productName, quantity) => {

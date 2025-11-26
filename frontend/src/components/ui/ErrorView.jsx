@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./ErrorView.css";
-import errorImage from "../../assets/emptyChest-Without-Background.png"; // ✅ Importa la imagen correctamente
+import errorImage from "../../assets/emptyChest-Without-Background.png";
 
 
 const ErrorView = ({message}) => {
